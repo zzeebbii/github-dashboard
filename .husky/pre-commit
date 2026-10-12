@@ -1,0 +1,3 @@
+# Fast checks only — the full gate is `pnpm verify`.
+# Anything slower than a couple of seconds belongs in CI, not here.
+pnpm exec lint-staged

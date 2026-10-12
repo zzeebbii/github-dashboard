@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "moduleDetection": "force",
+
+    // --- Strictness. Packages may ADD strictness, never remove it. ---
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+
+    // --- Emit / interop. verbatimModuleSyntax + isolatedModules keep every
+    //     file independently transpilable, which is what lets oxc/rolldown
+    //     transform without a type checker. erasableSyntaxOnly bans enums and
+    //     parameter properties so Node can strip types natively. ---
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true,
+
+    // Imports name real files (`./task.ts`), not phantom ones (`./task.js`).
+    // TypeScript rewrites the extension on emit. This keeps source honest and
+    // avoids the "why does it import a .js file that doesn't exist?" confusion
+    // that trips up both newcomers and agents.
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true
+  },
+  "exclude": ["node_modules", "dist", "coverage"]
+}

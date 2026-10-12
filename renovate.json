@@ -1,0 +1,66 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":dependencyDashboard"],
+  "timezone": "Europe/Oslo",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies"],
+  "rangeStrategy": "pin",
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Patch and minor updates auto-merge, but ONLY after the full verify suite passes. The gates are the review.",
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Major updates always get a human. They are where breaking changes live.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["major-update", "needs-review"]
+    },
+    {
+      "description": "Keep the toolchain versions in step; a split upgrade usually breaks.",
+      "groupName": "vitest",
+      "matchPackageNames": ["vitest", "@vitest/**", "vitest-browser-react"]
+    },
+    {
+      "groupName": "oxc toolchain",
+      "matchPackageNames": ["oxlint", "oxfmt", "oxlint-tsgolint"]
+    },
+    {
+      "groupName": "tanstack",
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "groupName": "react",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"]
+    },
+    {
+      "description": "TypeScript is load-bearing here (TS7 support gates several tools). Never auto-merge it.",
+      "matchPackageNames": ["typescript"],
+      "automerge": false,
+      "addLabels": ["needs-review"]
+    },
+    {
+      "description": "Drizzle is 0.x: its MINOR bumps carry breaking changes, so treat them as majors.",
+      "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": false,
+      "addLabels": ["needs-review"]
+    },
+    {
+      "description": "Node stays on the LTS line the repo pins. Node 26 becomes LTS in Oct 2026 — that is a deliberate, ADR-tracked bump, not an automatic one.",
+      "matchPackageNames": ["node", "@types/node"],
+      "allowedVersions": "<25",
+      "automerge": false
+    }
+  ]
+}

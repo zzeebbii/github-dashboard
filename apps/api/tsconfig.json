@@ -1,0 +1,17 @@
+{
+  // TOOLING config: every file, no emit. Editors and oxlint's type-aware rules
+  // discover THIS file, so it must cover tests and scripts — otherwise type-aware
+  // linting degrades to "error" types there and stops catching real defects.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts", "*.config.ts"]
+}

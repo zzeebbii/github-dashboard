@@ -1,0 +1,31 @@
+node_modules/
+# pnpm keeps its content-addressable store on the same filesystem as the project.
+# In container workflows the repo is a mounted volume, so pnpm creates the store
+# HERE unless store-dir is set explicitly. Never commit it.
+.pnpm-store/
+dist/
+coverage/
+*.tsbuildinfo
+.turbo/
+
+# Environment — never commit real values. .env.example is the documented contract.
+.env
+.env.*
+!.env.example
+
+# Test / build output
+playwright-report/
+test-results/
+blob-report/
+# Vitest browser-mode failure artefacts
+**/.vitest-attachments/
+**/__screenshots__/
+artifacts/dependency-graph.dot
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+dist-types/

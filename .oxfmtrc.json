@@ -1,0 +1,11 @@
+{
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/dist-types/**",
+    "**/coverage/**",
+    "apps/api/drizzle/**",
+    "artifacts/**",
+    "**/routeTree.gen.ts",
+    "pnpm-lock.yaml"
+  ]
+}

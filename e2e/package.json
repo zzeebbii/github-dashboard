@@ -1,0 +1,17 @@
+{
+  "name": "@kit/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@kit/contracts": "workspace:*",
+    "@playwright/test": "1.64.0",
+    "typescript": "7.0.2"
+  }
+}

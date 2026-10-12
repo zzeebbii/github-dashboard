@@ -1,0 +1,19 @@
+{
+  // TOOLING config: every file, no emit. See apps/api/tsconfig.json for why
+  // tests must be included here.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    // `@vitest/browser/matchers` augments `expect` with `.element()`.
+    "types": ["vite/client", "node", "@vitest/browser/matchers"],
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx", "*.config.ts"]
+}

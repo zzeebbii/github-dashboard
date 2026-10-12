@@ -1,0 +1,38 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "e2e"
+# pnpm 11 blocks dependency lifecycle scripts by default (supply-chain hardening):
+# a compromised package cannot execute code merely by being installed. Every entry
+# below is an explicit, reviewed exception, and adding one is a security decision.
+# See docs/adr/0011-dependency-management.md.
+allowBuilds:
+  # Native binary download. Required by drizzle-kit and Vite's dependency scanner.
+  esbuild: true
+  # Pulled in by testcontainers (via ssh2/dockerode). Optional native speedups and
+  # protobuf codegen — these packages work without their build steps.
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
+  # MSW's postinstall only copies the browser service worker; we intercept in
+  # Node and in Vitest browser mode, so the worker file is not needed.
+  msw: false
+# pnpm 11 refuses packages published within the last few days by default, which
+# blunts a compromised-release attack. Entries here are deliberate exceptions for
+# versions this project pins; remove them once the versions age out.
+minimumReleaseAgeExclude: []
+
+# dependency-cruiser 18 cannot use TypeScript 7 yet: TS7's programmatic compiler
+# API is not stable until 7.1, and tools that consume the compiler as a library
+# are blocked until then. Without a TypeScript it can load, dependency-cruiser
+# silently cruises ZERO modules and still reports success — a guardrail that
+# passes while checking nothing.
+#
+# So we give dependency-cruiser its own private TypeScript 6 for PARSING only.
+# The repository still compiles with TypeScript 7; this copy never type-checks
+# anything and is invisible to every other package thanks to pnpm's isolated
+# node_modules. Remove it once dependency-cruiser supports TS7. See ADR-0013.
+packageExtensions:
+  dependency-cruiser:
+    dependencies:
+      typescript: 6.0.3
