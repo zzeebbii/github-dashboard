@@ -1,6 +1,6 @@
 # ADR-0005: Architecture rules are machine-enforced and blocking
 
-**Status:** Accepted
+**Status:** Accepted — amended by [ADR-0015](0015-frontend-hexagonal-layering.md)
 **Date:** 2026-08-15
 
 ## Context

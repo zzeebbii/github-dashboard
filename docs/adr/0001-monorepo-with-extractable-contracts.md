@@ -1,6 +1,6 @@
 # ADR-0001: pnpm monorepo with an extractable contracts package
 
-**Status:** Accepted
+**Status:** Accepted — amended by [ADR-0014](0014-spa-only-browser-direct-github-access.md)
 **Date:** 2026-08-15
 
 ## Context

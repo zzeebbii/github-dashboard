@@ -1,6 +1,6 @@
 # ADR-0008: Test at real boundaries; do not mock by default
 
-**Status:** Accepted
+**Status:** Accepted — amended by [ADR-0019](0019-testing-a-browser-only-app.md)
 **Date:** 2026-08-15
 
 ## Context
