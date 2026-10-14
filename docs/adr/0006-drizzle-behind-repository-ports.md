@@ -1,6 +1,6 @@
 # ADR-0006: Drizzle behind repository ports, PostgreSQL 17
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0014](0014-spa-only-browser-direct-github-access.md)
 **Date:** 2026-08-15
 
 ## Context

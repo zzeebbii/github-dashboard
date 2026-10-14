@@ -1,6 +1,6 @@
 # ADR-0002: Zod contracts as source of truth, OpenAPI as the artifact
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0014](0014-spa-only-browser-direct-github-access.md)
 **Date:** 2026-08-15
 
 ## Context

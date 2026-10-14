@@ -1,6 +1,6 @@
 # ADR-0010: Container-first, cloud-neutral deployment
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0018](0018-static-host-agnostic-deployment.md)
 **Date:** 2026-08-15
 
 ## Context

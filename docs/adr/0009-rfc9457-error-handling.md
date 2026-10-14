@@ -1,6 +1,6 @@
 # ADR-0009: RFC 9457 problem details at the edge, Result types in the core
 
-**Status:** Accepted
+**Status:** Accepted — amended by [ADR-0020](0020-error-handling-without-an-http-edge.md)
 **Date:** 2026-08-15
 
 ## Context
