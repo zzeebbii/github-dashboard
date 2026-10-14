@@ -3,9 +3,8 @@
     "**/dist/**",
     "**/dist-types/**",
     "**/coverage/**",
-    "apps/api/drizzle/**",
-    "artifacts/**",
     "**/routeTree.gen.ts",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "docs/pr-dashboard-designs/**"
   ]
 }

@@ -1,6 +1,6 @@
 {
-  // TOOLING config: every file, no emit. See apps/api/tsconfig.json for why
-  // tests must be included here.
+  // TOOLING config: every file, no emit. Tests are included so editors and
+  // oxlint type-check them; tsconfig.build.json is the emitting one.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],

@@ -60,113 +60,26 @@ function commandFails(command) {
 // ---------------------------------------------------------------------------
 // The scenarios. Each one is a mistake an agent could plausibly make.
 // ---------------------------------------------------------------------------
+// Scenarios that mutated the removed backend and contracts are gone; the SPA
+// guardrail scenarios are rebuilt alongside the rewritten rule sets.
 const scenarios = [
-  {
-    name: "domain/ cannot import infrastructure",
-    guards: "pnpm arch:check",
-    touches: ["apps/api/src/domain/task/task.ts"],
-    apply: () =>
-      mutate(
-        "apps/api/src/domain/task/task.ts",
-        (source) =>
-          `import { createDatabase } from "../../infrastructure/persistence/db.ts";\nvoid createDatabase;\n${source}`,
-      ),
-  },
-  {
-    name: "domain/ cannot import Zod",
-    guards: "pnpm arch:check",
-    touches: ["apps/api/src/domain/task/task.ts"],
-    apply: () =>
-      mutate(
-        "apps/api/src/domain/task/task.ts",
-        (source) => `import { z } from "zod";\nvoid z;\n${source}`,
-      ),
-  },
-  {
-    name: "application/ cannot import infrastructure",
-    guards: "pnpm arch:check",
-    touches: ["apps/api/src/application/task/task.usecases.ts"],
-    apply: () =>
-      mutate(
-        "apps/api/src/application/task/task.usecases.ts",
-        (source) =>
-          `import { DrizzleTaskRepository } from "../../infrastructure/persistence/drizzle-task-repository.ts";\nvoid DrizzleTaskRepository;\n${source}`,
-      ),
-  },
-  {
-    name: "apps/web cannot import apps/api",
-    guards: "pnpm arch:check",
-    touches: ["apps/web/src/application/ports.ts"],
-    apply: () =>
-      mutate(
-        "apps/web/src/application/ports.ts",
-        (source) =>
-          `import type { TaskRepository } from "../../../api/src/application/ports.ts";\nexport type Leaked = TaskRepository;\n${source}`,
-      ),
-  },
-  {
-    name: "packages/contracts cannot depend on anything but Zod",
-    guards: "pnpm arch:check",
-    touches: ["packages/contracts/src/problem.ts"],
-    apply: () =>
-      mutate(
-        "packages/contracts/src/problem.ts",
-        (source) => `import { Hono } from "hono";\nvoid Hono;\n${source}`,
-      ),
-  },
-  {
-    name: "process.env cannot be read outside config/env.ts",
-    guards: "pnpm lint",
-    touches: ["apps/api/src/application/task/task.usecases.ts"],
-    apply: () =>
-      mutate(
-        "apps/api/src/application/task/task.usecases.ts",
-        (source) => `const leaked = process.env["DATABASE_URL"];\nvoid leaked;\n${source}`,
-      ),
-  },
-  {
-    name: "a floating promise is rejected",
-    guards: "pnpm lint",
-    touches: ["apps/api/src/application/task/task.usecases.ts"],
-    apply: () =>
-      mutate("apps/api/src/application/task/task.usecases.ts", (source) =>
-        source.replace(
-          "  await deps.tasks.save(created.value);",
-          "  deps.tasks.save(created.value);",
-        ),
-      ),
-  },
   {
     name: "`any` is rejected",
     guards: "pnpm lint",
-    touches: ["apps/api/src/application/errors.ts"],
+    touches: ["apps/web/src/features/home/HomePage.tsx"],
     apply: () =>
       mutate(
-        "apps/api/src/application/errors.ts",
+        "apps/web/src/features/home/HomePage.tsx",
         (source) => `export const sloppy = (value: any): any => value;\n${source}`,
       ),
   },
   {
-    name: "changing a schema without regenerating openapi.json is caught",
-    guards: "pnpm contract:check",
-    touches: ["packages/contracts/src/task/task.schema.ts", "artifacts/openapi.json"],
-    // The contract package must be rebuilt for the generator to see the change.
-    before: () =>
-      execSync("pnpm --filter @kit/contracts run build", { cwd: repoRoot, stdio: "pipe" }),
-    apply: () => {
-      mutate("packages/contracts/src/task/task.schema.ts", (source) =>
-        source.replace("  done: z.boolean(),", "  done: z.boolean(),\n  drifted: z.string(),"),
-      );
-      execSync("pnpm --filter @kit/contracts run build", { cwd: repoRoot, stdio: "pipe" });
-    },
-  },
-  {
     name: "an unused export is caught",
     guards: "pnpm exec knip",
-    touches: ["apps/api/src/domain/task/task.ts"],
+    touches: ["apps/web/src/features/home/HomePage.tsx"],
     apply: () =>
       mutate(
-        "apps/api/src/domain/task/task.ts",
+        "apps/web/src/features/home/HomePage.tsx",
         (source) => `export const neverUsedAnywhere = 42;\n${source}`,
       ),
   },
@@ -204,12 +117,6 @@ try {
   }
 } finally {
   restoreAll();
-  // Leave generated artefacts consistent with the restored sources.
-  try {
-    execSync("pnpm --filter @kit/contracts run build", { cwd: repoRoot, stdio: "pipe" });
-  } catch {
-    /* the caller's own verify run will surface any real problem */
-  }
 }
 
 if (failures > 0) {

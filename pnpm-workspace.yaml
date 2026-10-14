@@ -1,19 +1,13 @@
 packages:
   - "apps/*"
-  - "packages/*"
   - "e2e"
 # pnpm 11 blocks dependency lifecycle scripts by default (supply-chain hardening):
 # a compromised package cannot execute code merely by being installed. Every entry
 # below is an explicit, reviewed exception, and adding one is a security decision.
 # See docs/adr/0011-dependency-management.md.
 allowBuilds:
-  # Native binary download. Required by drizzle-kit and Vite's dependency scanner.
+  # Native binary download. Required by Vite's dependency scanner.
   esbuild: true
-  # Pulled in by testcontainers (via ssh2/dockerode). Optional native speedups and
-  # protobuf codegen — these packages work without their build steps.
-  cpu-features: false
-  protobufjs: false
-  ssh2: false
   # MSW's postinstall only copies the browser service worker; we intercept in
   # Node and in Vitest browser mode, so the worker file is not needed.
   msw: false

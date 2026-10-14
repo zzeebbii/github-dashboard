@@ -6,10 +6,9 @@
  *   pnpm init-project my-dashboard --owner @your-github-user [--title "My Dashboard"]
  *
  * Renames the @kit/* workspace scope, the root package, the Compose project, and
- * the human-readable title; points CODEOWNERS and the RFC 9457 problem type URLs
- * at the new project; resets the changelog; then regenerates the lockfile and
- * artifacts/openapi.json. The script deletes itself at the end, because a project
- * is initialised exactly once.
+ * the human-readable title; points CODEOWNERS at the new project; resets the
+ * changelog; then regenerates the lockfile. The script deletes itself at the end,
+ * because a project is initialised exactly once.
  *
  * It refuses to run on a dirty working tree, so `git checkout .` undoes it.
  */
@@ -20,8 +19,7 @@ import { parseArgs } from "node:util";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const selfPath = "scripts/init-project.mjs";
-const usage =
-  'Usage: pnpm init-project <name> --owner @github-user-or-org/team [--title "Title"] [--problem-base https://example.com/problems]';
+const usage = 'Usage: pnpm init-project <name> --owner @github-user-or-org/team [--title "Title"]';
 
 function fail(message) {
   console.error(`\n✖ ${message}\n\n${usage}\n`);
@@ -37,7 +35,6 @@ const { values, positionals } = parseArgs({
   options: {
     owner: { type: "string" },
     title: { type: "string" },
-    "problem-base": { type: "string" },
   },
 });
 
@@ -53,15 +50,8 @@ if (!/^@[\w.-]+(\/[\w.-]+)?$/u.test(owner)) {
 const title =
   values.title ??
   name.replace(/(^|-)([a-z0-9])/gu, (_, dash, c) => `${dash ? " " : ""}${c.toUpperCase()}`);
-// `.example` is reserved (RFC 2606): an honest placeholder until the project has a domain.
-const problemBase = (values["problem-base"] ?? `https://${name}.example/problems`).replace(
-  /\/$/u,
-  "",
-);
 
-if (
-  !readFileSync(resolve(repoRoot, "packages/contracts/package.json"), "utf8").includes('"@kit/')
-) {
+if (!readFileSync(resolve(repoRoot, "apps/web/package.json"), "utf8").includes('"@kit/')) {
   fail("This project is already initialised: no @kit/* packages remain.");
 }
 if (run("git", ["status", "--porcelain"], "pipe").trim() !== "") {
@@ -76,12 +66,10 @@ const replacements = [
   ["agentic-fullstack-starter-kit", name],
   ["agentic-kit", name],
   ["Agentic Fullstack Starter Kit", title],
-  ["https://kit.example/problems", problemBase],
   ["@kit/", `@${name}/`],
 ];
 
-// Regenerated below rather than edited, so it is guaranteed to match the contract.
-const skip = new Set([selfPath, "artifacts/openapi.json"]);
+const skip = new Set([selfPath]);
 const files = run("git", ["ls-files", "-z"], "pipe")
   .split("\0")
   .filter((file) => file !== "" && !skip.has(file));
@@ -123,9 +111,6 @@ rmSync(resolve(repoRoot, selfPath));
 
 console.log(`\nRenamed the kit to "${name}" in ${changed} files. Regenerating derived files…\n`);
 run("pnpm", ["install"]);
-// The generator imports the contracts package through its built dist/.
-run("pnpm", ["exec", "tsc", "--build"]);
-run("pnpm", ["run", "contract:generate"]);
 // Renames change column widths in Markdown tables; let the formatter realign them.
 run("pnpm", ["run", "format"]);
 
@@ -136,5 +121,4 @@ Next:
   1. Review the result:  git status && git diff
   2. Run the full gate:  pnpm verify
   3. Commit:             git add -A && git commit -m "chore: initialise ${name} from the starter kit"
-  4. Replace the Task slice with your first real feature (docs/guides/adding-a-feature.md).
 `);

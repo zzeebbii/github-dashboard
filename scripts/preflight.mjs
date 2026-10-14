@@ -3,7 +3,7 @@
  * Checks the local environment BEFORE anything fails confusingly downstream.
  *
  * A missing Docker daemon should say "Docker is not running", not surface as an
- * opaque Testcontainers timeout five minutes into a test run.
+ * opaque failure halfway through starting the prod-like stack.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -51,8 +51,8 @@ if (pnpmVersion === null) {
 if (tryRun("docker", ["--version"]) === null) {
   problems.push(
     `Docker is not installed.\n` +
-      `      It is required for the local stack, integration tests (Testcontainers),\n` +
-      `      and E2E. See docs/guides/local-development.md.`,
+      `      It is required for the local stack and E2E.\n` +
+      `      See docs/guides/local-development.md.`,
   );
 } else if (tryRun("docker", ["info", "--format", "{{.ServerVersion}}"]) === null) {
   problems.push(`Docker is installed but the daemon is not running. Fix: start Docker Desktop.`);
@@ -60,9 +60,7 @@ if (tryRun("docker", ["--version"]) === null) {
 
 // --- Environment file --------------------------------------------------------
 if (!existsSync(resolve(repoRoot, ".env"))) {
-  notes.push(
-    "No .env found. Compose supplies its own values; copy .env.example only for host-run apps.",
-  );
+  notes.push("No .env found. Copy .env.example only if you need to override build variables.");
 }
 
 // --- Report ------------------------------------------------------------------

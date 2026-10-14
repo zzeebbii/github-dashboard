@@ -1,89 +1,17 @@
-# One compose file, three profiles. A single file (rather than a stack of
+# One compose file, two profiles. A single file (rather than a stack of
 # overrides) means an agent can read the whole local topology in one place.
 #
 #   docker compose --profile dev up          → hot-reload development
-#   docker compose --profile prod-like up    → production images, what CI/E2E use
-#   docker compose --profile test up         → just the database, for local tests
+#   docker compose --profile prod-like up    → production image, what CI/E2E use
 #
-# Services with no profile (db, migrate) start under every profile.
+# There is no backend: the SPA talks to GitHub directly from the browser.
 
 name: agentic-kit
 
 services:
   # ---------------------------------------------------------------------------
-  # Infrastructure
-  # ---------------------------------------------------------------------------
-  db:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: kit
-      POSTGRES_PASSWORD: kit
-      POSTGRES_DB: kit
-    ports:
-      - "5432:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    healthcheck:
-      # Depending on a healthcheck rather than a sleep is what makes
-      # `docker compose up` reliable as a single command.
-      test: ["CMD-SHELL", "pg_isready -U kit -d kit"]
-      interval: 2s
-      timeout: 3s
-      retries: 30
-      start_period: 5s
-
-  # One-shot migration runner. Migrations are NOT applied on app start: N
-  # replicas booting at once would race each other.
-  migrate:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-      target: build
-    command: ["pnpm", "--filter", "@kit/api", "run", "db:migrate"]
-    working_dir: /repo
-    environment:
-      DATABASE_URL: postgres://kit:kit@db:5432/kit
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: on-failure
-
-  # ---------------------------------------------------------------------------
   # dev profile — source mounted, hot reload
   # ---------------------------------------------------------------------------
-  api-dev:
-    profiles: [dev]
-    image: node:24-bookworm-slim
-    working_dir: /repo
-    command: >
-      sh -c "corepack enable && corepack prepare pnpm@11.22.0 --activate &&
-             pnpm install --frozen-lockfile &&
-             pnpm --filter @kit/contracts run build &&
-             pnpm --filter @kit/api run dev"
-    environment:
-      # Keep pnpm's store off the bind mount: otherwise pnpm creates a large
-      # .pnpm-store inside your checkout, because it keeps the store on the same
-      # filesystem as node_modules.
-      PNPM_STORE_DIR: /pnpm-store
-      NODE_ENV: development
-      API_PORT: 3000
-      DATABASE_URL: postgres://kit:kit@db:5432/kit
-      LOG_LEVEL: debug
-      CORS_ORIGINS: http://localhost:5173
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/repo
-      # Anonymous volumes keep container-built node_modules from being shadowed
-      # by the host's (which may have different platform binaries).
-      - /repo/node_modules
-      - /repo/apps/api/node_modules
-      - /repo/packages/contracts/node_modules
-      - pnpm-store:/pnpm-store
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-
   web-dev:
     profiles: [dev]
     image: node:24-bookworm-slim
@@ -91,58 +19,34 @@ services:
     command: >
       sh -c "corepack enable && corepack prepare pnpm@11.22.0 --activate &&
              pnpm install --frozen-lockfile &&
-             pnpm --filter @kit/contracts run build &&
              pnpm --filter @kit/web run dev --host"
     environment:
+      # Keep pnpm's store off the bind mount: otherwise pnpm creates a large
+      # .pnpm-store inside your checkout, because it keeps the store on the same
+      # filesystem as node_modules.
       PNPM_STORE_DIR: /pnpm-store
-      VITE_API_URL: http://localhost:3000
     ports:
       - "5173:5173"
     volumes:
       - .:/repo
+      # Anonymous volumes keep container-built node_modules from being shadowed
+      # by the host's (which may have different platform binaries).
       - /repo/node_modules
       - /repo/apps/web/node_modules
-      - /repo/packages/contracts/node_modules
       - pnpm-store:/pnpm-store
-    depends_on:
-      - api-dev
 
   # ---------------------------------------------------------------------------
-  # prod-like profile — the images that ship. E2E runs against THIS.
+  # prod-like profile — the image that ships. E2E runs against THIS.
   # ---------------------------------------------------------------------------
-  api:
-    profiles: [prod-like]
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    environment:
-      NODE_ENV: production
-      API_PORT: 3000
-      DATABASE_URL: postgres://kit:kit@db:5432/kit
-      LOG_LEVEL: info
-      # Same-origin via nginx in this stack, so no cross-origin is permitted.
-      CORS_ORIGINS: http://localhost:8080
-    expose:
-      - "3000"
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-
   web:
     profiles: [prod-like]
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      args:
-        # Empty → the SPA calls its own origin and nginx proxies to the API.
-        VITE_API_URL: ""
     ports:
       - "8080:80"
-    depends_on:
-      - api
 
 volumes:
-  db-data:
-  # Shared pnpm store for the dev containers. A named volume (not a bind mount)
+  # Shared pnpm store for the dev container. A named volume (not a bind mount)
   # keeps the cache warm across restarts without polluting the checkout.
   pnpm-store:

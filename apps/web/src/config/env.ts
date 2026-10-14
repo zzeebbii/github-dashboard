@@ -4,22 +4,14 @@ import { z } from "zod";
  * The ONLY place the frontend reads import.meta.env.
  *
  * Validated at module load, so a misconfigured build fails immediately and
- * visibly rather than producing `undefined` API URLs at runtime.
+ * visibly rather than producing `undefined` values at runtime.
  *
  * Never put a secret behind a VITE_ prefix — everything here ships to the browser.
  */
 
-const EnvSchema = z.object({
-  /**
-   * Absolute API origin, or an empty string meaning "same origin".
-   *
-   * Local development uses an absolute URL because Vite (5173) and the API
-   * (3000) are different origins. Production builds leave this empty so the SPA
-   * calls its own origin and nginx proxies /api to the backend — which is why
-   * production needs no CORS at all.
-   */
-  VITE_API_URL: z.union([z.literal(""), z.url()]).default(""),
-});
+// Empty for now: features add their variables here as they need them. Unknown keys (Vite's own
+// MODE, DEV, ...) are stripped, so this accepts any build environment.
+const EnvSchema = z.object({});
 
 const parsed = EnvSchema.safeParse(import.meta.env);
 
@@ -30,4 +22,5 @@ if (!parsed.success) {
   throw new Error(`Invalid frontend environment configuration:\n${details}\n\nSee .env.example.`);
 }
 
+/** @public Unused until the first variable lands; kept so validation has one home. */
 export const env = Object.freeze(parsed.data);

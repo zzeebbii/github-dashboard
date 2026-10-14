@@ -1,8 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { render } from "vitest-browser-react";
-import { TaskApiProvider } from "../src/application/api-provider.tsx";
-import type { TaskApi } from "../src/application/ports.ts";
 
 /**
  * The single entry point for rendering components under test.
@@ -10,7 +8,7 @@ import type { TaskApi } from "../src/application/ports.ts";
  * Wiring providers in one place means a test never fails because someone forgot
  * a provider, and swapping a provider later touches one file rather than fifty.
  */
-export async function renderWithProviders(ui: ReactNode, options: { api: TaskApi }) {
+export async function renderWithProviders(ui: ReactNode) {
   const queryClient = new QueryClient({
     defaultOptions: {
       // No retries in tests: a deliberate error assertion should fail fast, not
@@ -21,9 +19,5 @@ export async function renderWithProviders(ui: ReactNode, options: { api: TaskApi
   });
 
   // `render` is async in vitest-browser-react v2.
-  return await render(
-    <QueryClientProvider client={queryClient}>
-      <TaskApiProvider api={options.api}>{ui}</TaskApiProvider>
-    </QueryClientProvider>,
-  );
+  return await render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
