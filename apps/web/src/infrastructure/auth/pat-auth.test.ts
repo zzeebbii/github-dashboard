@@ -15,21 +15,20 @@ import {
 import { AuthError } from "../../application/auth.ts";
 import { toAccountId } from "../../domain/account.ts";
 import { createLocalAccountStore } from "../local-account-store.ts";
-import { createPatAuth, parseExpiration } from "./pat-auth.ts";
+import { createPatAuth } from "./pat-auth.ts";
 import { createTokenStorage } from "./token-storage.ts";
 
 // Obviously fake tokens, shaped so secret scanners do not match them.
 const FINE_GRAINED_TOKEN = "github_pat_FAKE_fixture_token_for_tests_only";
 const CLASSIC_TOKEN = "ghp_fake_classic_token_for_tests_only";
-const NOW = new Date("2026-10-15T12:00:00.000Z");
 const ACCOUNT_ID = toAccountId(1000001)!;
 
 const github = setupGitHubServer();
 guardAgainstTokenLeaks([FINE_GRAINED_TOKEN, CLASSIC_TOKEN]);
 
-function setup(now = NOW) {
+function setup() {
   const accounts = createLocalAccountStore();
-  const auth = createPatAuth({ tokens: createTokenStorage(), accounts, clock: { now: () => now } });
+  const auth = createPatAuth({ tokens: createTokenStorage(), accounts });
   return { auth, accounts };
 }
 
@@ -74,7 +73,6 @@ describe("PatAuth.signIn", () => {
       avatarUrl: "https://avatars.githubusercontent.com/u/1000001?v=4",
       tokenType: "fine-grained",
       scopes: [],
-      expiresAt: "2026-10-20T12:00:00.000Z",
       rememberMe: false,
     });
     expect(result.missingPermissions).toEqual([]);
@@ -86,7 +84,7 @@ describe("PatAuth.signIn", () => {
     expect(JSON.stringify(entriesOf(localStorage))).not.toContain(FINE_GRAINED_TOKEN);
   });
 
-  it("reads classic scopes and an offset-form expiry", async () => {
+  it("reads classic scopes", async () => {
     github.respond(classicRepo, probeOk);
     const { auth } = setup();
 
@@ -94,7 +92,6 @@ describe("PatAuth.signIn", () => {
 
     expect(account.tokenType).toBe("classic");
     expect(account.scopes).toEqual(["repo", "read:org"]);
-    expect(account.expiresAt).toBe("2027-01-31T21:59:59.000Z");
   });
 
   it("keeps the token in localStorage with remember me", async () => {
@@ -118,16 +115,6 @@ describe("PatAuth.signIn", () => {
     expect(accounts.list()).toEqual([]);
     expect(sessionStorage).toHaveLength(0);
     expect(localStorage).toHaveLength(0);
-  });
-
-  it("treats an already expired token as a 401", async () => {
-    github.respond(fineGrained);
-    const { auth } = setup(new Date("2026-10-20T12:00:00.000Z"));
-
-    const error = await signInError(auth.signIn({ token: FINE_GRAINED_TOKEN, rememberMe: false }));
-
-    expect(error.kind).toBe("expired");
-    expect(storageDump()).toBe("{}{}");
   });
 
   it("refuses a malformed token without calling GitHub", async () => {
@@ -205,38 +192,18 @@ describe("PatAuth.signIn", () => {
 });
 
 describe("PatAuth session", () => {
-  it("refreshes, hides an expired token, and signs out one account", async () => {
+  it("refreshes and signs out one account", async () => {
     github.respond(fineGrained, probeOk);
-    let now = NOW;
-    const accounts = createLocalAccountStore();
-    const auth = createPatAuth({
-      tokens: createTokenStorage(),
-      accounts,
-      clock: { now: () => now },
-    });
+    const { auth, accounts } = setup();
     await auth.signIn({ token: FINE_GRAINED_TOKEN, rememberMe: false });
 
     await expect(auth.refresh(ACCOUNT_ID)).resolves.toMatchObject({ login: "octo-fixture" });
 
-    now = new Date("2026-10-21T00:00:00.000Z");
-    expect(auth.currentToken(ACCOUNT_ID)).toBeNull();
-
     auth.signOut(ACCOUNT_ID);
     expect(accounts.list()).toEqual([]);
     expect(accounts.activeId()).toBeNull();
+    expect(auth.currentToken(ACCOUNT_ID)).toBeNull();
     expect(storageDump()).not.toContain(FINE_GRAINED_TOKEN);
     await expect(auth.refresh(ACCOUNT_ID)).rejects.toMatchObject({ kind: "invalid-token" });
-  });
-});
-
-describe("parseExpiration", () => {
-  it.each([
-    ["2026-10-20 12:00:00 UTC", "2026-10-20T12:00:00.000Z"],
-    ["2026-10-20 12:00:00 -0130", "2026-10-20T13:30:00.000Z"],
-    [null, null],
-    ["", null],
-    ["tomorrow", null],
-  ])("%s → %s", (header, expected) => {
-    expect(parseExpiration(header)).toBe(expected);
   });
 });

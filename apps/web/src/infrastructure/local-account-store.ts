@@ -13,7 +13,6 @@ const StoredAccountSchema = z.object({
   avatarUrl: z.string(),
   tokenType: z.enum(["classic", "fine-grained"]),
   scopes: z.array(z.string()),
-  expiresAt: z.string().nullable(),
   rememberMe: z.boolean(),
 });
 

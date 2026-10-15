@@ -1,12 +1,11 @@
 {
-  "_note": "GET /user with a classic PAT (ghp_) holding the repo scope. Expiry uses the numeric-offset form. Fake data.",
+  "_note": "GET /user with a classic PAT (ghp_) holding the repo scope. Fake data.",
   "status": 200,
   "headers": {
     "content-type": "application/json; charset=utf-8",
     "x-github-media-type": "github.v3; format=json",
     "x-oauth-scopes": "repo, read:org",
-    "x-accepted-oauth-scopes": "",
-    "github-authentication-token-expiration": "2027-01-31 23:59:59 +0200"
+    "x-accepted-oauth-scopes": ""
   },
   "body": {
     "login": "octo-fixture",

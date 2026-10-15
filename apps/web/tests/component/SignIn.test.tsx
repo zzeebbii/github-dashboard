@@ -10,8 +10,7 @@ import { guardAgainstTokenLeaks } from "../token-leak-guard.ts";
 
 const CLASSIC_TOKEN = "ghp_fake_classic_token_for_tests_only";
 const FINE_GRAINED_TOKEN = "github_pat_FAKE_fixture_token_for_tests_only";
-const READ_ONLY_TOKEN = "github_pat_FAKE_read_only_never_expires";
-const NOW = new Date("2026-10-15T12:00:00.000Z");
+const READ_ONLY_TOKEN = "github_pat_FAKE_read_only_nothing_to_warn";
 
 guardAgainstTokenLeaks([CLASSIC_TOKEN, FINE_GRAINED_TOKEN, READ_ONLY_TOKEN]);
 
@@ -21,7 +20,6 @@ const baseAccount: Account = {
   avatarUrl: "https://avatars.githubusercontent.com/u/1000001?v=4",
   tokenType: "fine-grained",
   scopes: [],
-  expiresAt: null,
   rememberMe: false,
 };
 
@@ -32,7 +30,7 @@ const results: Record<string, SignInResult> = {
     ssoAuthorizationNeeded: false,
   },
   [FINE_GRAINED_TOKEN]: {
-    account: { ...baseAccount, expiresAt: "2026-10-20T12:00:00.000Z" },
+    account: baseAccount,
     missingPermissions: ["org-membership"],
     ssoAuthorizationNeeded: false,
   },
@@ -47,11 +45,7 @@ async function renderSignIn() {
   const accountStore = createInMemoryAccountStore();
   const onContinue = vi.fn<() => void>();
   const screen = await renderWithProviders(
-    <AuthProvider
-      auth={createInMemoryAuth(accountStore, results)}
-      accountStore={accountStore}
-      clock={{ now: () => NOW }}
-    >
+    <AuthProvider auth={createInMemoryAuth(accountStore, results)} accountStore={accountStore}>
       <SignInPage onContinue={onContinue} />
     </AuthProvider>,
   );
@@ -82,13 +76,12 @@ test("a classic token with repo shows the write-access warning (AC-2.2)", async 
   expect(onContinue).not.toHaveBeenCalled();
 });
 
-test("a fine-grained token expiring in 5 days shows the expiry warning and missing permissions (AC-2.2)", async () => {
+test("a fine-grained token missing a permission shows what to grant, without the write warning", async () => {
   const { screen, signIn } = await renderSignIn();
 
   await signIn(FINE_GRAINED_TOKEN);
 
   const region = screen.getByRole("region", { name: "About this token" });
-  await expect.element(region).toMatchTextContent("This token expires in 5 days (2026-10-20)");
   await expect.element(region).not.toMatchTextContent("can write");
   await expect
     .element(region)
@@ -108,7 +101,9 @@ test("an invalid token announces an error and stores nothing (AC-2.1)", async ()
 
   await signIn("github_pat_FAKE_unknown_to_the_fake");
 
-  await expect.element(screen.getByRole("alert")).toMatchTextContent("GitHub rejected this token");
+  await expect
+    .element(screen.getByRole("alert"))
+    .toMatchTextContent("This token is invalid, revoked or expired.");
   await expect.element(screen.getByLabelText("Personal access token")).toHaveValue("");
   expect(accountStore.list()).toEqual([]);
 });

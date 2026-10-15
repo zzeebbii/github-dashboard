@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { AccountStore } from "../../application/accounts.ts";
-import { AuthError, type AuthPort, type Clock } from "../../application/auth.ts";
-import { type Account, type AccountId, isExpired, toAccountId } from "../../domain/account.ts";
+import { AuthError, type AuthPort } from "../../application/auth.ts";
+import { type Account, type AccountId, toAccountId } from "../../domain/account.ts";
 import { probePermissions } from "./permission-probe.ts";
 import type { TokenStorage } from "./token-storage.ts";
 
@@ -17,21 +17,6 @@ const UserSchema = z.object({
 // Every GitHub token is ASCII letters, digits and underscores. Checking before the
 // request keeps whitespace or pasted junk out of the Authorization header.
 const TOKEN_SHAPE = /^\w{20,255}$/;
-
-/**
- * `github-authentication-token-expiration` is `YYYY-MM-DD HH:MM:SS UTC` or
- * `YYYY-MM-DD HH:MM:SS +HHMM`. Returns ISO 8601, or null if absent or unrecognised.
- */
-export function parseExpiration(header: string | null): string | null {
-  const match = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) (?:UTC|([+-]\d{2})(\d{2}))$/.exec(
-    header?.trim() ?? "",
-  );
-  if (match === null) return null;
-  const [, date, time, offsetHours, offsetMinutes] = match;
-  const offset = offsetHours === undefined ? "Z" : `${offsetHours}:${offsetMinutes ?? "00"}`;
-  const millis = Date.parse(`${date}T${time}${offset}`);
-  return Number.isNaN(millis) ? null : new Date(millis).toISOString();
-}
 
 function errorFor(response: Response): AuthError {
   if (response.status === 401) {
@@ -55,14 +40,13 @@ function errorFor(response: Response): AuthError {
 interface PatAuthOptions {
   readonly tokens: TokenStorage;
   readonly accounts: AccountStore;
-  readonly clock: Clock;
   /** Injected so tests can count requests; defaults to the global fetch. */
   readonly fetchImpl?: typeof fetch;
 }
 
 /** The PAT adapter for `AuthPort` (FR-2.2). */
 export function createPatAuth(options: PatAuthOptions): AuthPort {
-  const { tokens, accounts, clock } = options;
+  const { tokens, accounts } = options;
   const doFetch = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
 
   /** Exactly one `GET /user`. Accepts the token only on 200. */
@@ -94,7 +78,7 @@ export function createPatAuth(options: PatAuthOptions): AuthPort {
     }
 
     const fineGrained = token.startsWith("github_pat_");
-    const account: Account = {
+    return {
       id,
       login: user.data.login,
       avatarUrl: user.data.avatar_url,
@@ -105,13 +89,8 @@ export function createPatAuth(options: PatAuthOptions): AuthPort {
             .split(",")
             .map((scope) => scope.trim())
             .filter((scope) => scope !== ""),
-      expiresAt: parseExpiration(response.headers.get("github-authentication-token-expiration")),
       rememberMe,
     };
-    if (isExpired(account, clock.now())) {
-      throw new AuthError("expired", "This token has expired.");
-    }
-    return account;
   }
 
   return {
@@ -146,9 +125,7 @@ export function createPatAuth(options: PatAuthOptions): AuthPort {
     },
 
     currentToken(accountId) {
-      const account = accounts.get(accountId);
-      if (account === undefined || isExpired(account, clock.now())) return null;
-      return tokens.read(accountId);
+      return accounts.get(accountId) === undefined ? null : tokens.read(accountId);
     },
   };
 }

@@ -48,7 +48,7 @@ await hydrateQueries(queryClient, cache, { timeoutMs: 300 });
 persistQueries(queryClient, cache);
 
 const accountStore = createLocalAccountStore();
-const auth = createPatAuth({ tokens: createTokenStorage(), accounts: accountStore, clock });
+const auth = createPatAuth({ tokens: createTokenStorage(), accounts: accountStore });
 
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
@@ -63,7 +63,7 @@ createRoot(rootElement).render(
     >
       <QueryClientProvider client={queryClient}>
         <HtmlSanitizerContext value={sanitizeHtml}>
-          <AuthProvider auth={auth} accountStore={accountStore} clock={clock}>
+          <AuthProvider auth={auth} accountStore={accountStore}>
             <RouterProvider
               router={router}
               context={{ hasAccount: () => accountStore.activeId() !== null }}

@@ -88,9 +88,9 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 ### Functional Requirements
 
 - **FR-2.1** `AuthPort` in `application/` with `signIn`, `refresh`, `signOut`, `currentToken(accountId)`; two adapters in `infrastructure/auth/`: `PatAuth` and `GitHubAppAuth`.
-- **FR-2.2** PAT sign-in: user pastes a token; the app calls `GET /user` once, reads `X-OAuth-Scopes` (classic) or token prefix `github_pat_` (fine-grained) and `github-authentication-token-expiration`, and accepts the token only on 200. Detected login, id, avatar, token type and expiry are stored on the account.
+- **FR-2.2** PAT sign-in: user pastes a token; the app calls `GET /user` once, reads `X-OAuth-Scopes` (classic) or token prefix `github_pat_` (fine-grained), and accepts the token only on 200. Detected login, id, avatar, token type and scopes are stored on the account.
 - **FR-2.3** Permission check after sign-in: one GraphQL probe confirms read access to pull requests, checks and org membership; missing permissions are listed with where to grant them. A classic token with `repo` shows a persistent "this token can write" warning.
-- **FR-2.4** Fine-grained PAT expiry: warn from 7 days before expiry; on expiry treat as 401 (FR-2.8).
+- **FR-2.4** Dropped: GitHub does not expose the token-expiration header to browsers (CORS); an expired token surfaces as a 401 (FR-2.8). Decided 2026-10-15.
 - **FR-2.5** `GitHubAppAuth`: when `VITE_GITHUB_APP_CLIENT_ID` and `VITE_GITHUB_APP_EXCHANGE_URL` are both set, run the web flow (redirect with `state` + PKCE `code_verifier`, callback route, POST code to the exchange URL, receive access + refresh token, refresh before expiry via the exchange URL). When either is empty the "Sign in with GitHub App" button is rendered disabled with an explanation. The exchange handler itself is out of scope.
 - **FR-2.6** Multiple accounts: `AccountStore` holds accounts keyed by GitHub user id; the account menu lists them, switches the active account, and offers "Add GitHub account". Adding an account already present (same user id) updates its token instead of duplicating it.
 - **FR-2.7** Per-account "remember me" (default off): off → token in `sessionStorage`; on → `localStorage`. Non-secret account data (login, avatar, favourites, preferences) is always in `localStorage`/IndexedDB.
@@ -104,7 +104,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 ### Acceptance Criteria
 
 - **AC-2.1** Pasting a valid fine-grained PAT signs in with one `GET /user` call; an invalid token shows an error and stores nothing.
-- **AC-2.2** A classic PAT with `repo` shows the write-access warning; a fine-grained PAT expiring in 5 days shows the expiry warning.
+- **AC-2.2** A classic PAT with `repo` shows the write-access warning.
 - **AC-2.3** With both GitHub App env vars empty, the GitHub App button is disabled and announces why to screen readers; with both set (test config), the button starts a redirect containing `client_id`, `state` and `code_challenge`.
 - **AC-2.4** Two accounts can be added and switched; each shows only its own login and data. Re-adding the same user replaces its token (one entry).
 - **AC-2.5** With "remember me" off, closing and reopening the browser (new session) requires sign-in again; with it on, it does not.

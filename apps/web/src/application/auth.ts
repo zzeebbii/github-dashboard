@@ -11,7 +11,7 @@ export interface AuthPort {
   refresh(accountId: AccountId): Promise<Account>;
   /** Deletes this account's token and account record. Other accounts are untouched. */
   signOut(accountId: AccountId): void;
-  /** null when there is no token, or it has expired (treated as a 401, FR-2.4). */
+  /** null when this account has no stored token. */
   currentToken(accountId: AccountId): string | null;
 }
 
@@ -31,14 +31,9 @@ export interface SignInResult {
   readonly ssoAuthorizationNeeded: boolean;
 }
 
-export interface Clock {
-  now(): Date;
-}
-
 export type AuthErrorKind =
   | "invalid-format"
   | "invalid-token"
-  | "expired"
   | "sso-required"
   | "rate-limited"
   | "network"

@@ -1,12 +1,11 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Account, AccountId } from "../domain/account.ts";
 import type { AccountStore } from "./accounts.ts";
-import type { AuthPort, Clock, SignInRequest, SignInResult } from "./auth.ts";
+import type { AuthPort, SignInRequest, SignInResult } from "./auth.ts";
 
 interface AuthContextValue {
   readonly signIn: (request: SignInRequest) => Promise<SignInResult>;
   readonly signOut: (accountId: AccountId) => void;
-  readonly clock: Clock;
   readonly accounts: readonly Account[];
   readonly activeAccount: Account | null;
 }
@@ -16,12 +15,11 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 interface AuthProviderProps {
   readonly auth: AuthPort;
   readonly accountStore: AccountStore;
-  readonly clock: Clock;
   readonly children: ReactNode;
 }
 
 /** Wires the auth port and account store in; re-reads the store after every change. */
-export function AuthProvider({ auth, accountStore, clock, children }: AuthProviderProps) {
+export function AuthProvider({ auth, accountStore, children }: AuthProviderProps) {
   const snapshot = useCallback(
     () => ({ accounts: accountStore.list(), activeId: accountStore.activeId() }),
     [accountStore],
@@ -49,11 +47,10 @@ export function AuthProvider({ auth, accountStore, clock, children }: AuthProvid
     () => ({
       signIn,
       signOut,
-      clock,
       accounts: state.accounts,
       activeAccount: state.accounts.find((a) => a.id === state.activeId) ?? null,
     }),
-    [signIn, signOut, clock, state],
+    [signIn, signOut, state],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;
@@ -65,9 +62,9 @@ function useAuthContext(): AuthContextValue {
   return context;
 }
 
-export function useAuth(): Pick<AuthContextValue, "signIn" | "signOut" | "clock"> {
-  const { signIn, signOut, clock } = useAuthContext();
-  return { signIn, signOut, clock };
+export function useAuth(): Pick<AuthContextValue, "signIn" | "signOut"> {
+  const { signIn, signOut } = useAuthContext();
+  return { signIn, signOut };
 }
 
 export function useAccounts(): Pick<AuthContextValue, "accounts" | "activeAccount"> {

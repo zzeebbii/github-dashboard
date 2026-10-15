@@ -31,12 +31,8 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-function setup(now = new Date("2026-10-15T12:00:00.000Z")) {
-  return createPatAuth({
-    tokens: createTokenStorage(),
-    accounts: createLocalAccountStore(),
-    clock: { now: () => now },
-  });
+function setup() {
+  return createPatAuth({ tokens: createTokenStorage(), accounts: createLocalAccountStore() });
 }
 
 /** Echoes the Authorization header back, as a misbehaving proxy might. */
@@ -48,7 +44,7 @@ const echo =
       { status, headers },
     );
 
-const scenarios: [string, () => void, Date?][] = [
+const scenarios: [string, () => void][] = [
   ["401", () => github.respond(echo(401))],
   [
     "403 SAML SSO",
@@ -65,13 +61,12 @@ const scenarios: [string, () => void, Date?][] = [
   ["500", () => github.respond(echo(500))],
   ["malformed 200 body", () => github.respond(echo(200))],
   ["network failure", () => github.respond(() => HttpResponse.error())],
-  ["expired token", () => github.respond(fineGrained), new Date("2026-11-01T00:00:00.000Z")],
 ];
 
 describe("no token in errors, console or account records (AC-2.7)", () => {
-  it.each(scenarios)("sign-in error path: %s", async (_name, arrange, now) => {
+  it.each(scenarios)("sign-in error path: %s", async (_name, arrange) => {
     arrange();
-    const caught: unknown = await setup(now)
+    const caught: unknown = await setup()
       .signIn({ token: TOKEN, rememberMe: false })
       .catch((error: unknown) => error);
 
@@ -93,11 +88,7 @@ describe("no token in errors, console or account records (AC-2.7)", () => {
   it("a probe that echoes the token does not leak it", async () => {
     github.respond(fineGrained, echo(200));
     const accounts = createLocalAccountStore();
-    const auth = createPatAuth({
-      tokens: createTokenStorage(),
-      accounts,
-      clock: { now: () => new Date("2026-10-15T12:00:00.000Z") },
-    });
+    const auth = createPatAuth({ tokens: createTokenStorage(), accounts });
 
     const result = await auth.signIn({ token: TOKEN, rememberMe: true });
 
@@ -134,7 +125,7 @@ describe("redact", () => {
   });
 
   it("leaves ordinary messages alone", () => {
-    expect(redact("This token has expired.")).toBe("This token has expired.");
+    expect(redact("GitHub rejected this token.")).toBe("GitHub rejected this token.");
   });
 
   it("is applied by the AuthError constructor", () => {

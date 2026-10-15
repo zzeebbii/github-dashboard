@@ -16,8 +16,7 @@ const STRINGS = {
   continue: "Continue to dashboard",
   errors: {
     "invalid-format": "That does not look like a GitHub token. Paste the whole token.",
-    "invalid-token": "GitHub rejected this token. Check that it is correct and not revoked.",
-    expired: "This token has expired. Create a new one on GitHub.",
+    "invalid-token": "This token is invalid, revoked or expired. Create a new one on GitHub.",
     "sso-required":
       "An organisation requires SAML single sign-on. Authorise this token for it on GitHub, then try again.",
     "rate-limited": "GitHub's rate limit was reached. Wait a few minutes and try again.",
@@ -36,7 +35,7 @@ interface SignInPageProps {
  * state, so it does not show up in DevTools and is gone once the request is made.
  */
 export function SignInPage({ onContinue }: SignInPageProps) {
-  const { signIn, clock } = useAuth();
+  const { signIn } = useAuth();
   const { activeAccount } = useAccounts();
   const tokenId = useId();
   const [pending, setPending] = useState(false);
@@ -54,7 +53,7 @@ export function SignInPage({ onContinue }: SignInPageProps) {
         rememberMe: false,
       });
       const nothingToSay =
-        tokenWarnings(signedIn.account, clock.now()).length === 0 &&
+        tokenWarnings(signedIn.account).length === 0 &&
         signedIn.missingPermissions?.length === 0 &&
         !signedIn.ssoAuthorizationNeeded;
       if (nothingToSay) onContinue();
@@ -104,7 +103,7 @@ export function SignInPage({ onContinue }: SignInPageProps) {
         <>
           <p role="status">{STRINGS.signedInAs(account.login)}</p>
           <TokenWarnings
-            warnings={tokenWarnings(account, clock.now())}
+            warnings={tokenWarnings(account)}
             tokenType={account.tokenType}
             missingPermissions={result.missingPermissions}
             ssoAuthorizationNeeded={result.ssoAuthorizationNeeded}

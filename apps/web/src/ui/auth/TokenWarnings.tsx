@@ -7,8 +7,6 @@ const STRINGS = {
   heading: "About this token",
   writeAccess:
     "This token can write to your repositories (classic “repo” scope). The dashboard only reads, so a fine-grained token with read-only access is safer.",
-  expiresSoon: (days: number, date: string) =>
-    `This token expires in ${days} ${days === 1 ? "day" : "days"} (${date}). Create a new one before then.`,
   missingHeading: "Missing read permissions",
   probeFailed: "The token's permissions could not be checked. Some sections may stay empty.",
   sso: "An organisation uses SAML single sign-on. Authorise this token for it on GitHub under Settings → Developer settings → Personal access tokens → Configure SSO.",
@@ -39,7 +37,7 @@ interface TokenWarningsProps {
   readonly ssoAuthorizationNeeded: boolean;
 }
 
-/** Write-scope, expiry and permission warnings. Text only; nothing here holds a token. */
+/** Write-scope and permission warnings. Text only; nothing here holds a token. */
 export function TokenWarnings({
   warnings,
   tokenType,
@@ -47,11 +45,7 @@ export function TokenWarnings({
   ssoAuthorizationNeeded,
 }: TokenWarningsProps) {
   const headingId = useId();
-  const messages = warnings.map((warning) =>
-    warning.kind === "write-access"
-      ? STRINGS.writeAccess
-      : STRINGS.expiresSoon(warning.daysLeft, warning.expiresAt.slice(0, 10)),
-  );
+  const messages: string[] = warnings.map(() => STRINGS.writeAccess);
   if (missingPermissions === null) messages.push(STRINGS.probeFailed);
   if (ssoAuthorizationNeeded) messages.push(STRINGS.sso);
   const missing = missingPermissions ?? [];
