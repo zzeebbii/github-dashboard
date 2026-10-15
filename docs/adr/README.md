@@ -37,5 +37,4 @@ deleted. A decision that is reversed gets a new ADR, and the old one is marked
 pnpm adr:new "Short decision title"
 ```
 
-CI expects a new ADR when a PR changes the dependency rules, the contracts package in a
-breaking way, or adds a dependency to `domain/`.
+Write a new ADR when a PR changes the dependency rules or adds a dependency to `domain/`.

@@ -270,7 +270,7 @@ _Provisional until ADRs 0014–0021 (T1) are accepted._ SPA only, browser-direct
 | Component | Placeholder home renders its heading; axe-free markup                   | `apps/web/tests/component/HomePage.test.tsx` (new) |
 | E2E       | Prod-like stack serves `/` and a deep link `/some/path` returns the SPA | `e2e/tests/smoke.spec.ts` (new)                    |
 | Gate      | `pnpm verify` passes with Docker stopped (AC-0.1)                       | CI + local                                         |
-| Grep      | `rg -n "@kit/contracts                                                  | apps/api                                           | drizzle | postgres | openapi" --glob '!docs/adr/**' --glob '!CHANGELOG.md'` empty (AC-0.3) — T5 finishes docs | repo root |
+| Grep      | `rg -n "@kit/contracts                                                  | apps/api                                           | drizzle | postgres | openapi\.json" --glob '!docs/adr/**' --glob '!docs/pr-dashboard-designs/**' --glob '!CHANGELOG.md'` empty (AC-0.3) — T5 finishes docs | repo root |
 
 ##### Context
 

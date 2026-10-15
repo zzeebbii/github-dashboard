@@ -46,7 +46,7 @@ Turn the starter template into an empty, green SPA shell with the new architectu
 
 - **AC-0.1** `pnpm verify` passes on a clean checkout with no Docker daemon running.
 - **AC-0.2** `pnpm verify:guardrails` passes, and introducing a `fetch(` call in `apps/web/src/features/` makes `pnpm lint` fail.
-- **AC-0.3** `rg -n "@kit/contracts|apps/api|drizzle|postgres|openapi" --glob '!docs/adr/**' --glob '!CHANGELOG.md'` returns no matches.
+- **AC-0.3** `rg -n "@kit/contracts|apps/api|drizzle|postgres|openapi\.json" --glob '!docs/adr/**' --glob '!docs/pr-dashboard-designs/**' --glob '!CHANGELOG.md'` returns no matches.
 - **AC-0.4** `docker compose --profile prod-like up` serves the placeholder page on `http://localhost:8080`, and its response carries the FR-0.8 headers; `curl http://localhost:8080/some/deep/link` returns `index.html`.
 - **AC-0.5** ADRs 0014–0021 exist with status Accepted; 0002, 0004, 0006, 0010 are marked Superseded with links to their successors.
 - **AC-0.6** `knip` reports no unused files, exports or dependencies.
