@@ -22,7 +22,7 @@ COPY apps/web/package.json apps/web/
 COPY e2e/package.json e2e/
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter @kit/web...
+    pnpm install --frozen-lockfile --filter @ghd/web...
 
 FROM deps AS build
 WORKDIR /repo
@@ -30,7 +30,7 @@ WORKDIR /repo
 COPY tsconfig.base.json tsconfig.json ./
 COPY apps/web apps/web
 
-RUN pnpm --filter @kit/web run build
+RUN pnpm --filter @ghd/web run build
 
 FROM nginx:1.29-alpine AS runtime
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf

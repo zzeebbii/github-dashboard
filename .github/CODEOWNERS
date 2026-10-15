@@ -4,26 +4,22 @@
 # human review. This is the boundary between "the agent does the work" and "the
 # agent redefines what correct means".
 #
-# The owner below is set by `pnpm init-project --owner` (see README).
+# The owner is the repository owner.
 
 # The architecture contract and the checks that enforce it.
-/.dependency-cruiser.cjs      @your-org/maintainers
-/.oxlintrc.json               @your-org/maintainers
-/tsconfig.base.json           @your-org/maintainers
-/knip.json                    @your-org/maintainers
+/.dependency-cruiser.cjs      @zzeebbii
+/.oxlintrc.json               @zzeebbii
+/tsconfig.base.json           @zzeebbii
+/knip.json                    @zzeebbii
 
 # CI/CD and the release path.
-/.github/                     @your-org/maintainers
-
-# The published API contract. Changes here affect every consumer.
-/packages/contracts/          @your-org/maintainers
-/artifacts/openapi.json       @your-org/maintainers
+/.github/                     @zzeebbii
 
 # Container and deployment definitions.
-/apps/*/Dockerfile            @your-org/maintainers
-/compose.yaml                 @your-org/maintainers
-/apps/web/nginx.conf          @your-org/maintainers
+/apps/*/Dockerfile            @zzeebbii
+/compose.yaml                 @zzeebbii
+/apps/web/nginx.conf          @zzeebbii
 
 # Decision records and agent instructions.
-/docs/adr/                    @your-org/maintainers
-/AGENTS.md                    @your-org/maintainers
+/docs/adr/                    @zzeebbii
+/AGENTS.md                    @zzeebbii

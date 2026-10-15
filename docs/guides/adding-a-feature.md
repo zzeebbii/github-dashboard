@@ -1,118 +1,92 @@
 # Adding a feature, end to end
 
-The most important document in this repository. It walks the **Task** reference slice layer by layer. Follow it literally for anything new; the pattern is identical every time.
+Follow this order for anything new. The layers are in
+[ADR-0015](../adr/0015-frontend-hexagonal-layering.md); the rules that enforce them are
+in [dependency-rules.md](../conventions/dependency-rules.md).
 
-The running example: adding a `dueDate` to tasks.
+The running example: show a "stale" badge on PRs with no activity for a while.
 
 ---
 
 ## The order matters
 
-Always work **contract first, then backend inward-out, then frontend**. Doing it in this order means the compiler tells you what is left to do at every step.
+Work **inside out**: the rule first, then the data, then the screen. The compiler then
+tells you what is left at every step.
 
 ```
-1. contract  →  2. domain  →  3. application  →  4. infrastructure  →  5. http
-                                                                        │
-                                              6. frontend port ← ← ← ← ←┘
-                                                     ↓
-                                        7. hooks → 8. ui → 9. feature
-                                                     ↓
-                                                 10. tests
+1. domain  →  2. port  →  3. adapter  →  4. hook  →  5. ui  →  6. feature  →  7. tests
 ```
+
+Skip a step when the change does not need it. A pure rule change may stop at step 1.
 
 ---
 
-## 1. Change the contract first
+## 1. Domain — the rule
 
-`packages/contracts/src/task/task.schema.ts`
+`apps/web/src/domain/`
 
-```ts
-export const TaskSchema = z.object({
-  id: TaskIdSchema,
-  title: z.string().min(1).max(TASK_TITLE_MAX_LENGTH),
-  done: z.boolean(),
-  createdAt: z.iso.datetime(),
-  dueDate: z.iso.datetime().optional(), // ← added: OPTIONAL, so this is additive
-});
-```
-
-Then regenerate and commit the published spec:
-
-```bash
-pnpm contract:generate
-pnpm contract:breaking   # tells you additive vs breaking
-```
-
-> **Additive or breaking?** Adding an _optional_ response field is additive. Removing a field, renaming one, narrowing a type, or adding a _required_ request field is breaking — and needs a `feat!:` commit, a `breaking-change` label, and an ADR.
-
-At this point `pnpm typecheck` will fail everywhere the new field must be handled. That is the design working: the contract propagates its own to-do list.
-
-## 2. Domain — the business rule
-
-`apps/api/src/domain/task/task.ts`
-
-Remember: **no imports here at all.** Express the rule with types and constructors.
+Pure functions over the plain types in `pull-request.ts`. **No imports from outside
+`domain/`**: not Zod, not React, not browser APIs. Time is passed in, never read.
 
 ```ts
-export type TaskValidationError =
-  | { readonly kind: "TitleEmpty" }
-  | { readonly kind: "TitleTooLong"; readonly maxLength: number; readonly actualLength: number }
-  | { readonly kind: "DueDateInPast"; readonly dueDate: Date }; // ← new rule
-
-static create(input: { id: TaskId; title: string; createdAt: Date; dueDate?: Date }) {
-  // ...existing checks...
-  if (input.dueDate !== undefined && input.dueDate < input.createdAt) {
-    return err({ kind: "DueDateInPast", dueDate: input.dueDate });
-  }
-  return ok(new Task({ ...  }));
+export function isStale(pr: PullRequest, now: Date): boolean {
+  // ...
 }
 ```
 
-Then map the new error kind in `application/errors.ts`. The exhaustive `switch` there means **forgetting to is a compile error**, not a runtime surprise.
+Add a unit test next to it (`activity.test.ts`). No mocks.
 
-## 3. Application — orchestration and ports
+## 2. Port — only if you need something new from outside
 
-`apps/api/src/application/task/task.usecases.ts`
+`apps/web/src/application/`
 
-Use cases take dependencies as an argument and return `Result`. They never throw for expected failures and never know about HTTP.
+If the feature needs data or a browser capability that no port offers yet, add a
+method to an existing port (`GitHubReadPort`, `CachePort`, ...) or a new port. A port is
+a TypeScript interface. It never imports `infrastructure/`.
 
-If your feature needs something new from the outside world (an email sender, a queue, a third-party API), **add a port to `application/ports.ts`** — do not import a client here.
+## 3. Adapter — the only place that touches the outside
 
-## 4. Infrastructure — adapters and persistence
+`apps/web/src/infrastructure/`
 
-Schema first (`infrastructure/persistence/schema.ts`), then the migration:
+- GitHub: a static GraphQL document with typed variables (never build a query from
+  user input), a Zod schema for the response, and a mapping onto domain types. Map
+  failures to `GitHubError` ([error-handling.md](../conventions/error-handling.md)).
+- Keep the quota budget: batch list data into one query, send ETags on REST calls
+  ([ADR-0017](../adr/0017-indexeddb-cache-and-quota-budget.md)).
+- Storage: namespace every key by account id. Never store a token in IndexedDB.
 
-```bash
-pnpm db:generate     # writes apps/api/drizzle/NNNN_*.sql — review it, then commit it
-```
+## 4. Hook — server state
 
-Then update the mapping in `drizzle-task-repository.ts`. This is the only file that knows tasks live in PostgreSQL.
+`apps/web/src/application/use-*.ts`
 
-## 5. HTTP — the thin adapter
+A TanStack Query hook that calls the port, not `fetch`.
 
-`apps/api/src/http/task.routes.ts`
+## 5. UI — presentational
 
-Routes do exactly three things: parse against the contract, call a use case, map the result. If you find yourself writing an `if` about business meaning here, it belongs in the domain.
+`apps/web/src/ui/`
 
-## 6–9. Frontend
+Props in, JSX out. No data fetching. Every visible string comes from the message
+catalogue (en, fi, sv). Status is icon plus text, never colour alone. Real `<button>`
+and `<a href>` elements ([ADR-0021](../adr/0021-i18n-themes-and-accessibility.md)).
 
-| Step       | File                              | Rule                                                                             |
-| ---------- | --------------------------------- | -------------------------------------------------------------------------------- |
-| 6. Port    | `application/ports.ts`            | Types come from `@kit/contracts`                                                 |
-| 7. Adapter | `infrastructure/http-task-api.ts` | The only file that touches the network; validates responses against the contract |
-| 8. Hooks   | `application/tasks/use-tasks.ts`  | Depends on the port, never on `fetch`                                            |
-| 9. UI      | `ui/` then `features/`            | `ui/` is presentational: props in, JSX out                                       |
+## 6. Feature — composition
 
-## 10. Tests — one per layer that changed
+`apps/web/src/features/<name>/`
 
-| You changed    | Write                                                  |
-| -------------- | ------------------------------------------------------ |
-| Domain rule    | Unit test, no mocks (`domain/task/task.test.ts`)       |
-| Use case       | Unit test with the in-memory repository                |
-| Repository/SQL | Integration test against real Postgres                 |
-| Route          | HTTP test via `app.request()`, no server, no DB        |
-| Component      | Browser-mode component test with the in-memory API     |
-| A user journey | One Playwright test — only if it is genuinely critical |
+Calls the hooks and passes data to `ui/` components. Add a route in `routes/` if it is
+a new screen.
+
+## 7. Tests — one per layer that changed
+
+| You changed     | Write                                                      |
+| --------------- | ---------------------------------------------------------- |
+| Domain rule     | Unit test, no mocks (`src/domain/*.test.ts`)               |
+| GitHub adapter  | MSW test with recorded fixtures; budget assertion          |
+| Storage adapter | Browser-mode test against the real API                     |
+| Component       | Browser-mode test with in-memory ports, axe in both themes |
+| A user journey  | One Playwright test — only if it is genuinely critical     |
+
+See [testing.md](testing.md).
 
 ---
 
@@ -122,26 +96,9 @@ Routes do exactly three things: parse against the contract, call a use case, map
 pnpm verify
 ```
 
-Then check the [Definition of Done](../../AGENTS.md#definition-of-done). If you made an architectural decision, record it:
+Then check the [Definition of Done](../../AGENTS.md#definition-of-done). If you made an
+architectural decision, record it:
 
 ```bash
-pnpm adr:new "Why tasks carry a due date"
+pnpm adr:new "Why stale PRs get a badge"
 ```
-
----
-
-## Adding a whole new resource
-
-Same shape, one directory deeper. For an `Order` resource:
-
-```
-packages/contracts/src/order/{order.schema.ts,order.endpoints.ts}   → export from src/index.ts
-apps/api/src/domain/order/order.ts
-apps/api/src/application/order/order.usecases.ts                    → ports in application/ports.ts
-apps/api/src/infrastructure/persistence/{schema.ts,drizzle-order-repository.ts}
-apps/api/src/http/order.routes.ts                                   → mount in http/app.ts
-                                                                    → wire in http/composition.ts
-apps/web/src/{application/orders,ui,features/orders}
-```
-
-Copy the Task slice and rename. That is the intended workflow — the reference slice exists to be imitated.

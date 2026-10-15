@@ -1,48 +1,42 @@
-# Agentic Fullstack Starter Kit
+# GitHub Dashboard
 
-A production-grade React + TypeScript starter, built so that **AI coding agents can work in it with minimal supervision** — and so that the backend stays replaceable.
+A personal, read-only dashboard for GitHub pull requests. It runs entirely in the
+browser: there is no backend. The app calls the GitHub API directly with your token
+and caches results in the browser.
+
+Work in progress. Today the app is a placeholder home page plus the domain rules for
+sorting pull requests into Home sections. Sign-in, the GitHub client and the real
+views are being built; the decisions behind them are in
+[ADR-0014 to ADR-0021](docs/adr/).
 
 ```bash
-git clone <this-repo> && cd agentic-fullstack-starter-kit
-docker compose --profile dev up
+pnpm install
+pnpm --filter @ghd/web dev   # http://localhost:5173
 ```
 
-That is the whole setup. PostgreSQL, migrations, API, and SPA with hot reload.
-
-- SPA → http://localhost:5173
-- API → http://localhost:3000
+Or with Docker: `pnpm dev`.
 
 ## What is in the box
 
-|              |                                                                                   |
-| ------------ | --------------------------------------------------------------------------------- |
-| **Frontend** | React 19 · Vite 8 (Rolldown) · TanStack Router + Query · TypeScript 7 strict      |
-| **Backend**  | Hono 4 on Node 24 LTS · hexagonal layers · PostgreSQL 17 · Drizzle                |
-| **Contract** | Zod 4 schemas → committed OpenAPI 3.1, with drift and breaking-change detection   |
-| **Testing**  | Vitest 5 (unit + real-browser components) · Testcontainers · Playwright           |
-| **Quality**  | oxlint with type-aware rules · oxfmt · dependency-cruiser · knip                  |
-| **Ops**      | Distroless non-root images · Compose profiles · GitHub Actions · Trivy · Renovate |
+|             |                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------- |
+| **App**     | React 19 · Vite 8 · TanStack Router + Query · Zod 4 · TypeScript 7 strict           |
+| **Data**    | GitHub GraphQL + REST, called from the browser; IndexedDB cache (planned)           |
+| **Testing** | Vitest 5 (unit + real-browser components) · Playwright                              |
+| **Quality** | oxlint with type-aware rules · oxfmt · dependency-cruiser · knip                    |
+| **Ops**     | Static build served by nginx · Compose profiles · GitHub Actions · Trivy · Renovate |
 
-## The two ideas that shape everything
+## Two ideas that shape everything
 
-**1. The frontend and backend share a contract, not code.**
+**1. No backend.** All data lives in GitHub, and GitHub allows browser calls, so a
+server of our own would only forward requests. The build is plain static files that
+any host can serve ([ADR-0014](docs/adr/0014-spa-only-browser-direct-github-access.md),
+[ADR-0018](docs/adr/0018-static-host-agnostic-deployment.md)).
 
-`packages/contracts` holds Zod schemas and nothing else. It generates
-`artifacts/openapi.json`, which is committed and is the language-neutral contract of
-record. `apps/web` never imports `apps/api` — CI enforces it — so the backend can be
-replaced by .NET, Go, or Java without touching the frontend.
-
-The honest test of that claim: delete `apps/api`, and the frontend, contracts, and E2E
-suite still typecheck and describe a complete system.
-
-**2. Architectural rules are machine-enforced, not documented.**
-
-`domain/` imports nothing. `application/` defines ports; `infrastructure/` implements
-them. Reading `process.env` outside `config/env.ts` fails the build. So does a
-contract change without a regenerated spec, an unused export, or a floating promise.
-
-An agent cannot merge an architectural violation, regardless of what it believes it is
-doing. That is what makes hands-off development safe.
+**2. Architectural rules are machine-enforced.** The token lives in the browser, so
+only `apps/web/src/infrastructure/` may touch the network or browser storage, and
+raw-HTML APIs are banned outside one sanitising component. `domain/` imports nothing.
+Breaking a rule fails the build ([ADR-0015](docs/adr/0015-frontend-hexagonal-layering.md)).
 
 ## One command to validate everything
 
@@ -50,73 +44,44 @@ doing. That is what makes hands-off development safe.
 pnpm verify
 ```
 
-Format, lint (type-aware), typecheck, architecture rules, contract drift, dead code,
-dependency consistency, unit tests, component tests, integration tests, and builds —
-the same script CI runs, so there is no CI-only surprise.
+Format, lint (type-aware), typecheck, architecture rules, dead code, dependency
+consistency, unit tests, component tests, and the build. CI runs the same scripts.
 
 ```bash
-pnpm preflight          # check Node/pnpm/Docker before anything else
+pnpm preflight          # check Node, pnpm and Docker first
 pnpm verify:static      # the fast subset while iterating
 pnpm test:e2e           # after: pnpm stack:prod-like
-pnpm contract:breaking  # is my API change breaking?
 ```
 
 ## Layout
 
 ```
-apps/api           domain → application → infrastructure → http
-apps/web           domain → application → infrastructure → ui → features → routes
-packages/contracts Zod schemas. The API contract. Zod is its only dependency.
-packages/testing   Shared fixtures and deterministic clock/id helpers
-e2e                Playwright, against the production-like stack
-artifacts/         openapi.json — committed, generated, drift-checked
-docs/              architecture · adr · guides · conventions
+apps/web    domain → application → infrastructure → ui → features → routes
+e2e         Playwright, against the production-like stack
+docs/       architecture · adr · guides · conventions
+scripts/    preflight, guardrail self-test, ADR and changelog helpers
 ```
 
 ## Documentation
 
-Start with **[AGENTS.md](AGENTS.md)** — it is the entry point for agents and the
+Start with **[AGENTS.md](AGENTS.md)**. It is the entry point for agents and the
 fastest orientation for humans too.
 
 | Document                                                                     | For                               |
 | ---------------------------------------------------------------------------- | --------------------------------- |
 | [docs/guides/adding-a-feature.md](docs/guides/adding-a-feature.md)           | Adding anything, layer by layer   |
-| [docs/architecture/overview.md](docs/architecture/overview.md)               | The whole picture, with diagrams  |
+| [docs/architecture/overview.md](docs/architecture/overview.md)               | The whole picture                 |
 | [docs/conventions/dependency-rules.md](docs/conventions/dependency-rules.md) | The rules and why they exist      |
 | [docs/guides/testing.md](docs/guides/testing.md)                             | What to test where                |
 | [docs/guides/local-development.md](docs/guides/local-development.md)         | Running and troubleshooting       |
-| [docs/guides/replacing-the-backend.md](docs/guides/replacing-the-backend.md) | Swapping in another language      |
 | [docs/adr/](docs/adr/)                                                       | Why every major decision was made |
-
-## Using this as a template
-
-1. Create a repository from this template (GitHub's **Use this template**), clone it,
-   and run `pnpm install`.
-2. Initialise it — one command, run once:
-
-   ```bash
-   pnpm init-project my-dashboard --owner @your-github-user
-   ```
-
-   It renames the `@kit/*` packages, the root package, and the Compose project; sets
-   the title (`--title`, defaults to "My Dashboard"), the CODEOWNERS owner, and the
-   `ProblemTypes` URLs (`--problem-base`, defaults to `https://<name>.example/problems`);
-   resets the changelog; regenerates the lockfile and `artifacts/openapi.json`; and
-   removes itself and this section. It refuses a dirty working tree, so
-   `git checkout .` undoes it. Then `pnpm verify` and commit.
-
-3. Replace the `Task` slice with your first real feature — copy its shape, it exists to
-   be imitated.
-4. Add a deploy step; `.github/workflows/ci.yml` publishes images to GHCR and stops
-   there deliberately.
 
 ## Notable version choices
 
-Node **24 LTS** (Node 26 becomes LTS in October 2026 — a deliberate, ADR-tracked bump).
-TypeScript **7.0.2**, the Go-native compiler. That last choice is why the toolchain is
-OXC rather than ESLint: typescript-eslint cannot do type-aware linting on TS7 until the
-stable compiler API lands in 7.1, while oxlint's tsgolint runs on typescript-go
-directly. See [ADR-0007](docs/adr/0007-oxc-toolchain.md) and
+Node **24 LTS**. TypeScript **7.0.2**, the Go-native compiler. That is why the
+toolchain is OXC rather than ESLint: typescript-eslint cannot do type-aware linting on
+TS7 until the stable compiler API lands in 7.1, while oxlint's tsgolint runs on
+typescript-go directly. See [ADR-0007](docs/adr/0007-oxc-toolchain.md) and
 [ADR-0013](docs/adr/0013-typescript-7-adoption.md).
 
 ## Licence

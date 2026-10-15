@@ -8,72 +8,68 @@ This file is deliberately short and navigational. Long instruction files get ski
 
 ## 60-second orientation
 
-A React SPA and a Hono API that share **one contract** and nothing else.
+A personal, read-only GitHub pull-request dashboard. It is a single-page app with **no backend**: the browser calls GitHub directly with the signed-in account's token and caches results in the browser.
 
 ```
-packages/contracts   Zod schemas. The API contract. Zod is its ONLY dependency.
-        │
-        ├── apps/api   Hono + hexagonal layers + PostgreSQL (Drizzle)
-        └── apps/web   React 19 + Vite + TanStack Router/Query
-artifacts/openapi.json   Generated from contracts. COMMITTED. The language-neutral spec.
+apps/web   React 19 + Vite + TanStack Router/Query. The whole product.
+   │
+   └── https://api.github.com   GraphQL + REST, called from the browser
+e2e        Playwright, against the nginx prod-like build
+docs/adr   Why it is built this way (start at ADR-0014)
 ```
 
-The single most important rule: **`apps/web` must never import from `apps/api`.** They communicate over HTTP, described by the contract. This is what keeps the backend replaceable by .NET, Go, or Java. CI enforces it.
+The single most important rule: **only `apps/web/src/infrastructure/` may touch the network or browser storage.** The token lives in the browser, so where `fetch` and storage happen is a security boundary. CI enforces it.
 
 ---
 
 ## Commands
 
-One command reproduces the entire CI gate:
+One command runs the CI checks, tests and build, with no Docker needed:
 
 ```bash
 pnpm verify
 ```
 
-Run it before you consider work finished. It is the same script CI runs, so there is no "CI-only" failure to be surprised by.
+Run it before you consider work finished. CI runs the same scripts. Only E2E, the guardrail self-test and the image scan run separately.
 
-| Task                                    | Command                                        |
-| --------------------------------------- | ---------------------------------------------- |
-| Check the environment first             | `pnpm preflight`                               |
-| Everything (the full gate)              | `pnpm verify`                                  |
-| Fast subset while iterating             | `pnpm verify:static`                           |
-| Format / lint / types                   | `pnpm format` · `pnpm lint` · `pnpm typecheck` |
-| Auto-fix                                | `pnpm format` then `pnpm lint:fix`             |
-| Unit tests                              | `pnpm test:unit`                               |
-| Component tests (real browser)          | `pnpm test:component`                          |
-| Integration tests (real Postgres)       | `pnpm test:integration`                        |
-| E2E (needs the stack running)           | `pnpm stack:prod-like` then `pnpm test:e2e`    |
-| Architecture rules                      | `pnpm arch:check`                              |
-| Regenerate the API contract             | `pnpm contract:generate`                       |
-| Is my API change breaking?              | `pnpm contract:breaking`                       |
-| Run the whole app locally               | `docker compose --profile dev up`              |
-| New migration (after editing schema.ts) | `pnpm db:generate`                             |
-| New decision record                     | `pnpm adr:new "Title"`                         |
+| Task                            | Command                                             |
+| ------------------------------- | --------------------------------------------------- |
+| Check the environment first     | `pnpm preflight`                                    |
+| Everything (the full gate)      | `pnpm verify`                                       |
+| Fast subset while iterating     | `pnpm verify:static`                                |
+| Format / lint / types           | `pnpm format` · `pnpm lint` · `pnpm typecheck`      |
+| Auto-fix                        | `pnpm format` then `pnpm lint:fix`                  |
+| Unit tests                      | `pnpm test:unit`                                    |
+| Component tests (real browser)  | `pnpm test:component`                               |
+| E2E (needs the stack running)   | `pnpm stack:prod-like` then `pnpm test:e2e`         |
+| Architecture rules              | `pnpm arch:check`                                   |
+| Prove the guardrails still bite | `pnpm verify:guardrails`                            |
+| Unused code and dependencies    | `pnpm deps:check`                                   |
+| Run the app locally             | `pnpm dev` (Docker) or `pnpm --filter @ghd/web dev` |
+| New decision record             | `pnpm adr:new "Title"`                              |
 
 ---
 
 ## Dependency rules — the architecture contract
 
-Enforced by `dependency-cruiser`, `oxlint`, and TypeScript project references. You cannot merge a violation.
+Enforced by `dependency-cruiser`, `oxlint`, and TypeScript. You cannot merge a violation. Layers follow [ADR-0015](docs/adr/0015-frontend-hexagonal-layering.md).
 
 ```
-apps/api/src/
-  domain/          → imports NOTHING. Not Zod, not Hono, not Node builtins.
-  application/     → imports domain only. DEFINES ports; never imports adapters.
-  infrastructure/  → imports domain + application. Implements ports.
-  http/            → imports all of the above. Hono lives here and nowhere else.
-  config/env.ts    → the ONLY place process.env is read.
-
 apps/web/src/
-  domain/          → framework-free model code.
-  application/     → hooks + the TaskApi port. No fetch.
-  infrastructure/  → the ONLY place that touches the network.
+  domain/          → imports nothing outside domain/. No Zod, React, TanStack or browser APIs.
+  application/     → imports domain only. DEFINES ports + TanStack Query hooks. No infrastructure.
+  infrastructure/  → implements ports. The ONLY place for fetch and browser storage.
   ui/              → presentational only. Props in, JSX out. No data fetching.
-  features/        → composes application + ui.
-
-packages/contracts → Zod ONLY. No app imports. No helpers. No utilities.
-apps/web           → NEVER imports apps/api (and vice versa).
+  features/        → composes application hooks + ui components.
+  routes/          → TanStack Router route tree.
+  config/env.ts    → the ONLY place import.meta.env is read.
 ```
+
+- dependency-cruiser: `web-domain-is-pure`, `web-domain-no-zod`, `web-ui-is-presentational`, `web-application-no-infrastructure`, `web-no-direct-fetch`.
+- oxlint: `fetch`, `XMLHttpRequest`, `localStorage`, `sessionStorage`, `indexedDB`, `BroadcastChannel` and `navigator.locks` are banned outside `apps/web/src/infrastructure/**`.
+- oxlint: `dangerouslySetInnerHTML`, `innerHTML`, `eval` and `new Function` are banned everywhere except `apps/web/src/ui/SafeHtml.tsx` (the one sanitising component; not built yet).
+
+Today `src/` has `domain/`, `features/home/`, `routes/` and `config/`. The other layers appear as features need them.
 
 Full rationale: [docs/conventions/dependency-rules.md](docs/conventions/dependency-rules.md).
 
@@ -81,17 +77,16 @@ Full rationale: [docs/conventions/dependency-rules.md](docs/conventions/dependen
 
 ## Where does this code go?
 
-| What you are adding                                    | Where it goes                                                   |
-| ------------------------------------------------------ | --------------------------------------------------------------- |
-| A business rule or invariant                           | `apps/api/src/domain/`                                          |
-| Orchestration of a workflow                            | `apps/api/src/application/` (a use case)                        |
-| A new external dependency (DB, queue, third-party API) | Port in `application/ports.ts`, adapter in `infrastructure/`    |
-| A new HTTP endpoint                                    | Contract in `packages/contracts`, route in `apps/api/src/http/` |
-| A new API field                                        | `packages/contracts` first, then both sides                     |
-| A reusable visual component                            | `apps/web/src/ui/`                                              |
-| A screen or feature                                    | `apps/web/src/features/`                                        |
-| Server-state fetching                                  | `apps/web/src/application/tasks/use-*.ts`                       |
-| Anything touching the network from the frontend        | `apps/web/src/infrastructure/`                                  |
+| What you are adding                                 | Where it goes                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------- |
+| A PR rule (sections, re-review, staleness, sorting) | `apps/web/src/domain/`                                            |
+| A new outside capability (GitHub, storage, tabs)    | Port in `apps/web/src/application/`, adapter in `infrastructure/` |
+| A GitHub query or response schema                   | `apps/web/src/infrastructure/github/`                             |
+| Server-state fetching                               | A TanStack Query hook in `apps/web/src/application/`              |
+| A reusable visual component                         | `apps/web/src/ui/`                                                |
+| A screen or feature                                 | `apps/web/src/features/`                                          |
+| A route                                             | `apps/web/src/routes/`                                            |
+| A build-time setting                                | `VITE_*` in `apps/web/src/config/env.ts` and `.env.example`       |
 
 Worked example, layer by layer: **[docs/guides/adding-a-feature.md](docs/guides/adding-a-feature.md)**. Follow it literally.
 
@@ -101,29 +96,28 @@ Worked example, layer by layer: **[docs/guides/adding-a-feature.md](docs/guides/
 
 TypeScript types vanish at runtime, so boundaries are validated with Zod. But not everything is a boundary.
 
-| Concern                   | Schema lives in                         | Validated                                      |
-| ------------------------- | --------------------------------------- | ---------------------------------------------- |
-| API request / response    | `packages/contracts`                    | Backend on the way in; frontend on the way out |
-| Environment variables     | `apps/*/src/config/env.ts`              | At process start — **fail fast**               |
-| Third-party API responses | The infrastructure adapter              | At the adapter boundary                        |
-| Database rows             | The repository adapter                  | On read, when the schema is not ours           |
-| **Domain invariants**     | **NOT Zod** — constructors in `domain/` | At construction                                |
+| Concern                | Schema lives in                        | Validated                         |
+| ---------------------- | -------------------------------------- | --------------------------------- |
+| GitHub API responses   | `apps/web/src/infrastructure/github/`  | On every response, before mapping |
+| Cached / stored data   | The storage adapter                    | On read                           |
+| Build-time environment | `apps/web/src/config/env.ts`           | At app load — **fail fast**       |
+| **Domain rules**       | **NOT Zod** — plain types in `domain/` | By construction                   |
 
-The last row is the one most often got wrong. **`domain/` must not import Zod.** Domain invariants use branded types and factory functions returning `Result`, so an invalid domain object is _unconstructible_ rather than merely detectable. Zod guards boundaries; the type system guards the core.
+The last row is the one most often got wrong. **`domain/` must not import Zod.** The GitHub adapter parses responses and maps them onto plain domain types, so domain code only ever sees valid data. Zod guards boundaries; the type system guards the core.
 
 ---
 
 ## Testing policy
 
-Default is **do not mock**.
+Default is **do not mock**. Details in [ADR-0019](docs/adr/0019-testing-a-browser-only-app.md).
 
-| Layer                     | How to test it                                             |
-| ------------------------- | ---------------------------------------------------------- |
-| `domain/`, `application/` | Real code, no mocks, no I/O. Use the in-memory port fakes. |
-| Repository adapters       | Real PostgreSQL via Testcontainers (`tests/integration/`)  |
-| React components          | Real browser, Vitest browser mode, in-memory `TaskApi`     |
-| Full journeys             | Playwright against the prod-like Docker stack              |
-| Third-party HTTP          | MSW at the network layer — never module mocking            |
+| Layer                          | How to test it                                                          |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| `domain/`, `application/`      | Real code, no mocks, no I/O. In-memory port fakes; injected clock.      |
+| GitHub adapter                 | MSW in Node serving recorded fixtures from `apps/web/tests/fixtures/`   |
+| IndexedDB / cross-tab adapters | Real browser APIs in Vitest browser mode                                |
+| React components               | Real Chromium, in-memory ports, axe in both themes                      |
+| Full journeys                  | Playwright against the prod-like stack, GitHub mocked with `page.route` |
 
 `vi.mock` of an internal module is **banned**. Needing it means a dependency is missing a port; add the port instead.
 
@@ -138,13 +132,13 @@ A change is done when all of these hold. Most are checked by `pnpm verify`.
 1. `pnpm verify` passes locally.
 2. New behaviour has tests at the appropriate layer (see the table above).
 3. Coverage thresholds met for the layers you touched.
-4. Contract changes: `pnpm contract:generate` run and `artifacts/openapi.json` committed.
-5. Breaking contract changes are declared — `feat!:`/`BREAKING CHANGE:`, a `breaking-change` label, **and** an ADR.
-6. No new `oxlint-disable` without a `-- reason:` explaining why.
-7. Docs updated if you changed structure, boundaries, commands, or data flow.
-8. A new ADR if you made or reversed an architectural decision.
-9. Conventional Commit messages (`type(scope): subject`).
-10. You can state what changed, why, and whether it is breaking.
+4. Changes to GitHub requests stay within the quota budget, and the budget tests pass ([ADR-0017](docs/adr/0017-indexeddb-cache-and-quota-budget.md)).
+5. Every new UI string has a key in the English, Finnish and Swedish catalogues (`pnpm i18n:check`, once the catalogues land — [ADR-0021](docs/adr/0021-i18n-themes-and-accessibility.md)).
+6. New or changed components pass axe in light and dark themes.
+7. No new `oxlint-disable` without a `-- reason:` explaining why.
+8. Docs updated if you changed structure, boundaries, commands, or data flow.
+9. A new ADR if you made or reversed an architectural decision.
+10. Conventional Commit messages (`type(scope): subject`); you can state what changed, why, and whether it is breaking.
 
 ---
 
@@ -152,14 +146,13 @@ A change is done when all of these hold. Most are checked by `pnpm verify`.
 
 Do not attempt these; they are blocked by design, and the fix is architectural, not a workaround.
 
-- Importing `infrastructure` from `domain` or `application`
-- Importing anything into `domain/` at all
-- Importing `apps/api` from `apps/web`
-- Adding any dependency other than Zod to `packages/contracts`
-- Reading `process.env` outside `config/env.ts`
-- Changing a schema without regenerating `artifacts/openapi.json`
-- Breaking the API contract without declaring it
-- Leaving unused exports or dependencies (knip)
+- Importing anything outside `domain/` into `domain/`, including Zod
+- Importing `infrastructure/` from `application/`
+- Fetching data in `ui/`
+- Calling `fetch` or browser storage outside `infrastructure/`
+- Raw-HTML APIs (`dangerouslySetInnerHTML`, `innerHTML`, `eval`, `new Function`) outside `ui/SafeHtml.tsx`
+- Reading `import.meta.env` outside `config/env.ts`
+- Leaving unused files, exports or dependencies (knip)
 - `any`, non-null assertions, or floating promises
 
 If a rule genuinely blocks legitimate work, that is a signal to change the rule **deliberately** — propose an ADR. Do not silence the check. Guardrail files are CODEOWNERS-protected and need human review.
@@ -168,10 +161,10 @@ If a rule genuinely blocks legitimate work, that is a signal to change the rule 
 
 ## Conventions
 
-- **Errors:** RFC 9457 `application/problem+json` at the HTTP edge; `Result` types in the domain. Exceptions are for genuinely exceptional cases. See [docs/conventions/error-handling.md](docs/conventions/error-handling.md).
-- **No parameter properties** (`constructor(private x)`): `erasableSyntaxOnly` is on so Node can strip types natively. Declare fields explicitly.
-- **Imports use real extensions** (`./task.ts`, not `./task.js`). TypeScript rewrites them on emit.
-- **Branded ids** are constructed only via their `toXId()` helper.
+- **Errors:** `Result` types in the domain; GitHub errors mapped once, in the GitHub adapter, to a `GitHubError` union the UI renders from. Never put a token in a message or log. See [docs/conventions/error-handling.md](docs/conventions/error-handling.md).
+- **Tokens** go only to `api.github.com` (and, later, the token-exchange handler). See [ADR-0016](docs/adr/0016-auth-port-and-token-storage.md).
+- **No parameter properties** (`constructor(private x)`): `erasableSyntaxOnly` is on. Declare fields explicitly.
+- **Imports use real extensions** (`./sort.ts`, not `./sort.js`).
 - Prefer explicit and boring over clever. This codebase optimises for being read, by humans and by agents.
 
 ---
@@ -184,6 +177,5 @@ If a rule genuinely blocks legitimate work, that is a signal to change the rule 
 | [docs/architecture/overview.md](docs/architecture/overview.md)               | You need the whole picture                   |
 | [docs/conventions/dependency-rules.md](docs/conventions/dependency-rules.md) | A boundary check failed                      |
 | [docs/guides/testing.md](docs/guides/testing.md)                             | Deciding how to test something               |
-| [docs/guides/local-development.md](docs/guides/local-development.md)         | Getting the stack running                    |
-| [docs/guides/replacing-the-backend.md](docs/guides/replacing-the-backend.md) | Swapping the API for another language        |
+| [docs/guides/local-development.md](docs/guides/local-development.md)         | Getting the app running                      |
 | [docs/adr/](docs/adr/)                                                       | You want to know _why_ something is this way |

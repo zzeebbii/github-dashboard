@@ -1,75 +1,48 @@
 # Error handling
 
-One convention, chosen once (ADR-0009). Do not invent a second.
+One convention, chosen once
+([ADR-0020](../adr/0020-error-handling-without-an-http-edge.md)). Do not invent a second.
 
 ## Two vocabularies, one translation point
 
 ```
-domain/        Result<T, E>  — expected failures are VALUES
-application/   AppError      — transport-agnostic; never mentions status codes
-http/          RFC 9457      — the ONLY place status codes appear
+domain/                  Result<T, E>  — expected failures are VALUES
+infrastructure/github/   GitHubError   — the ONLY place status codes and GraphQL errors are read
+ui/, features/           render from GitHubError, never from status codes
 ```
 
 ## Domain: Result, not exceptions
 
-```ts
-static create(input): Result<Task, TaskValidationError> {
-  if (title.length === 0) return err({ kind: "TitleEmpty" });
-  return ok(new Task({ ... }));
-}
-```
+Expected failures are part of the return type, so a caller cannot forget one.
+Exceptions are only for genuinely exceptional conditions (a bug).
 
-Expected failures appear in the type signature, so a caller cannot forget one — the
-compiler makes them unwrap the `Result`. Exceptions are reserved for genuinely
-exceptional conditions (a dead database, a bug).
+## GitHub errors: one union
 
-## Application: a transport-agnostic vocabulary
+The GitHub adapter maps every failure, once, to a transport-agnostic union:
 
-```ts
-export type AppError =
-  | { kind: "NotFound"; resource: string; id: string }
-  | { kind: "Validation"; issues: readonly ValidationIssue[] }
-  | { kind: "Conflict"; reason: string };
-```
+| Kind             | Meaning                                                           |
+| ---------------- | ----------------------------------------------------------------- |
+| `unauthorized`   | 401. Signs out only the affected account.                         |
+| `forbidden`      | 403 that is not a rate limit                                      |
+| `orgAccess`      | SSO or fine-grained approval needed; carries org, reason, fix URL |
+| `rateLimited`    | Primary rate limit used up                                        |
+| `secondaryLimit` | 403/429 with `retry-after`; pauses that account                   |
+| `network`        | Offline or the request failed                                     |
+| `schema`         | The response failed Zod validation                                |
+| `notFound`       | 404                                                               |
 
-Nothing here knows what a 404 is. That is why swapping HTTP for a queue would replace
-one file.
-
-## HTTP: RFC 9457 problem details
-
-```json
-{
-  "type": "https://kit.example/problems/validation-failed",
-  "title": "Validation failed",
-  "status": 400,
-  "detail": "The request body or parameters did not satisfy the API contract.",
-  "errors": [{ "pointer": "/title", "message": "Title must not be empty." }]
-}
-```
-
-`errors[]` carries JSON Pointers so the frontend can attach messages to the right
-input. The shape is defined once, in `packages/contracts/src/problem.ts`, so client and
-server cannot disagree about it.
-
-## Exhaustiveness
-
-Every mapping switch ends with:
-
-```ts
-default: {
-  const unhandled: never = error;
-  throw new Error(`Unhandled AppError: ${JSON.stringify(unhandled)}`);
-}
-```
-
-Adding an error kind without mapping it is then a **compile error**, not a runtime
-surprise in production.
+The mapping prefers GraphQL error `type` and falls back to message text. A GitHub API
+change is absorbed in that one file.
 
 ## Rules
 
-- Never leak internal messages or stack traces to clients. The 500 handler logs the
-  cause and returns a body containing nothing sensitive.
-- Never `catch` without either handling or rethrowing with context.
-- A caught error is `unknown` (`useUnknownInCatchVariables`). Narrow it before use.
-- Adding a new error kind: extend `AppError`, map it in `http/problem.ts`, add the
-  status to `ProblemStatus`. The compiler will point at each place.
+- **Never leak a token.** No token, header or credential URL in a message, log or UI
+  string ([ADR-0016](../adr/0016-auth-port-and-token-storage.md)).
+- **Keep partial results.** If a GraphQL query fails for some repositories, render the
+  rest and flag the failed ones in place.
+- **Never a blank screen.** Offline and storage failures fall back to cached data with
+  a visible banner.
+- **Exhaustive switches.** A `switch` over an error union ends with
+  `const unhandled: never = error;`, so a new kind without handling is a compile error.
+- Never `catch` without either handling or rethrowing with context. A caught error is
+  `unknown`; narrow it before use.
