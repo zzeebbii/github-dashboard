@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { render } from "vitest-browser-react";
+import { HtmlSanitizerContext } from "../src/application/html-sanitizer.ts";
+import { sanitizeHtml } from "../src/infrastructure/browser/trusted-types.ts";
 
 /**
  * The single entry point for rendering components under test.
@@ -19,5 +21,10 @@ export async function renderWithProviders(ui: ReactNode) {
   });
 
   // `render` is async in vitest-browser-react v2.
-  return await render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return await render(
+    <QueryClientProvider client={queryClient}>
+      {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
+      <HtmlSanitizerContext value={sanitizeHtml}>{ui}</HtmlSanitizerContext>
+    </QueryClientProvider>,
+  );
 }
