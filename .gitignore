@@ -19,6 +19,7 @@ test-results/
 blob-report/
 # Vitest browser-mode failure artefacts
 **/.vitest-attachments/
+**/.vitest/attachments/
 **/__screenshots__/
 artifacts/dependency-graph.dot
 

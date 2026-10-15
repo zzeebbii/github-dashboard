@@ -44,6 +44,7 @@ Run it before you consider work finished. CI runs the same scripts. Only E2E, th
 | E2E (needs the stack running)   | `pnpm stack:prod-like` then `pnpm test:e2e`         |
 | Architecture rules              | `pnpm arch:check`                                   |
 | Prove the guardrails still bite | `pnpm verify:guardrails`                            |
+| Translation keys complete       | `pnpm i18n:check`                                   |
 | Unused code and dependencies    | `pnpm deps:check`                                   |
 | Run the app locally             | `pnpm dev` (Docker) or `pnpm --filter @ghd/web dev` |
 | New decision record             | `pnpm adr:new "Title"`                              |
@@ -67,9 +68,9 @@ apps/web/src/
 
 - dependency-cruiser: `web-domain-is-pure`, `web-domain-no-zod`, `web-ui-is-presentational`, `web-application-no-infrastructure`, `web-no-direct-fetch`.
 - oxlint: `fetch`, `XMLHttpRequest`, `localStorage`, `sessionStorage`, `indexedDB`, `BroadcastChannel` and `navigator.locks` are banned outside `apps/web/src/infrastructure/**`.
-- oxlint: `dangerouslySetInnerHTML`, `innerHTML`, `eval` and `new Function` are banned everywhere except `apps/web/src/ui/SafeHtml.tsx` (the one sanitising component; not built yet).
+- oxlint: `dangerouslySetInnerHTML`, `innerHTML`, `eval` and `new Function` are banned everywhere except `apps/web/src/ui/SafeHtml.tsx` (the one sanitising component).
 
-Today `src/` has `domain/`, `features/home/`, `routes/` and `config/`. The other layers appear as features need them.
+Today `src/` has `domain/`, `application/`, `infrastructure/`, `ui/`, `features/`, `i18n/`, `routes/` and `config/`.
 
 Full rationale: [docs/conventions/dependency-rules.md](docs/conventions/dependency-rules.md).
 
@@ -133,7 +134,7 @@ A change is done when all of these hold. Most are checked by `pnpm verify`.
 2. New behaviour has tests at the appropriate layer (see the table above).
 3. Coverage thresholds met for the layers you touched.
 4. Changes to GitHub requests stay within the quota budget, and the budget tests pass ([ADR-0017](docs/adr/0017-indexeddb-cache-and-quota-budget.md)).
-5. Every new UI string has a key in the English, Finnish and Swedish catalogues (`pnpm i18n:check`, once the catalogues land — [ADR-0021](docs/adr/0021-i18n-themes-and-accessibility.md)).
+5. Every new UI string has a key in the English, Finnish and Swedish catalogues (`pnpm i18n:check` — [ADR-0021](docs/adr/0021-i18n-themes-and-accessibility.md)).
 6. New or changed components pass axe in light and dark themes.
 7. No new `oxlint-disable` without a `-- reason:` explaining why.
 8. Docs updated if you changed structure, boundaries, commands, or data flow.
