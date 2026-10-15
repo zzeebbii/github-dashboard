@@ -2,7 +2,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { render } from "vitest-browser-react";
 import { HtmlSanitizerContext } from "../src/application/html-sanitizer.ts";
+import type { PreferencesStore } from "../src/application/preferences.ts";
+import { PreferencesProvider } from "../src/application/preferences-provider.tsx";
+import type { ColorSchemeQuery } from "../src/application/theme.ts";
 import { sanitizeHtml } from "../src/infrastructure/browser/trusted-types.ts";
+import { createFakeColorSchemeQuery } from "./fakes/fake-color-scheme-query.ts";
+import { createInMemoryPreferencesStore } from "./fakes/in-memory-preferences-store.ts";
 
 /**
  * The single entry point for rendering components under test.
@@ -12,14 +17,24 @@ import { sanitizeHtml } from "../src/infrastructure/browser/trusted-types.ts";
  */
 export async function renderWithProviders(
   ui: ReactNode,
-  { queryClient = testQueryClient() }: { queryClient?: QueryClient } = {},
+  {
+    queryClient = testQueryClient(),
+    preferencesStore = createInMemoryPreferencesStore(),
+    prefersDark = createFakeColorSchemeQuery(),
+  }: {
+    queryClient?: QueryClient;
+    preferencesStore?: PreferencesStore;
+    prefersDark?: ColorSchemeQuery;
+  } = {},
 ) {
   // `render` is async in vitest-browser-react v2.
   return await render(
-    <QueryClientProvider client={queryClient}>
-      {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
-      <HtmlSanitizerContext value={sanitizeHtml}>{ui}</HtmlSanitizerContext>
-    </QueryClientProvider>,
+    <PreferencesProvider store={preferencesStore} prefersDark={prefersDark}>
+      <QueryClientProvider client={queryClient}>
+        {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
+        <HtmlSanitizerContext value={sanitizeHtml}>{ui}</HtmlSanitizerContext>
+      </QueryClientProvider>
+    </PreferencesProvider>,
   );
 }
 

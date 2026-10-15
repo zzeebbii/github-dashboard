@@ -106,6 +106,8 @@ module.exports = {
           "(^|/)(tsconfig|vite\\.config|vitest\\.config|playwright\\.config)",
           // Test helpers kept for upcoming tests; nothing imports them yet.
           "^apps/web/tests/determinism\\.ts$",
+          // Static pre-paint script, loaded by a <script> tag in index.html, not imported.
+          "^apps/web/public/theme-init\\.js$",
         ],
       },
       to: {},

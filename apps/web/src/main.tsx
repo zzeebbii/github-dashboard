@@ -6,11 +6,17 @@ import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
+import { PreferencesProvider } from "./application/preferences-provider.tsx";
+import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
-import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 import { createIndexedDbCache } from "./infrastructure/cache/indexeddb-cache.ts";
+import { createLocalPreferencesStore } from "./infrastructure/local-preferences-store.ts";
 import { router } from "./routes/router.tsx";
+// Self-hosted Geist and Geist Mono (FR-1.2): Vite bundles the woff2 files into dist/assets.
+// Imported here rather than via CSS @import so knip sees the dependencies are used.
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
 import "./styles.css";
 
 /**
@@ -43,10 +49,15 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <HtmlSanitizerContext value={sanitizeHtml}>
-        <RouterProvider router={router} />
-      </HtmlSanitizerContext>
-    </QueryClientProvider>
+    <PreferencesProvider
+      store={createLocalPreferencesStore()}
+      prefersDark={matchMedia("(prefers-color-scheme: dark)")}
+    >
+      <QueryClientProvider client={queryClient}>
+        <HtmlSanitizerContext value={sanitizeHtml}>
+          <RouterProvider router={router} />
+        </HtmlSanitizerContext>
+      </QueryClientProvider>
+    </PreferencesProvider>
   </StrictMode>,
 );

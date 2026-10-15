@@ -18,6 +18,24 @@ test("the home page loads", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "GitHub Dashboard" })).toBeVisible();
 });
 
+test("fonts and icons load from the app's own origin (AC-1.7)", async ({ page, baseURL }) => {
+  const origin = new URL(baseURL ?? "http://localhost").origin;
+  const offOrigin: string[] = [];
+  const fonts: string[] = [];
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (url.origin !== origin) offOrigin.push(request.url());
+    if (request.resourceType() === "font") fonts.push(request.url());
+  });
+
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForLoadState("networkidle");
+
+  expect(offOrigin).toEqual([]);
+  expect(fonts.length).toBeGreaterThan(0);
+});
+
 test("a deep link returns the SPA shell", async ({ page }) => {
   const response = await page.goto("/some/path");
 
