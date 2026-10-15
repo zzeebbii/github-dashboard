@@ -204,6 +204,45 @@
       }
     },
     {
+      // reason: the pre-paint theme script (FR-1.3) must read the stored theme before the bundle
+      // loads, so it cannot go through the infrastructure adapter. It only reads the one
+      // preferences key. Only the localStorage global is lifted; the other bans are restated
+      // because an override replaces a rule's options. It is plain JavaScript, so the
+      // type-aware "unsafe" rules report JSON.parse's `any`, not a defect.
+      "files": ["apps/web/public/theme-init.js"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          {
+            "name": "process",
+            "message": "Read configuration through the validated config module, not process.env. See docs/conventions/validation.md."
+          },
+          {
+            "name": "fetch",
+            "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+          },
+          {
+            "name": "XMLHttpRequest",
+            "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+          },
+          {
+            "name": "sessionStorage",
+            "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+          },
+          {
+            "name": "indexedDB",
+            "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+          },
+          {
+            "name": "BroadcastChannel",
+            "message": "Only apps/web/src/infrastructure may talk across tabs. Go through an application port."
+          }
+        ],
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-member-access": "off"
+      }
+    },
+    {
       // CSS and side-effect imports (env validation) have no bindings by design.
       "files": ["apps/web/src/main.tsx"],
       "rules": { "import/no-unassigned-import": "off" }

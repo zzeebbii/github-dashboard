@@ -1,47 +1,52 @@
-/* Placeholder styling until the design tokens and themes land (ADR-0021). */
+/*
+ * Design tokens and base styles (FR-1.1, ADR-0021).
+ *
+ * The :root and html.dark blocks are copied verbatim from
+ * docs/pr-dashboard-designs/PR Dashboard.dc.html. Keep them identical to the design.
+ * `html.dark` is set before first paint by public/theme-init.js, then by PreferencesProvider.
+ */
 
+/* prettier-ignore */
+:root{color-scheme:light;--background:#ffffff;--foreground:#0a0a0b;--card:#ffffff;--popover:#ffffff;--muted:#f4f4f5;--muted-foreground:#71717a;--accent:#f4f4f5;--border:#e4e4e7;--border-strong:#d4d4d8;--input:#e4e4e7;--primary:#18181b;--primary-foreground:#fafafa;--sidebar:#fafafa;--subtle:#fafafa;--overlay:rgba(9,9,11,.16);--green:#16a34a;--red:#dc2626;--amber:#c2410c;--blue:#2563eb;--purple:#9333ea;--shadow:0 12px 32px -12px rgba(0,0,0,.2)}
+/* prettier-ignore */
+html.dark{color-scheme:dark;--background:#09090b;--foreground:#fafafa;--card:#0c0c0e;--popover:#18181b;--muted:#27272a;--muted-foreground:#a1a1aa;--accent:#232326;--border:#27272a;--border-strong:#3f3f46;--input:#3f3f46;--primary:#fafafa;--primary-foreground:#18181b;--sidebar:#0f0f11;--subtle:#111113;--overlay:rgba(0,0,0,.5);--green:#4ade80;--red:#f87171;--amber:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--shadow:0 12px 32px -12px rgba(0,0,0,.6)}
+
+/* Fontsource registers the families as "Geist Variable" / "Geist Mono Variable". */
 :root {
-  --color-bg: #ffffff;
-  --color-fg: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-danger: #b91c1c;
-  --radius: 6px;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #111317;
-    --color-fg: #f3f4f6;
-    --color-muted: #9ca3af;
-    --color-border: #2a2f37;
-    --color-danger: #f87171;
-  }
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-fg);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.5;
+  height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-button {
-  padding: 0.5rem 0.9rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-bg);
+a {
+  color: var(--foreground);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--muted-foreground);
+}
+
+button,
+input {
+  font: inherit;
   color: inherit;
-  cursor: pointer;
 }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+code,
+kbd {
+  font-family: var(--font-mono);
 }
