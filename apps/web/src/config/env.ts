@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// The CSP forbids string evaluation, and Zod 4 probes `new Function` to decide whether to
+// compile its parsers. The probe fails safely but logs a Trusted Types violation on every load,
+// so turn the compiler off before the first schema runs.
+z.config({ jitless: true });
+
 /**
  * The ONLY place the frontend reads import.meta.env.
  *
