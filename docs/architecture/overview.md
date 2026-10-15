@@ -2,148 +2,109 @@
 
 ## The shape of it
 
-A React SPA and a Hono API that share exactly one thing: a contract.
+One single-page app and GitHub. Nothing else
+([ADR-0014](../adr/0014-spa-only-browser-direct-github-access.md)).
 
 ```mermaid
 C4Context
   title System context
 
-  Person(user, "User", "Uses the task application")
-  System(spa, "Web SPA", "React 19 + Vite. Static assets served by nginx.")
-  System(api, "API", "Hono on Node 24. Hexagonal layers.")
-  SystemDb(db, "PostgreSQL 17", "Task storage")
+  Person(user, "User", "Reads their pull requests")
+  System(spa, "Web SPA", "React 19 + Vite. Static files on any host.")
+  System_Ext(github, "GitHub API", "api.github.com: GraphQL + REST")
 
   Rel(user, spa, "Uses", "HTTPS")
-  Rel(spa, api, "Calls", "HTTP/JSON, described by artifacts/openapi.json")
-  Rel(api, db, "Reads/writes", "SQL")
+  Rel(spa, github, "Calls with the user's token", "HTTPS, CORS")
 ```
 
-In production both are served from a single origin: nginx serves the SPA and proxies
-`/api` and `/health` to the API. That is why production needs no CORS.
+- No backend, no database. All state is in the browser.
+- GitHub's schemas are the external contract. The GitHub adapter validates every
+  response with Zod.
+- The only server-side piece ever planned is a small, stateless token-exchange
+  handler for GitHub App sign-in. It is not built yet
+  ([ADR-0016](../adr/0016-auth-port-and-token-storage.md)).
 
-## Containers
+## Deployment
 
-```mermaid
-C4Container
-  title Container view (prod-like profile)
+The build is plain static files (`index.html` plus hashed assets). Any static host
+works if it falls back to `index.html` for unknown paths and sends the security
+headers. nginx (`apps/web/nginx.conf`) is the reference host, used by the prod-like
+Compose profile and E2E ([ADR-0018](../adr/0018-static-host-agnostic-deployment.md)).
 
-  Container(nginx, "web", "nginx + static bundle", "Serves the SPA, proxies /api")
-  Container(api, "api", "Node 24, distroless, non-root", "Implements the contract")
-  Container(migrate, "migrate", "One-shot job", "Applies committed SQL migrations")
-  ContainerDb(db, "db", "PostgreSQL 17", "")
+The headers matter because the token lives in the browser: a strict CSP that only
+allows `api.github.com` and `avatars.githubusercontent.com`, with Trusted Types.
 
-  Rel(nginx, api, "proxy_pass", "HTTP")
-  Rel(migrate, db, "Applies migrations before the API starts", "SQL")
-  Rel(api, db, "Pooled connections", "SQL")
-```
+## Layers
 
-Migrations run as a **separate one-shot container**, never on application start — N
-replicas booting simultaneously would race each other.
-
-## The backend, layer by layer
+`apps/web/src` is layered, and dependencies point inward
+([ADR-0015](../adr/0015-frontend-hexagonal-layering.md)):
 
 ```mermaid
 flowchart TD
-    HTTP["http/<br/><i>Hono routes, composition root,<br/>RFC 9457 mapping</i>"]
-    INFRA["infrastructure/<br/><i>Drizzle repositories, clock,<br/>id generation, logging</i>"]
-    APP["application/<br/><i>Use cases. DEFINES ports.</i>"]
-    DOMAIN["domain/<br/><i>Entities, invariants, Result types.<br/>ZERO imports.</i>"]
+    FEAT["features/<br/><i>screens: hooks + ui</i>"]
+    UI["ui/<br/><i>presentational components</i>"]
+    APP["application/<br/><i>ports + TanStack Query hooks</i>"]
+    INFRA["infrastructure/<br/><i>GitHub client, auth, IndexedDB,<br/>Web Storage, cross-tab</i>"]
+    DOMAIN["domain/<br/><i>pure PR rules. ZERO outside imports.</i>"]
 
-    HTTP --> APP
-    HTTP --> INFRA
-    HTTP --> DOMAIN
+    FEAT --> UI
+    FEAT --> APP
+    UI --> DOMAIN
+    APP --> DOMAIN
     INFRA -->|implements ports| APP
     INFRA --> DOMAIN
-    APP --> DOMAIN
 
     style DOMAIN fill:#1f6feb,color:#fff
     style APP fill:#238636,color:#fff
 ```
 
-Every arrow points **inward**. Nothing points out of `domain/`. That single property is
-what makes the framework, the ORM, and the runtime replaceable.
-
-The inversion that makes it work: `application/` declares `TaskRepository` as an
-interface; `infrastructure/` implements it with Drizzle; `http/composition.ts` is the
-one place they meet.
-
-## Request flow
-
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant N as nginx
-    participant R as http/task.routes.ts
-    participant U as application/use case
-    participant P as TaskRepository (port)
-    participant D as Drizzle adapter
-    participant PG as PostgreSQL
-
-    B->>N: POST /api/tasks {"title":"..."}
-    N->>R: proxy_pass
-    R->>R: Parse against CONTRACT schema
-    alt invalid
-        R-->>B: 400 application/problem+json
-    else valid
-        R->>U: createTask(deps, {title})
-        U->>U: Task.create() enforces invariants
-        U->>P: save(task)
-        P->>D: (bound in composition.ts)
-        D->>PG: INSERT ... ON CONFLICT
-        U-->>R: Result<Task, AppError>
-        R-->>B: 201 + contract-shaped JSON
-    end
 ```
-
-Note where validation happens: the **contract** validates the wire, the **domain**
-enforces business rules. They are different concerns and live in different places.
-
-## The frontend/backend boundary
-
-```mermaid
-flowchart LR
-    subgraph contracts["packages/contracts — Zod only"]
-        S["Schemas + endpoint descriptors"]
-    end
-
-    subgraph api["apps/api"]
-        AV["Request/response validation"]
-        GEN["OpenAPI generator"]
-    end
-
-    subgraph web["apps/web"]
-        C["Typed client + response validation"]
-    end
-
-    SPEC["artifacts/openapi.json<br/><b>committed</b>"]
-    OTHER["A future .NET / Go / Java backend"]
-
-    S --> AV
-    S --> C
-    S --> GEN --> SPEC
-    SPEC -.->|implements the same spec| OTHER
-    C -.->|HTTP only, never an import| AV
-
-    style SPEC fill:#8957e5,color:#fff
-```
-
-`apps/web` never imports `apps/api`. CI enforces it. A replacement backend implements
-the committed spec and never touches the TypeScript contract package.
-
-## Frontend layers
-
-```
-routes/          TanStack Router. Code-based, no codegen.
-features/        Composes application + ui. The only layer that knows both.
+routes/          TanStack Router route tree.
+features/        Composes application hooks with ui components.
 ui/              Presentational. Props in, JSX out. No fetching.
-application/     Hooks + the TaskApi PORT. Transport-agnostic.
-infrastructure/  The ONLY place that touches the network.
-domain/          Framework-free model code.
+application/     Ports (AuthPort, GitHubReadPort, CachePort, AccountStore,
+                 PreferencesStore, CrossTabPort) and TanStack Query hooks.
+infrastructure/  Adapters. The ONLY place that calls fetch or touches browser storage.
+domain/          Section rules, re-review, activity, staleness, sort keys.
 config/env.ts    The ONLY place import.meta.env is read.
 ```
 
-Components resolve the API through React context, so a component test wires an
-in-memory implementation and never touches the network.
+Today `domain/`, `features/home/`, `routes/` and `config/` exist. The ports and
+adapters arrive with the features that need them.
+
+Components get their ports through React context, so a component test wires
+in-memory fakes and never touches the network.
+
+## Data flow
+
+How a Home refresh will work once the GitHub adapter and cache exist
+([ADR-0017](../adr/0017-indexeddb-cache-and-quota-budget.md)):
+
+```mermaid
+sequenceDiagram
+    participant F as features/home
+    participant H as application hook
+    participant C as CachePort (IndexedDB)
+    participant G as GitHubReadPort (adapter)
+    participant GH as api.github.com
+
+    F->>H: render
+    H->>C: read cached PRs (cache-first)
+    C-->>F: show cached data at once
+    H->>G: refresh in background
+    G->>GH: batched GraphQL search
+    GH-->>G: JSON + rate-limit info
+    G->>G: Zod parse, map to domain types
+    G-->>H: PullRequest[] or GitHubError
+    H->>C: store
+    H-->>F: re-render with fresh data
+```
+
+- List data comes from batched GraphQL queries, never one request per PR.
+- Refresh runs every 5 minutes while the tab is visible. Only one tab refreshes; the
+  others follow over a `BroadcastChannel`.
+- A quota guard slows down and then stops auto-refresh as the rate limit runs low.
+  Budgets per operation are asserted by tests.
 
 ## Where to read next
 
@@ -153,5 +114,4 @@ in-memory implementation and never touches the network.
 | Adding anything                     | [../guides/adding-a-feature.md](../guides/adding-a-feature.md)           |
 | Testing approach                    | [../guides/testing.md](../guides/testing.md)                             |
 | Running it locally                  | [../guides/local-development.md](../guides/local-development.md)         |
-| Swapping the backend                | [../guides/replacing-the-backend.md](../guides/replacing-the-backend.md) |
 | Why any of this                     | [../adr/](../adr/)                                                       |

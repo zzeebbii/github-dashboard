@@ -1,5 +1,5 @@
 {
-  "name": "@kit/web",
+  "name": "@ghd/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --build tsconfig.build.json && vite build",
     "preview": "vite preview",
-    "test:unit": "vitest run --project unit --passWithNoTests",
+    "test:unit": "vitest run --project unit",
     "test:component": "vitest run --project component",
     "typecheck": "tsc -p tsconfig.json"
   },

@@ -6,7 +6,7 @@
 #
 # There is no backend: the SPA talks to GitHub directly from the browser.
 
-name: agentic-kit
+name: github-dashboard
 
 services:
   # ---------------------------------------------------------------------------
@@ -19,7 +19,7 @@ services:
     command: >
       sh -c "corepack enable && corepack prepare pnpm@11.22.0 --activate &&
              pnpm install --frozen-lockfile &&
-             pnpm --filter @kit/web run dev --host"
+             pnpm --filter @ghd/web run dev --host"
     environment:
       # Keep pnpm's store off the bind mount: otherwise pnpm creates a large
       # .pnpm-store inside your checkout, because it keeps the store on the same

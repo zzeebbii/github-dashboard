@@ -1,5 +1,4 @@
-/* Minimal, dependency-free styling. Deliberately plain: a starter kit should not
-   impose a design system, and an agent should not have to learn one to add a UI. */
+/* Placeholder styling until the design tokens and themes land (ADR-0021). */
 
 :root {
   --color-bg: #ffffff;

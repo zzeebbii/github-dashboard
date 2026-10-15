@@ -1,2 +1,2 @@
-# Conventional Commits drive the changelog AND the breaking-change interlock.
+# Conventional Commits drive the changelog and mark breaking changes.
 pnpm exec commitlint --edit "$1"

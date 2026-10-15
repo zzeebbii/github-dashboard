@@ -4,9 +4,6 @@
  * Tests must never depend on the real clock or real randomness. The application
  * layer takes Clock and IdGenerator as ports precisely so tests can substitute
  * these, which is why no test in this repository has to freeze timers globally.
- *
- * These live in @kit/testing rather than in either app so both sides share one
- * definition of "deterministic".
  */
 
 /** A clock frozen at a fixed instant. */

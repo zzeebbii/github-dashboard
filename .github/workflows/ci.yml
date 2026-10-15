@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Weekly run on an unchanged main. A template repository rots silently:
+  # Weekly run on an unchanged main. An untouched repository rots silently:
   # this catches dependency drift, base-image CVEs, and upstream breakage
   # while nobody is touching the code.
   schedule:
@@ -114,7 +114,7 @@ jobs:
           echo "Stack did not become ready"; docker compose --profile prod-like logs; exit 1
 
       - name: Install Playwright browsers
-        run: pnpm --filter @kit/e2e exec playwright install --with-deps chromium
+        run: pnpm --filter @ghd/e2e exec playwright install --with-deps chromium
 
       - name: Run E2E
         run: pnpm run test:e2e
@@ -152,12 +152,12 @@ jobs:
         run: pnpm audit --audit-level high
 
       - name: Build web image for scanning
-        run: docker build -f apps/web/Dockerfile -t kit-web:scan .
+        run: docker build -f apps/web/Dockerfile -t ghd-web:scan .
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: kit-web:scan
+          image-ref: ghd-web:scan
           format: sarif
           output: trivy.sarif
           severity: HIGH,CRITICAL
