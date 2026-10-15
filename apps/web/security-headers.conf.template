@@ -1,0 +1,13 @@
+# Reference security headers (FR-0.8, ADR-0018). Any other host must send the same.
+#
+# Rendered at container start by the nginx image's envsubst step into
+# /etc/nginx/conf.d/snippets/, then included by EVERY location in nginx.conf:
+# an add_header inside a location discards all inherited ones, so headers set at
+# server level would silently vanish from /assets/ and /index.html.
+#
+# GHD_EXTRA_CONNECT_SRC is " https://<exchange origin>" or empty; it is derived
+# and validated by 15-ghd-connect-src.envsh. No 'unsafe-inline', no 'unsafe-eval'.
+add_header Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.github.com${GHD_EXTRA_CONNECT_SRC}; img-src 'self' https://avatars.githubusercontent.com data:; style-src 'self'; font-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types ghd-sanitize" always;
+add_header Referrer-Policy "no-referrer" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" always;
