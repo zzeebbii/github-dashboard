@@ -10,16 +10,10 @@ import { sanitizeHtml } from "../src/infrastructure/browser/trusted-types.ts";
  * Wiring providers in one place means a test never fails because someone forgot
  * a provider, and swapping a provider later touches one file rather than fifty.
  */
-export async function renderWithProviders(ui: ReactNode) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      // No retries in tests: a deliberate error assertion should fail fast, not
-      // after three backoff cycles.
-      queries: { retry: false, staleTime: 0 },
-      mutations: { retry: false },
-    },
-  });
-
+export async function renderWithProviders(
+  ui: ReactNode,
+  { queryClient = testQueryClient() }: { queryClient?: QueryClient } = {},
+) {
   // `render` is async in vitest-browser-react v2.
   return await render(
     <QueryClientProvider client={queryClient}>
@@ -27,4 +21,16 @@ export async function renderWithProviders(ui: ReactNode) {
       <HtmlSanitizerContext value={sanitizeHtml}>{ui}</HtmlSanitizerContext>
     </QueryClientProvider>,
   );
+}
+
+/** The QueryClient renderWithProviders uses by default; build one to seed or inspect it. */
+export function testQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: {
+      // No retries in tests: a deliberate error assertion should fail fast, not
+      // after three backoff cycles.
+      queries: { retry: false, staleTime: 0 },
+      mutations: { retry: false },
+    },
+  });
 }
