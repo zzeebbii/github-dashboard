@@ -209,6 +209,16 @@ const scenarios = [
     "no-explicit-any",
   ),
 
+  // i18n catalogues.
+  {
+    name: "a key missing from sv.ts is caught",
+    guards: "pnpm i18n:check",
+    expect: 'missing key "kSearch"',
+    touches: ["apps/web/src/i18n/sv.ts"],
+    apply: () =>
+      mutate("apps/web/src/i18n/sv.ts", (source) => source.replace(/^ {2}kSearch:.*\n/mu, "")),
+  },
+
   // knip.
   {
     name: "an unused export is caught",
