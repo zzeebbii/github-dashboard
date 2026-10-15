@@ -71,6 +71,24 @@
         "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
       },
       {
+        "property": "outerHTML",
+        "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+      },
+      {
+        "property": "insertAdjacentHTML",
+        "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+      },
+      {
+        "object": "document",
+        "property": "write",
+        "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+      },
+      {
+        "object": "document",
+        "property": "writeln",
+        "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+      },
+      {
         "property": "locks",
         "message": "Only apps/web/src/infrastructure may use Web Locks. Go through an application port."
       },
@@ -114,7 +132,8 @@
     // in apps/web/src/ui/SafeHtml.tsx (override below).
     "react/no-danger": "error",
     "no-eval": "error",
-    "no-new-func": "error"
+    "no-new-func": "error",
+    "typescript/no-implied-eval": "error"
   },
   "overrides": [
     {
@@ -134,6 +153,24 @@
           "error",
           {
             "property": "innerHTML",
+            "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+          },
+          {
+            "property": "outerHTML",
+            "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+          },
+          {
+            "property": "insertAdjacentHTML",
+            "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+          },
+          {
+            "object": "document",
+            "property": "write",
+            "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+          },
+          {
+            "object": "document",
+            "property": "writeln",
             "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
           }
         ]

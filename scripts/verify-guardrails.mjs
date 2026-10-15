@@ -180,6 +180,26 @@ const scenarios = [
     'export const probe = () => new Function("return 1");',
     "no-new-func",
   ),
+  lintInFeatures(
+    "`outerHTML` in features/ is rejected",
+    'export const probe = (el: HTMLElement) => { el.outerHTML = "x"; };',
+    "no-restricted-properties",
+  ),
+  lintInFeatures(
+    "`insertAdjacentHTML` in features/ is rejected",
+    'export const probe = (el: HTMLElement) => { el.insertAdjacentHTML("beforeend", "x"); };',
+    "no-restricted-properties",
+  ),
+  lintInFeatures(
+    "`document.write` in features/ is rejected",
+    'export const probe = () => { document.write("x"); };',
+    "no-restricted-properties",
+  ),
+  lintInFeatures(
+    "`setTimeout` with a code string is rejected",
+    'export const probe = () => setTimeout("alert(1)", 1);',
+    "no-implied-eval",
+  ),
 
   // oxlint: type-aware hygiene.
   lintInFeatures("a floating promise is rejected", "Promise.resolve();", "no-floating-promises"),

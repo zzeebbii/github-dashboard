@@ -16,18 +16,18 @@ apps/web/src/
   config/env.ts    → the only reader of import.meta.env
 ```
 
-| Rule                                                                                         | Tool               | What it forbids                                                                                                                              |
-| -------------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `web-domain-is-pure`                                                                         | dependency-cruiser | `domain/` importing `react`, `react-dom` or `@tanstack/*`                                                                                    |
-| `web-domain-no-zod`                                                                          | dependency-cruiser | `domain/` importing `zod`                                                                                                                    |
-| `web-application-no-infrastructure`                                                          | dependency-cruiser | `application/` importing `infrastructure/`                                                                                                   |
-| `web-ui-is-presentational`                                                                   | dependency-cruiser | `ui/` importing `features/` or `infrastructure/`                                                                                             |
-| `web-no-direct-fetch`                                                                        | dependency-cruiser | `domain/`, `application/`, `ui/` importing an HTTP client package (`axios`, `ky`, `openapi-fetch`)                                           |
-| `no-restricted-globals`                                                                      | oxlint             | `fetch`, `XMLHttpRequest`, `localStorage`, `sessionStorage`, `indexedDB`, `BroadcastChannel` outside `infrastructure/`; `process` everywhere |
-| `no-restricted-properties`                                                                   | oxlint             | `navigator.locks` and `window.`/`globalThis.` access to the names above outside `infrastructure/`; `.innerHTML` everywhere                   |
-| `react/no-danger`                                                                            | oxlint             | `dangerouslySetInnerHTML` everywhere except `ui/SafeHtml.tsx`                                                                                |
-| `no-eval`, `no-new-func`                                                                     | oxlint             | `eval(...)` and `new Function(...)` everywhere                                                                                               |
-| `no-circular`, `no-orphans`, `not-to-unresolvable`, `no-dev-dep-in-src`, `not-to-deprecated` | dependency-cruiser | General hygiene: cycles, dead modules, unresolvable imports, devDependencies in `src`, deprecated packages                                   |
+| Rule                                                                                         | Tool               | What it forbids                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `web-domain-is-pure`                                                                         | dependency-cruiser | `domain/` importing `react`, `react-dom` or `@tanstack/*`                                                                                                                                          |
+| `web-domain-no-zod`                                                                          | dependency-cruiser | `domain/` importing `zod`                                                                                                                                                                          |
+| `web-application-no-infrastructure`                                                          | dependency-cruiser | `application/` importing `infrastructure/`                                                                                                                                                         |
+| `web-ui-is-presentational`                                                                   | dependency-cruiser | `ui/` importing `features/` or `infrastructure/`                                                                                                                                                   |
+| `web-no-direct-fetch`                                                                        | dependency-cruiser | `domain/`, `application/`, `ui/` importing an HTTP client package (`axios`, `ky`, `openapi-fetch`)                                                                                                 |
+| `no-restricted-globals`                                                                      | oxlint             | `fetch`, `XMLHttpRequest`, `localStorage`, `sessionStorage`, `indexedDB`, `BroadcastChannel` outside `infrastructure/`; `process` everywhere                                                       |
+| `no-restricted-properties`                                                                   | oxlint             | `navigator.locks` and `window.`/`globalThis.` access to the names above outside `infrastructure/`; raw-HTML sinks (`.innerHTML`, `.outerHTML`, `.insertAdjacentHTML`, `document.write`) everywhere |
+| `react/no-danger`                                                                            | oxlint             | `dangerouslySetInnerHTML` everywhere except `ui/SafeHtml.tsx`                                                                                                                                      |
+| `no-eval`, `no-new-func`, `typescript/no-implied-eval`                                       | oxlint             | `eval(...)`, `new Function(...)` and `setTimeout`/`setInterval` with a code string, everywhere                                                                                                     |
+| `no-circular`, `no-orphans`, `not-to-unresolvable`, `no-dev-dep-in-src`, `not-to-deprecated` | dependency-cruiser | General hygiene: cycles, dead modules, unresolvable imports, devDependencies in `src`, deprecated packages                                                                                         |
 
 `pnpm audit --prod --audit-level high` also runs in `verify:static`: a high or critical
 advisory in a production dependency fails the gate.
@@ -59,10 +59,10 @@ send the token, and that is where review attention goes.
 
 ### Raw HTML only through one sanitising component
 
-`dangerouslySetInnerHTML`, `innerHTML`, `eval` and `new Function` are how untrusted text
+`dangerouslySetInnerHTML`, `innerHTML` and its siblings, `eval` and `new Function` are how untrusted text
 (a PR body, a comment) becomes running script. All rendered HTML goes through
 `ui/SafeHtml.tsx`, which sanitises it (it arrives with the PR body view; until then
-the exemption matches no file). `innerHTML` and string evaluation have no
+the exemption matches no file). The other HTML sinks and string evaluation have no
 exemption at all, not even in `infrastructure/`.
 
 ## How the rules are enforced
