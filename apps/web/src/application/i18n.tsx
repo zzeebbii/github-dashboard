@@ -2,9 +2,7 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo } from "r
 import { en, type MessageKey } from "../i18n/en.ts";
 import { fi } from "../i18n/fi.ts";
 import { sv } from "../i18n/sv.ts";
-
-// ponytail: duplicated in application/preferences.ts (T6); T8 makes this import that one.
-export type Language = "en" | "fi" | "sv";
+import type { Language } from "./preferences.ts";
 
 type Messages = Partial<Record<MessageKey, string>>;
 type Params = Readonly<Record<string, string | number>>;

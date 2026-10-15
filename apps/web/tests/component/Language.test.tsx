@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { expect, test } from "vitest";
-import { I18nProvider, type Language, useI18n, useT } from "../../src/application/i18n.tsx";
+import { I18nProvider, useI18n, useT } from "../../src/application/i18n.tsx";
+import type { Language } from "../../src/application/preferences.ts";
 import { renderWithProviders } from "../render.tsx";
 
 function Probe() {
