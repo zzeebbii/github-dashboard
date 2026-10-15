@@ -27,15 +27,124 @@
 
     "no-console": "error",
     "eqeqeq": ["error", "always"],
+
+    // Network and storage belong to apps/web/src/infrastructure only (ADR-0015):
+    // the browser holds the GitHub token, so this is a security boundary. The
+    // infrastructure override below lifts these bans for that one directory.
     "no-restricted-globals": [
       "error",
       {
         "name": "process",
         "message": "Read configuration through the validated config module, not process.env. See docs/conventions/validation.md."
+      },
+      {
+        "name": "fetch",
+        "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+      },
+      {
+        "name": "XMLHttpRequest",
+        "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+      },
+      {
+        "name": "localStorage",
+        "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+      },
+      {
+        "name": "sessionStorage",
+        "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+      },
+      {
+        "name": "indexedDB",
+        "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+      },
+      {
+        "name": "BroadcastChannel",
+        "message": "Only apps/web/src/infrastructure may talk across tabs. Go through an application port."
       }
-    ]
+    ],
+    // Property-only entries also catch `window.localStorage`, `globalThis.fetch`
+    // and `window.navigator.locks`, which no-restricted-globals cannot see.
+    "no-restricted-properties": [
+      "error",
+      {
+        "property": "innerHTML",
+        "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+      },
+      {
+        "property": "locks",
+        "message": "Only apps/web/src/infrastructure may use Web Locks. Go through an application port."
+      },
+      {
+        "property": "localStorage",
+        "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+      },
+      {
+        "property": "sessionStorage",
+        "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+      },
+      {
+        "property": "indexedDB",
+        "message": "Only apps/web/src/infrastructure may touch browser storage. Go through an application port."
+      },
+      {
+        "property": "XMLHttpRequest",
+        "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+      },
+      {
+        "property": "BroadcastChannel",
+        "message": "Only apps/web/src/infrastructure may talk across tabs. Go through an application port."
+      },
+      {
+        "object": "window",
+        "property": "fetch",
+        "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+      },
+      {
+        "object": "globalThis",
+        "property": "fetch",
+        "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+      },
+      {
+        "object": "self",
+        "property": "fetch",
+        "message": "Only apps/web/src/infrastructure may use the network. Go through an application port."
+      }
+    ],
+    // Raw HTML and string evaluation. `dangerouslySetInnerHTML` is allowed only
+    // in apps/web/src/ui/SafeHtml.tsx (override below).
+    "react/no-danger": "error",
+    "no-eval": "error",
+    "no-new-func": "error"
   },
   "overrides": [
+    {
+      // The one layer allowed to touch the network and browser storage. The
+      // process.env and innerHTML bans still apply here, so they are restated:
+      // an override replaces a rule's options rather than merging them.
+      "files": ["apps/web/src/infrastructure/**"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          {
+            "name": "process",
+            "message": "Read configuration through the validated config module, not process.env. See docs/conventions/validation.md."
+          }
+        ],
+        "no-restricted-properties": [
+          "error",
+          {
+            "property": "innerHTML",
+            "message": "Raw HTML is an XSS sink. Render through the sanitising SafeHtml component in ui/."
+          }
+        ]
+      }
+    },
+    {
+      // The single sanitised-HTML component (created with the PR body view).
+      // It is the only place raw HTML may reach the DOM.
+      "files": ["apps/web/src/ui/SafeHtml.tsx"],
+      "rules": { "react/no-danger": "off" }
+    },
     {
       // Build tooling and config, not application code. These legitimately read
       // process.env and print to stdout — that is their entire job.

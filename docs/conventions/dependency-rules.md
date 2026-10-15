@@ -1,106 +1,105 @@
 # Dependency rules
 
-The architecture contract. `.dependency-cruiser.cjs` is the machine-readable version of
-this document; if the two ever disagree, the config wins and this file is a bug.
+The architecture contract for the browser app ([ADR-0015](../adr/0015-frontend-hexagonal-layering.md)).
+`.dependency-cruiser.cjs` and `.oxlintrc.json` are the machine-readable version of this
+document; if they ever disagree with it, the config wins and this file is a bug.
 
 ## The rules
 
 ```
-apps/api/src/
-  domain/          → imports NOTHING
-  application/     → domain
-  infrastructure/  → domain, application
-  http/            → domain, application, infrastructure
-  config/env.ts    → the ONLY reader of process.env
-
 apps/web/src/
-  domain/          → nothing framework-shaped
-  application/     → domain, @kit/contracts
-  infrastructure/  → domain, application, @kit/contracts   (only network access)
-  ui/              → domain, @kit/contracts                 (no fetching)
+  domain/          → nothing framework-shaped: no React, TanStack or Zod
+  application/     → domain                      (defines ports; never imports infrastructure)
+  infrastructure/  → domain, application         (the ONLY network and storage access)
+  ui/              → domain                      (presentational; never features or infrastructure)
   features/        → application, ui, domain
-
-packages/contracts → zod. Nothing else. Ever.
-
-apps/web  ⇸  apps/api      (forbidden, both directions)
+  config/env.ts    → the only reader of import.meta.env
 ```
+
+| Rule                                                                                         | Tool               | What it forbids                                                                                                                              |
+| -------------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `web-domain-is-pure`                                                                         | dependency-cruiser | `domain/` importing `react`, `react-dom` or `@tanstack/*`                                                                                    |
+| `web-domain-no-zod`                                                                          | dependency-cruiser | `domain/` importing `zod`                                                                                                                    |
+| `web-application-no-infrastructure`                                                          | dependency-cruiser | `application/` importing `infrastructure/`                                                                                                   |
+| `web-ui-is-presentational`                                                                   | dependency-cruiser | `ui/` importing `features/` or `infrastructure/`                                                                                             |
+| `web-no-direct-fetch`                                                                        | dependency-cruiser | `domain/`, `application/`, `ui/` importing an HTTP client package (`axios`, `ky`, `openapi-fetch`)                                           |
+| `no-restricted-globals`                                                                      | oxlint             | `fetch`, `XMLHttpRequest`, `localStorage`, `sessionStorage`, `indexedDB`, `BroadcastChannel` outside `infrastructure/`; `process` everywhere |
+| `no-restricted-properties`                                                                   | oxlint             | `navigator.locks` and `window.`/`globalThis.` access to the names above outside `infrastructure/`; `.innerHTML` everywhere                   |
+| `react/no-danger`                                                                            | oxlint             | `dangerouslySetInnerHTML` everywhere except `ui/SafeHtml.tsx`                                                                                |
+| `no-eval`, `no-new-func`                                                                     | oxlint             | `eval(...)` and `new Function(...)` everywhere                                                                                               |
+| `no-circular`, `no-orphans`, `not-to-unresolvable`, `no-dev-dep-in-src`, `not-to-deprecated` | dependency-cruiser | General hygiene: cycles, dead modules, unresolvable imports, devDependencies in `src`, deprecated packages                                   |
+
+`pnpm audit --prod --audit-level high` also runs in `verify:static`: a high or critical
+advisory in a production dependency fails the gate.
 
 ## Why each rule exists
 
-### `domain/` imports nothing
+### `domain/` imports nothing framework-shaped
 
-Not Zod, not Hono, not `node:crypto`. The moment the domain imports something, the
-business rules become tied to that thing's lifecycle. Keeping it empty means the rules
-survive replacing the framework, the ORM, the runtime, and the validation library.
+The domain is the PR logic: section rules, re-review, activity, staleness, sort keys. If
+it imports React, TanStack or Zod, those rules become tied to that library's lifecycle,
+and domain tests stop being setup-free.
 
-It also makes domain tests trivial: no setup, no mocks, no I/O, microseconds to run.
+Zod is singled out because it is the most tempting: it is already a dependency, and it
+looks like "just validation". It guards the GitHub boundary in `infrastructure/`. Domain
+invariants use branded types and factory functions returning `Result`.
 
 ### `application/` defines ports but never imports adapters
 
-This is the dependency inversion that carries the whole design. The application says
-_"I need something that can save a Task"_; infrastructure says _"I can do that with
-Drizzle"_; `http/composition.ts` introduces them. Nothing else knows both sides.
+The application says _"I need something that can read pull requests"_ (a port);
+infrastructure says _"I can do that with GitHub GraphQL"_ (an adapter). Only the
+composition root knows both. Hooks and components are then tested against in-memory
+port fakes, with no network and no mocking framework.
 
-Practical consequence: use cases are tested against a real in-memory repository, so
-those tests need no mocking framework at all.
+### Only `infrastructure/` touches the network or browser storage
 
-### `packages/contracts` may import only Zod
+The browser holds the GitHub token, so this is a security boundary, not a style rule.
+If only one directory can call `fetch` or read storage, only one directory can read or
+send the token, and that is where review attention goes.
 
-This is the single rule most likely to be eroded, and the one that matters most.
+### Raw HTML only through one sanitising component
 
-The contracts package is why the backend can be replaced. If it grows a dependency on
-an app, it stops being a contract and becomes shared code — and the two apps become
-coupled through it. If it grows implementation, a non-TypeScript backend can no longer
-satisfy it.
-
-It will be under constant pressure to absorb "just one small helper". Put the helper in
-whichever app needs it, **even if both do**. Duplication across the boundary is cheaper
-than coupling across it.
-
-### `apps/web` never imports `apps/api`
-
-The honest test of this design: **delete `apps/api` entirely, and the frontend,
-contracts, and E2E suite still typecheck and describe a complete system.**
-
-If any TypeScript import crosses that line, replacing the backend stops being a
-deployment change and becomes a refactor.
-
-### `process.env` only in `config/env.ts`
-
-Configuration read at the point of use is configuration that fails at 3am on the one
-code path nobody tested. Parsing once at startup, through Zod, means a misconfigured
-deploy dies immediately with a message naming the variable.
+`dangerouslySetInnerHTML`, `innerHTML`, `eval` and `new Function` are how untrusted text
+(a PR body, a comment) becomes running script. All rendered HTML goes through
+`ui/SafeHtml.tsx`, which sanitises it (it arrives with the PR body view; until then
+the exemption matches no file). `innerHTML` and string evaluation have no
+exemption at all, not even in `infrastructure/`.
 
 ## How the rules are enforced
 
 Four independent layers, because a single mechanism gets worked around:
 
-| Layer | Mechanism                      | When you find out                                       |
-| ----- | ------------------------------ | ------------------------------------------------------- |
-| 1     | TypeScript project references  | Compile time — `domain` cannot resolve `infrastructure` |
-| 2     | `dependency-cruiser`           | `pnpm arch:check`, blocking in CI                       |
-| 3     | `oxlint no-restricted-imports` | In the editor, and pre-commit                           |
-| 4     | pnpm strict `node_modules`     | Install time — no phantom transitive imports            |
+| Layer | Mechanism                     | When you find out                           |
+| ----- | ----------------------------- | ------------------------------------------- |
+| 1     | TypeScript project references | Compile time                                |
+| 2     | `dependency-cruiser`          | `pnpm arch:check`, blocking in CI           |
+| 3     | `oxlint` restriction rules    | In the editor, `pnpm lint`, and pre-commit  |
+| 4     | pnpm strict `node_modules`    | Install time: no phantom transitive imports |
+
+`pnpm verify:guardrails` breaks each rule on purpose and checks that the right check
+fails, naming the right rule. A guardrail never observed failing is not known to work.
 
 Run them yourself:
 
 ```bash
-pnpm arch:check     # the rules
-pnpm arch:graph     # writes a dependency graph to artifacts/
+pnpm arch:check          # dependency-cruiser rules
+pnpm lint                # oxlint rules
+pnpm verify:guardrails   # prove every rule fires
+pnpm arch:graph          # writes a dependency graph to artifacts/
 ```
 
 ## When a rule blocks you
 
 It is usually telling you something true. In order of likelihood:
 
-1. **The code is in the wrong layer.** A business rule in `http/`; a fetch call in a
+1. **The code is in the wrong layer.** A `fetch` call in a hook; a business rule in a
    component. Move it.
 2. **A port is missing.** You want to call something concrete from `application/`.
-   Declare the interface there, implement it in `infrastructure/`, bind it in
-   `composition.ts`.
+   Declare the interface there, implement it in `infrastructure/`, and wire it in at
+   the composition root.
 3. **The rule is genuinely wrong.** Rare, but possible. Propose an ADR explaining why,
-   and change `.dependency-cruiser.cjs` deliberately. It is CODEOWNERS-protected, so a
-   human reviews it.
+   and change the config deliberately. It is CODEOWNERS-protected, so a human reviews
+   it.
 
 What not to do: add an ignore pattern, weaken a rule to `warn`, or route the import
 through an intermediate file to dodge the matcher. All three convert a loud, cheap

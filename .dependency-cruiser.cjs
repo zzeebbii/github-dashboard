@@ -24,8 +24,31 @@ module.exports = {
       from: { path: "^apps/web/src/domain" },
       to: {
         dependencyTypes: ["npm"],
-        path: "^(react|react-dom|@tanstack)",
+        // `to.path` matches the RESOLVED file (node_modules/.pnpm/react@x/node_modules/
+        // react/index.js), not the specifier, so anchor on the package directory.
+        path: "(^|/)node_modules/(react|react-dom|@tanstack)/",
       },
+    },
+    {
+      name: "web-domain-no-zod",
+      comment:
+        "apps/web/src/domain must not import Zod. Zod guards the GitHub boundary in " +
+        "infrastructure; domain invariants are branded types and factory functions returning " +
+        "Result (ADR-0015). Fix: move the schema to apps/web/src/infrastructure and map the " +
+        "parsed value to a domain type there.",
+      severity: "error",
+      from: { path: "^apps/web/src/domain" },
+      to: { dependencyTypes: ["npm"], path: "(^|/)node_modules/zod/" },
+    },
+    {
+      name: "web-application-no-infrastructure",
+      comment:
+        "apps/web/src/application defines ports and never imports adapters (ADR-0015). Fix: " +
+        "declare the interface in application/, implement it in infrastructure/, and wire the " +
+        "adapter in at the composition root.",
+      severity: "error",
+      from: { path: "^apps/web/src/application" },
+      to: { path: "^apps/web/src/infrastructure" },
     },
     {
       name: "web-ui-is-presentational",
@@ -43,7 +66,7 @@ module.exports = {
         "API port so the transport stays swappable and mockable.",
       severity: "error",
       from: { path: "^apps/web/src/(domain|application|ui)" },
-      to: { dependencyTypes: ["npm"], path: "^(axios|ky|openapi-fetch)" },
+      to: { dependencyTypes: ["npm"], path: "(^|/)node_modules/(axios|ky|openapi-fetch)/" },
     },
 
     // ---------------------------------------------------------------
