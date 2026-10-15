@@ -6,7 +6,7 @@
   "scripts": {
     "preflight": "node scripts/preflight.mjs",
     "verify": "pnpm run verify:static && pnpm run verify:test && pnpm run verify:build",
-    "verify:static": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run arch:check && pnpm run deps:check && pnpm audit --prod --audit-level high",
+    "verify:static": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run arch:check && pnpm run deps:check && pnpm audit --prod --audit-level high && pnpm run i18n:check",
     "verify:test": "pnpm run test:unit && pnpm run test:component",
     "verify:build": "pnpm -r --filter './apps/*' run build",
     "format": "oxfmt .",
@@ -24,6 +24,7 @@
     "dev": "docker compose --profile dev up --build",
     "dev:down": "docker compose --profile dev down -v",
     "stack:prod-like": "docker compose --profile prod-like up --build",
+    "i18n:check": "node scripts/i18n-check.mjs",
     "adr:new": "node scripts/new-adr.mjs",
     "changelog": "node scripts/generate-changelog.mjs",
     "prepare": "husky || true"

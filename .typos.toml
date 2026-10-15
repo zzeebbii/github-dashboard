@@ -1,0 +1,3 @@
+# typos checks English only; Finnish and Swedish words read to it as misspellings (Hae, Byt, tema).
+[files]
+extend-exclude = ["apps/web/src/i18n/fi.ts", "apps/web/src/i18n/sv.ts"]
