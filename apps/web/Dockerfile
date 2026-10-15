@@ -32,7 +32,7 @@ COPY apps/web apps/web
 
 RUN pnpm --filter @ghd/web run build
 
-FROM nginx:1.29-alpine AS runtime
+FROM nginx:1.30-alpine AS runtime
 # The exchange URL's origin joins the CSP connect-src only when set (FR-0.8).
 ARG VITE_GITHUB_APP_EXCHANGE_URL=""
 ENV VITE_GITHUB_APP_EXCHANGE_URL=${VITE_GITHUB_APP_EXCHANGE_URL}
