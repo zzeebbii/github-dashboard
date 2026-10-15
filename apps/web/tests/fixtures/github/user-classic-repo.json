@@ -1,0 +1,27 @@
+{
+  "_note": "GET /user with a classic PAT (ghp_) holding the repo scope. Expiry uses the numeric-offset form. Fake data.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v3; format=json",
+    "x-oauth-scopes": "repo, read:org",
+    "x-accepted-oauth-scopes": "",
+    "github-authentication-token-expiration": "2027-01-31 23:59:59 +0200"
+  },
+  "body": {
+    "login": "octo-fixture",
+    "id": 1000001,
+    "node_id": "U_kgFIXTURE1",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1000001?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/octo-fixture",
+    "html_url": "https://github.com/octo-fixture",
+    "type": "User",
+    "site_admin": false,
+    "name": "Octo Fixture",
+    "company": null,
+    "public_repos": 3,
+    "created_at": "2020-01-01T00:00:00Z",
+    "updated_at": "2026-10-01T00:00:00Z"
+  }
+}

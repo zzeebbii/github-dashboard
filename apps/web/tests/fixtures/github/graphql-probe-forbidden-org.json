@@ -1,0 +1,24 @@
+{
+  "_note": "Fine-grained PAT without Organization permissions > Members: Read. organizations is non-null, so the null propagates up to data.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v3; format=json"
+  },
+  "body": {
+    "data": null,
+    "errors": [
+      {
+        "type": "FORBIDDEN",
+        "path": ["viewer", "organizations"],
+        "locations": [
+          {
+            "line": 3,
+            "column": 5
+          }
+        ],
+        "message": "Resource not accessible by personal access token"
+      }
+    ]
+  }
+}

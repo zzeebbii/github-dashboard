@@ -5,11 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { AuthProvider } from "./application/auth-provider.tsx";
 import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
 import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
+import { createPatAuth } from "./infrastructure/auth/pat-auth.ts";
+import { createTokenStorage } from "./infrastructure/auth/token-storage.ts";
+import { createLocalAccountStore } from "./infrastructure/local-account-store.ts";
 import { createIndexedDbCache } from "./infrastructure/cache/indexeddb-cache.ts";
 import { createLocalPreferencesStore } from "./infrastructure/local-preferences-store.ts";
 import { router } from "./routes/router.tsx";
@@ -38,9 +42,13 @@ const queryClient = new QueryClient({
 
 // Cache-first (ADR-0017): restore cached query data before the first render, but never
 // wait more than 300 ms for it; then save every successful fetch.
-const cache = createIndexedDbCache({ clock: { now: () => new Date() } });
+const clock = { now: () => new Date() };
+const cache = createIndexedDbCache({ clock });
 await hydrateQueries(queryClient, cache, { timeoutMs: 300 });
 persistQueries(queryClient, cache);
+
+const accountStore = createLocalAccountStore();
+const auth = createPatAuth({ tokens: createTokenStorage(), accounts: accountStore, clock });
 
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
@@ -55,7 +63,12 @@ createRoot(rootElement).render(
     >
       <QueryClientProvider client={queryClient}>
         <HtmlSanitizerContext value={sanitizeHtml}>
-          <RouterProvider router={router} />
+          <AuthProvider auth={auth} accountStore={accountStore} clock={clock}>
+            <RouterProvider
+              router={router}
+              context={{ hasAccount: () => accountStore.activeId() !== null }}
+            />
+          </AuthProvider>
         </HtmlSanitizerContext>
       </QueryClientProvider>
     </PreferencesProvider>
