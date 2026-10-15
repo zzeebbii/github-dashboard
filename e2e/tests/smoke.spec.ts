@@ -11,11 +11,13 @@ const securityHeaders = {
     "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()",
 };
 
-test("the home page loads", async ({ page }) => {
+test("with no account, the app opens on sign-in", async ({ page }) => {
   await page.goto("/");
 
   await expect(page).toHaveTitle("GitHub Dashboard");
-  await expect(page.getByRole("heading", { level: 1, name: "GitHub Dashboard" })).toBeVisible();
+  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Sign in to GitHub" })).toBeVisible();
+  await expect(page.getByLabel("Personal access token")).toBeVisible();
 });
 
 test("fonts and icons load from the app's own origin (AC-1.7)", async ({ page, baseURL }) => {
