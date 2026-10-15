@@ -2,9 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { TaskApiProvider } from "./application/api-provider.tsx";
-import { env } from "./config/env.ts";
-import { createHttpTaskApi } from "./infrastructure/http-task-api.ts";
+// Imported for its side effect: validates the build environment before render.
+import "./config/env.ts";
 import { router } from "./routes/router.tsx";
 import "./styles.css";
 
@@ -25,8 +24,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const taskApi = createHttpTaskApi({ baseUrl: env.VITE_API_URL });
-
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
   throw new Error("Root element #root not found in index.html");
@@ -35,9 +32,7 @@ if (rootElement === null) {
 createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <TaskApiProvider api={taskApi}>
-        <RouterProvider router={router} />
-      </TaskApiProvider>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   </StrictMode>,
 );

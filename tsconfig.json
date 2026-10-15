@@ -4,10 +4,5 @@
   // dependency order. Each package also has a tsconfig.json (no emit) that
   // covers tests — that is the one editors and oxlint discover.
   "files": [],
-  "references": [
-    { "path": "./packages/contracts/tsconfig.build.json" },
-    { "path": "./packages/testing/tsconfig.build.json" },
-    { "path": "./apps/api/tsconfig.build.json" },
-    { "path": "./apps/web/tsconfig.build.json" }
-  ]
+  "references": [{ "path": "./apps/web/tsconfig.build.json" }]
 }

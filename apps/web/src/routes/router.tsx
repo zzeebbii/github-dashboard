@@ -1,5 +1,5 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
-import { TasksPage } from "../features/tasks/TasksPage.tsx";
+import { HomePage } from "../features/home/HomePage.tsx";
 
 /**
  * Code-based routes rather than file-based.
@@ -20,7 +20,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  component: TasksPage,
+  component: HomePage,
 });
 
 const routeTree = rootRoute.addChildren([indexRoute]);

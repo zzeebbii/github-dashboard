@@ -41,18 +41,17 @@ jobs:
           - { name: typecheck, command: "pnpm run typecheck" }
           - { name: architecture, command: "pnpm run arch:check" }
           - { name: dead-code, command: "pnpm run deps:check" }
-          - { name: contract-drift, command: "pnpm run contract:check" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      # The contract and architecture checks need built declaration output.
+      # The architecture check needs built declaration output.
       - name: Build TypeScript projects
         run: pnpm exec tsc --build
       - name: ${{ matrix.check.name }}
         run: ${{ matrix.check.command }}
 
   # ---------------------------------------------------------------------------
-  # Tests. Unit and component are fast; integration needs Docker.
+  # Tests. Unit and component are fast and need no Docker.
   # ---------------------------------------------------------------------------
   test-unit:
     name: unit tests
@@ -75,16 +74,6 @@ jobs:
       - run: pnpm exec tsc --build
       - run: pnpm run test:component
 
-  test-integration:
-    name: integration tests (real PostgreSQL)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: ./.github/actions/setup
-      - run: pnpm exec tsc --build
-      # Testcontainers talks to the runner's Docker daemon directly.
-      - run: pnpm run test:integration
-
   # ---------------------------------------------------------------------------
   # Proves the guardrails still BLOCK what they claim to block. Without this, a
   # check can silently stop working and keep reporting success — which happened
@@ -100,26 +89,7 @@ jobs:
       - run: pnpm run verify:guardrails
 
   # ---------------------------------------------------------------------------
-  # Contract change classification. Runs only on PRs, where a base ref exists.
-  # ---------------------------------------------------------------------------
-  contract-breaking:
-    name: breaking change check
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # Full history so the base ref is available to diff against.
-          fetch-depth: 0
-      - uses: ./.github/actions/setup
-      - name: Classify contract changes
-        env:
-          BASE_REF: origin/${{ github.base_ref }}
-          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
-        run: pnpm run contract:breaking
-
-  # ---------------------------------------------------------------------------
-  # Docker images, then E2E against the PRODUCTION-LIKE stack.
+  # Docker image, then E2E against the PRODUCTION-LIKE stack.
   # ---------------------------------------------------------------------------
   e2e:
     name: e2e (prod-like stack)
@@ -128,9 +98,6 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      # The e2e suite imports @kit/contracts, which resolves to its built dist/.
-      - run: pnpm exec tsc --build
-
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Build and start the production-like stack
@@ -139,7 +106,7 @@ jobs:
       - name: Wait for readiness
         run: |
           for i in $(seq 1 60); do
-            if curl -sf http://localhost:8080/health/ready > /dev/null; then
+            if curl -sf http://localhost:8080/ > /dev/null; then
               echo "Stack ready after ${i}s"; exit 0
             fi
             sleep 1
@@ -184,13 +151,13 @@ jobs:
       - name: Audit dependencies
         run: pnpm audit --audit-level high
 
-      - name: Build API image for scanning
-        run: docker build -f apps/api/Dockerfile -t kit-api:scan .
+      - name: Build web image for scanning
+        run: docker build -f apps/web/Dockerfile -t kit-web:scan .
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: kit-api:scan
+          image-ref: kit-web:scan
           format: sarif
           output: trivy.sarif
           severity: HIGH,CRITICAL
@@ -211,7 +178,7 @@ jobs:
   publish:
     name: publish images
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [static, guardrails, test-unit, test-component, test-integration, e2e, security]
+    needs: [static, guardrails, test-unit, test-component, e2e, security]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -226,18 +193,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push API
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          file: apps/api/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/api:latest
-            ghcr.io/${{ github.repository }}/api:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Build and push Web
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -249,9 +204,3 @@ jobs:
             ghcr.io/${{ github.repository }}/web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Upload the published contract
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: openapi
-          path: artifacts/openapi.json

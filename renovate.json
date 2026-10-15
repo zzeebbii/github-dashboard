@@ -50,13 +50,6 @@
       "addLabels": ["needs-review"]
     },
     {
-      "description": "Drizzle is 0.x: its MINOR bumps carry breaking changes, so treat them as majors.",
-      "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
-      "matchUpdateTypes": ["minor"],
-      "automerge": false,
-      "addLabels": ["needs-review"]
-    },
-    {
       "description": "Node stays on the LTS line the repo pins. Node 26 becomes LTS in Oct 2026 — that is a deliberate, ADR-tracked bump, not an automatic one.",
       "matchPackageNames": ["node", "@types/node"],
       "allowedVersions": "<25",

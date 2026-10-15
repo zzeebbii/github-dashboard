@@ -39,14 +39,7 @@
     {
       // Build tooling and config, not application code. These legitimately read
       // process.env and print to stdout — that is their entire job.
-      "files": [
-        "apps/api/src/config/env.ts",
-        "apps/api/src/main.ts",
-        "**/scripts/**",
-        "**/*.config.ts",
-        "**/*.config.js",
-        "**/*.config.mjs"
-      ],
+      "files": ["**/scripts/**", "**/*.config.ts", "**/*.config.js", "**/*.config.mjs"],
       "rules": { "no-restricted-globals": "off", "no-console": "off" }
     },
     {
@@ -65,7 +58,7 @@
       }
     },
     {
-      // CSS and polyfill imports have no bindings by design.
+      // CSS and side-effect imports (env validation) have no bindings by design.
       "files": ["apps/web/src/main.tsx"],
       "rules": { "import/no-unassigned-import": "off" }
     },
@@ -81,77 +74,6 @@
         "vitest/no-disabled-tests": "warn",
         "vitest/expect-expect": "error"
       }
-    },
-    {
-      "files": ["apps/api/src/domain/**", "apps/api/src/application/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": [
-                  "**/infrastructure/**",
-                  "**/http/**",
-                  "hono",
-                  "hono/*",
-                  "drizzle-orm",
-                  "drizzle-orm/*"
-                ],
-                "message": "The core must not depend on infrastructure, HTTP, or the ORM. Define a port in application/ and bind the adapter in http/composition.ts. See docs/conventions/dependency-rules.md."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["apps/api/src/domain/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": ["zod", "zod/*", "@kit/contracts", "**/infrastructure/**", "**/http/**"],
-                "message": "domain/ must be dependency-free. Zod guards boundaries; the type system guards the core. Use branded types and private constructors."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["apps/web/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": ["@kit/api", "@kit/api/*", "../../api/**", "**/apps/api/**"],
-                "message": "The frontend must never import backend code. Use @kit/contracts and the HTTP wire. This rule is what keeps the backend replaceable."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["packages/contracts/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": ["!zod", "!zod/*", "!./*", "!../*"],
-                "message": "packages/contracts may import Zod only. It stays publishable and language-neutral."
-              }
-            ]
-          }
-        ]
-      }
     }
   ],
   "ignorePatterns": [
@@ -159,8 +81,8 @@
     "**/dist-types/**",
     "**/coverage/**",
     "**/node_modules/**",
-    "apps/api/drizzle/**",
-    "artifacts/**",
-    "**/routeTree.gen.ts"
+    "**/routeTree.gen.ts",
+    // Vendor design export (static HTML/JS reference, not our source).
+    "docs/pr-dashboard-designs/**"
   ]
 }
