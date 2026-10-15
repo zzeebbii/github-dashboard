@@ -61,8 +61,8 @@ send the token, and that is where review attention goes.
 
 `dangerouslySetInnerHTML`, `innerHTML` and its siblings, `eval` and `new Function` are how untrusted text
 (a PR body, a comment) becomes running script. All rendered HTML goes through
-`ui/SafeHtml.tsx`, which sanitises it (it arrives with the PR body view; until then
-the exemption matches no file). The other HTML sinks and string evaluation have no
+`ui/SafeHtml.tsx`, which sanitises it with DOMPurify under the single
+`ghd-sanitize` Trusted Types policy. The other HTML sinks and string evaluation have no
 exemption at all, not even in `infrastructure/`.
 
 ## How the rules are enforced

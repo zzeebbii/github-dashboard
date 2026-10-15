@@ -681,11 +681,11 @@ _Provisional until ADRs 0014–0021 (T1) are accepted._ Code-based routes (ADR 0
 
 #### Task T9: Add the auth port, account store and PAT sign-in
 
-**Scope:** Scope 2: Auth and Accounts | **FR:** FR-2.1, FR-2.2, FR-2.3, FR-2.4, FR-2.10 | **LOC:** ~600 | **Review Time:** ~50 min | **Depends On:** T3 | **Repository:** github-dashboard
+**Scope:** Scope 2: Auth and Accounts | **FR:** FR-2.1, FR-2.2, FR-2.3, FR-2.10 | **LOC:** ~600 | **Review Time:** ~50 min | **Depends On:** T3 | **Repository:** github-dashboard
 
 ##### What & Why
 
-Users sign in by pasting a GitHub personal access token. The app validates it with one `GET /user`, detects classic vs fine-grained and expiry, probes read permissions, and warns about write-capable classic tokens or upcoming expiry. This task introduces the `AuthPort` and `AccountStore` every GitHub call depends on, and guarantees tokens never leak into logs, errors or URLs.
+Users sign in by pasting a GitHub personal access token. The app validates it with one `GET /user`, detects classic vs fine-grained, probes read permissions, and warns about write-capable classic tokens (expiry tracking dropped, FR-2.4). This task introduces the `AuthPort` and `AccountStore` every GitHub call depends on, and guarantees tokens never leak into logs, errors or URLs.
 
 ##### Technical approach
 
@@ -693,27 +693,27 @@ _Provisional until ADRs 0014–0021 (T1) are accepted._ `AuthPort` + `AccountSto
 
 ##### Files to Modify
 
-| File                                                                   | Change | Description                                                                                                                              |
-| ---------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src/domain/account.ts`                                       | Add    | `Account` (id, login, avatarUrl, tokenType, expiresAt, rememberMe) with branded `AccountId` via `toAccountId()`                          |
-| `apps/web/src/application/auth.ts`                                     | Add    | `AuthPort` (`signIn`, `refresh`, `signOut`, `currentToken(accountId)`), `AuthError` union                                                |
-| `apps/web/src/application/accounts.ts`                                 | Add    | `AccountStore` port (list, get, upsert by user id, remove, active id)                                                                    |
-| `apps/web/src/application/auth-provider.tsx`                           | Add    | Context + `useAuth()`, `useAccounts()`                                                                                                   |
-| `apps/web/src/infrastructure/auth/pat-auth.ts`                         | Add    | `GET https://api.github.com/user`; reads `X-OAuth-Scopes`, `github-authentication-token-expiration`; `github_pat_` prefix → fine-grained |
-| `apps/web/src/infrastructure/auth/permission-probe.ts`                 | Add    | One GraphQL query exercising PRs, checks and org membership read; maps failures to missing-permission list                               |
-| `apps/web/src/infrastructure/auth/token-storage.ts`                    | Add    | `sessionStorage` (default) / `localStorage` (remember me) per account                                                                    |
-| `apps/web/src/infrastructure/local-account-store.ts`                   | Add    | Non-secret account data in `localStorage`                                                                                                |
-| `apps/web/src/features/auth/SignInPage.tsx`                            | Add    | Paste-token form (labelled input, `type="password"`), errors, warnings                                                                   |
-| `apps/web/src/ui/auth/TokenWarnings.tsx`                               | Add    | Write-scope and expiry warnings                                                                                                          |
-| `apps/web/tests/fakes/in-memory-auth.ts`, `in-memory-account-store.ts` | Add    | Fakes                                                                                                                                    |
-| `apps/web/tests/fixtures/github/user-*.json`                           | Add    | Recorded `/user` responses with headers                                                                                                  |
+| File                                                                   | Change | Description                                                                                                  |
+| ---------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| `apps/web/src/domain/account.ts`                                       | Add    | `Account` (id, login, avatarUrl, tokenType, scopes, rememberMe) with branded `AccountId` via `toAccountId()` |
+| `apps/web/src/application/auth.ts`                                     | Add    | `AuthPort` (`signIn`, `refresh`, `signOut`, `currentToken(accountId)`), `AuthError` union                    |
+| `apps/web/src/application/accounts.ts`                                 | Add    | `AccountStore` port (list, get, upsert by user id, remove, active id)                                        |
+| `apps/web/src/application/auth-provider.tsx`                           | Add    | Context + `useAuth()`, `useAccounts()`                                                                       |
+| `apps/web/src/infrastructure/auth/pat-auth.ts`                         | Add    | `GET https://api.github.com/user`; reads `X-OAuth-Scopes`; `github_pat_` prefix → fine-grained               |
+| `apps/web/src/infrastructure/auth/permission-probe.ts`                 | Add    | One GraphQL query exercising PRs, checks and org membership read; maps failures to missing-permission list   |
+| `apps/web/src/infrastructure/auth/token-storage.ts`                    | Add    | `sessionStorage` (default) / `localStorage` (remember me) per account                                        |
+| `apps/web/src/infrastructure/local-account-store.ts`                   | Add    | Non-secret account data in `localStorage`                                                                    |
+| `apps/web/src/features/auth/SignInPage.tsx`                            | Add    | Paste-token form (labelled input, `type="password"`), errors, warnings                                       |
+| `apps/web/src/ui/auth/TokenWarnings.tsx`                               | Add    | Write-scope warning                                                                                          |
+| `apps/web/tests/fakes/in-memory-auth.ts`, `in-memory-account-store.ts` | Add    | Fakes                                                                                                        |
+| `apps/web/tests/fixtures/github/user-*.json`                           | Add    | Recorded `/user` responses with headers                                                                      |
 
 ##### Implementation Approach
 
 1. Port/error shape: follow the deleted `application/ports.ts` (commit `590de8f`, lines 1-35) — interface + transport-agnostic error class.
 2. Response handling: follow the deleted `http-task-api.ts` (lines 37-79) — non-2xx → typed error; parse body with Zod.
 3. Token redaction: a `redact()` helper used by every error constructor; never include headers or tokens in messages.
-4. Warnings: classic + `repo` scope → persistent write warning; fine-grained expiry ≤ 7 days → expiry warning; expired → treated as 401.
+4. Warnings: classic + `repo` scope → persistent write warning. An expired token is a 401 (FR-2.4 dropped).
 5. Adapter tests use MSW in Node as the deleted `http-task-api.test.ts` did; component tests use in-memory fakes (no `vi.mock`).
 
 ##### Backwards Compatibility
@@ -723,12 +723,12 @@ _Provisional until ADRs 0014–0021 (T1) are accepted._ `AuthPort` + `AccountSto
 
 ##### Test Requirements
 
-| Type          | Scenario                                                                                                | Location                                                   |
-| ------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Adapter (MSW) | Valid fine-grained PAT → one `GET /user`, account stored (AC-2.1)                                       | `apps/web/src/infrastructure/auth/pat-auth.test.ts` (new)  |
-| Adapter (MSW) | 401 → error, nothing stored                                                                             | same                                                       |
-| Component     | Classic `repo` token shows write warning; fine-grained expiring in 5 days shows expiry warning (AC-2.2) | `apps/web/tests/component/SignIn.test.tsx` (new)           |
-| Unit          | No token string appears in console output or thrown error messages across the suite (AC-2.7, partial)   | `apps/web/src/infrastructure/auth/redaction.test.ts` (new) |
+| Type          | Scenario                                                                                              | Location                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Adapter (MSW) | Valid fine-grained PAT → one `GET /user`, account stored (AC-2.1)                                     | `apps/web/src/infrastructure/auth/pat-auth.test.ts` (new)  |
+| Adapter (MSW) | 401 → error, nothing stored                                                                           | same                                                       |
+| Component     | Classic `repo` token shows write warning (AC-2.2)                                                     | `apps/web/tests/component/SignIn.test.tsx` (new)           |
+| Unit          | No token string appears in console output or thrown error messages across the suite (AC-2.7, partial) | `apps/web/src/infrastructure/auth/redaction.test.ts` (new) |
 
 ##### Context
 

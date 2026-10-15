@@ -15,6 +15,11 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: true,
   },
+  // Pre-bundle these up front. Otherwise Vite discovers them mid-run on a cold cache (CI)
+  // and reloads the browser, which kills whichever component test is loading.
+  optimizeDeps: {
+    include: ["@tanstack/react-router", "react-dom/client"],
+  },
   test: {
     projects: [
       {

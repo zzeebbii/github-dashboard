@@ -19,7 +19,8 @@ and GitHub's token endpoint does not allow cross-origin calls.
 `infrastructure/auth/`.
 
 - **PAT first.** A pasted token is accepted only after one `GET /user` returns 200.
-  Classic vs fine-grained, scopes and expiry come from that response's headers.
+  Classic vs fine-grained and scopes come from that response's headers; expiry is not
+  readable from the browser (CORS).
 - **GitHub App behind placeholder config.** `VITE_GITHUB_APP_CLIENT_ID` and
   `VITE_GITHUB_APP_EXCHANGE_URL` are empty by default; the sign-in button is then
   disabled with an explanation. When both are set, the web flow uses `state` (single
