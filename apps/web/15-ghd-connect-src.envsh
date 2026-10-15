@@ -1,0 +1,31 @@
+#!/bin/sh
+# Sourced by the nginx image's entrypoint before it renders /etc/nginx/templates.
+# Exports GHD_EXTRA_CONNECT_SRC: " https://host[:port]" (the origin of
+# VITE_GITHUB_APP_EXCHANGE_URL) or empty. The value lands in a response header,
+# so it is untrusted: anything that is not a plain https origin is ignored and
+# the CSP keeps its default connect-src.
+
+GHD_EXTRA_CONNECT_SRC=""
+ghd_url="${VITE_GITHUB_APP_EXCHANGE_URL:-}"
+
+if [ -n "$ghd_url" ]; then
+  ghd_hostport="${ghd_url#https://}"
+  ghd_hostport="${ghd_hostport%%[/?#]*}"
+  ghd_host="${ghd_hostport%%:*}"
+  ghd_port="${ghd_hostport#"$ghd_host"}"
+  ghd_port="${ghd_port#:}"
+  ghd_ok=1
+  case "$ghd_url" in https://*) ;; *) ghd_ok=0 ;; esac
+  case "$ghd_host" in "" | [.-]* | *[!A-Za-z0-9.-]*) ghd_ok=0 ;; esac
+  case "$ghd_hostport" in *:) ghd_ok=0 ;; esac
+  case "$ghd_port" in *[!0-9]*) ghd_ok=0 ;; esac
+  if [ "$ghd_ok" = 1 ]; then
+    GHD_EXTRA_CONNECT_SRC=" https://$ghd_hostport"
+  else
+    echo "15-ghd-connect-src: ignoring VITE_GITHUB_APP_EXCHANGE_URL, not an https://host[:port] URL" >&2
+  fi
+  unset ghd_hostport ghd_host ghd_port ghd_ok
+fi
+unset ghd_url
+
+export GHD_EXTRA_CONNECT_SRC
