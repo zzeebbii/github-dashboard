@@ -2,8 +2,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
 // Imported for its side effect: validates the build environment before render.
 import "./config/env.ts";
+// Importing the adapter creates the single Trusted Types policy, before anything renders.
+import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
 import { router } from "./routes/router.tsx";
 import "./styles.css";
 
@@ -32,7 +35,9 @@ if (rootElement === null) {
 createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <HtmlSanitizerContext value={sanitizeHtml}>
+        <RouterProvider router={router} />
+      </HtmlSanitizerContext>
     </QueryClientProvider>
   </StrictMode>,
 );
