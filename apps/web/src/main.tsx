@@ -1,12 +1,15 @@
+// Must stay the first import: it validates the build environment and switches Zod to
+// jitless mode before any other module builds a schema (the CSP forbids `new Function`).
+import "./config/env.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
-// Imported for its side effect: validates the build environment before render.
-import "./config/env.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
+import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
+import { createIndexedDbCache } from "./infrastructure/cache/indexeddb-cache.ts";
 import { router } from "./routes/router.tsx";
 import "./styles.css";
 
@@ -26,6 +29,12 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Cache-first (ADR-0017): restore cached query data before the first render, but never
+// wait more than 300 ms for it; then save every successful fetch.
+const cache = createIndexedDbCache({ clock: { now: () => new Date() } });
+await hydrateQueries(queryClient, cache, { timeoutMs: 300 });
+persistQueries(queryClient, cache);
 
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
