@@ -30,12 +30,12 @@ test("an SSO organisation shows the reason and a Fix access link; the rest still
   // GitHub did not say which organisation the app is missing from.
   await expect.element(notice.getByText("An organization")).toBeVisible();
   await expect.element(notice.getByText("The GitHub App is not installed here")).toBeVisible();
-  await expect.element(screen.getByRole("link", { name: "billing" })).toBeVisible();
+  await expect.element(screen.getByRole("link", { name: "acme/billing" })).toBeVisible();
 
   await expectNoAxeViolations(screen.getByRole("complementary").element());
 });
 
-test("the whole section, with notices, favourites and a closed group, passes axe in both themes", async () => {
+test("the whole section, with notices, favourites and the flat list, passes axe in both themes", async () => {
   const { screen } = await renderSidebar({
     repositories: REPOS,
     favourites: [favourite("acme/app"), favourite("acme/gone")],
@@ -49,10 +49,7 @@ test("the whole section, with notices, favourites and a closed group, passes axe
   await expectNoAxeViolations(sidebar.element());
 
   await sidebar.getByRole("searchbox").fill("");
-  await sidebar.getByRole("button", { name: "octo 1 repository" }).click();
-  await expect
-    .element(sidebar.getByRole("button", { name: "octo 1 repository" }))
-    .toHaveAttribute("aria-expanded", "false");
+  await expect.element(sidebar.getByRole("link", { name: "octo/tools" })).toBeVisible();
   await expectNoAxeViolations(sidebar.element());
 });
 
@@ -71,13 +68,17 @@ test("below 768 px the section works in the drawer, and following a repository c
 
   await drawer.getByRole("searchbox", { name: "Search repositories" }).fill("tool");
   await expect.element(drawer.getByText("1 match")).toBeVisible();
-  await expect.element(drawer.getByRole("link", { name: "billing" })).not.toBeInTheDocument();
-  // Collapsing a group is a button, not a link: the drawer stays open.
-  await drawer.getByRole("button", { name: "octo 1 repository" }).click();
+  await expect.element(drawer.getByRole("link", { name: "acme/billing" })).not.toBeInTheDocument();
+  // Starring is a button, not a link: the drawer stays open.
+  const repositories = drawer.getByRole("region", { name: "Repositories" });
+  const star = repositories.getByRole("button", { name: "Favorite octo/tools" });
+  await star.click();
+  await expect.element(star).toHaveAttribute("aria-pressed", "true");
   await expect.element(drawer).toBeVisible();
-  await drawer.getByRole("button", { name: "octo 1 repository" }).click();
+  await star.click();
+  await expect.element(star).toHaveAttribute("aria-pressed", "false");
 
-  await drawer.getByRole("link", { name: "tools" }).click();
+  await repositories.getByRole("link", { name: "octo/tools" }).click();
 
   await expect.element(drawer).not.toBeInTheDocument();
   expect(router.state.location.pathname).toBe("/repo/octo/tools");

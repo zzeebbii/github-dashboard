@@ -42,8 +42,8 @@ describe("plurals follow Intl.PluralRules on the n param", () => {
   });
 
   test("formats the number for the language", () => {
-    expect(translate("fi", fi, "sb_repoCount", { n: 1234 }).replace(/ /gu, " ")).toBe(
-      "1 234 repositoriota",
+    expect(translate("fi", fi, "sb_openPrs", { n: 1234 }).replace(/ /gu, " ")).toBe(
+      "1 234 avointa pull requestia",
     );
   });
 

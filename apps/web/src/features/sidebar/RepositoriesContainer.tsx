@@ -6,7 +6,7 @@ import { useFavourites } from "../../application/repos/use-favourites.ts";
 import { useRepos } from "../../application/repos/use-repos.ts";
 import type { AccountId } from "../../domain/account.ts";
 import { type Repository, batchesOf } from "../../domain/favourites.ts";
-import { groupByOwner, parseRepoSearch } from "../../domain/repo-search.ts";
+import { parseRepoSearch, sortByName } from "../../domain/repo-search.ts";
 import { OrgAccessNotice } from "../../ui/sidebar/OrgAccessNotice.tsx";
 import {
   type FavouriteRow,
@@ -70,7 +70,7 @@ function Repositories({ accountId }: { readonly accountId: AccountId }) {
       <RepositoriesSection
         t={t}
         status={list.isPending ? "loading" : list.isError ? "error" : "ready"}
-        groups={groupByOwner(matching)}
+        repositories={sortByName(matching)}
         isFavourite={favourites.isFavourite}
         onToggleFavourite={toggle}
         onRefresh={repos.refresh}

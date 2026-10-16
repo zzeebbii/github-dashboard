@@ -8,7 +8,7 @@ import { createInMemoryAccountStore } from "./fakes/in-memory-account-store.ts";
 import { createInMemoryGitHub } from "./fakes/in-memory-github.ts";
 import { renderApp } from "./render.tsx";
 
-/** The real stylesheet: hidden groups, the drawer breakpoint and contrast depend on it. */
+/** The real stylesheet: the drawer breakpoint and contrast depend on it. */
 export function loadRealStyles(): void {
   beforeAll(() => {
     const sheet = document.createElement("style");

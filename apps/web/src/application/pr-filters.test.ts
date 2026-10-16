@@ -54,7 +54,7 @@ describe("toPrFilterSearch", () => {
       label: ["a", "b"],
       updated: "7d",
       drafts: false,
-      sort: "updated",
+      sort: "waiting",
     });
     expect(parsePrFilters(toPrFilterSearch(all))).toEqual(all);
   });

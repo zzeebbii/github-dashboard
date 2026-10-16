@@ -67,22 +67,24 @@ test("more than 50 favourites show the refresh cost notice (FR-4.8)", async () =
     .toBeVisible();
 });
 
-test("owner groups collapse and expand with a real disclosure button (FR-4.2)", async () => {
-  const { screen } = await renderSidebar({ repositories: REPOS });
+test("repositories are one flat list of owner/name links, A–Z ignoring case (FR-4.2)", async () => {
+  const { screen } = await renderSidebar({
+    repositories: ["octo/tools", "acme/billing", "Beta/app"],
+  });
   const repositories = screen.getByRole("region", { name: "Repositories" });
-  const acme = repositories.getByRole("button", { name: "acme 2 repositories" });
-  await expect.element(acme).toHaveAttribute("aria-expanded", "true");
-  await expect.element(repositories.getByRole("link", { name: "billing" })).toBeVisible();
+  await expect.element(repositories.getByRole("link", { name: "octo/tools" })).toBeVisible();
 
-  await acme.click();
-
-  await expect.element(acme).toHaveAttribute("aria-expanded", "false");
-  await expect.element(repositories.getByRole("link", { name: "billing" })).not.toBeInTheDocument();
-  await expect.element(repositories.getByRole("link", { name: "tools" })).toBeVisible();
+  const links = repositories.getByRole("link").elements();
+  expect(links.map((link) => link.textContent)).toEqual(["acme/billing", "Beta/app", "octo/tools"]);
+  expect(links.map((link) => link.getAttribute("href"))).toEqual([
+    "/repo/acme/billing",
+    "/repo/Beta/app",
+    "/repo/octo/tools",
+  ]);
+  // Flat: no owner headings or disclosure buttons, every row is in one list.
+  expect(repositories.element().querySelectorAll("[aria-expanded], h3")).toHaveLength(0);
+  expect(repositories.getByRole("list").elements()).toHaveLength(1);
   await expectNoAxeViolations(screen.getByRole("complementary").element());
-
-  await acme.click();
-  await expect.element(repositories.getByRole("link", { name: "billing" })).toBeVisible();
 });
 
 test("a repository link navigates within the app to /repo/$owner/$name", async () => {
@@ -91,7 +93,7 @@ test("a repository link navigates within the app to /repo/$owner/$name", async (
   const before = window.history.length;
   Object.assign(window, { [marker]: true });
 
-  await screen.getByRole("complementary").getByRole("link", { name: "billing" }).click();
+  await screen.getByRole("complementary").getByRole("link", { name: "acme/billing" }).click();
 
   await expect
     .element(screen.getByRole("heading", { level: 1, name: "acme / billing" }))
@@ -101,13 +103,13 @@ test("a repository link navigates within the app to /repo/$owner/$name", async (
   expect(marker in window).toBe(true);
   expect(window.history.length).toBe(before);
   await expect
-    .element(screen.getByRole("complementary").getByRole("link", { name: "billing" }))
+    .element(screen.getByRole("complementary").getByRole("link", { name: "acme/billing" }))
     .toHaveAttribute("aria-current", "page");
 });
 
 test("refresh repositories asks GitHub again, the only way within 24 hours (AC-4.1)", async () => {
   const { screen, calls } = await renderSidebar({ repositories: REPOS });
-  await expect.element(screen.getByRole("link", { name: "billing" })).toBeVisible();
+  await expect.element(screen.getByRole("link", { name: "acme/billing" })).toBeVisible();
   expect(calls.listRepos).toBe(1);
 
   await screen.getByRole("button", { name: "Refresh repositories" }).click();

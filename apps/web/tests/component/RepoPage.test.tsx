@@ -137,6 +137,42 @@ test("tabs count open, draft and unreviewed PRs and list them (AC-4.5)", async (
   expect(calls).toEqual([null]);
 });
 
+test("rows come out most recently updated first by default", async () => {
+  const { screen } = await renderRepo({
+    listRepoPullRequests: () =>
+      Promise.resolve({
+        ok: true,
+        value: {
+          data: pageOf([
+            aPullRequest({
+              id: "o",
+              number: 1,
+              title: "Oldest",
+              updatedAt: "2026-09-20T00:00:00Z",
+            }),
+            aPullRequest({
+              id: "n",
+              number: 2,
+              title: "Newest",
+              updatedAt: "2026-09-28T00:00:00Z",
+            }),
+            aPullRequest({
+              id: "m",
+              number: 3,
+              title: "Middle",
+              updatedAt: "2026-09-24T00:00:00Z",
+            }),
+          ]),
+          partialErrors: [],
+        },
+      }),
+  });
+  await expect.element(screen.getByRole("link", { name: /Oldest/ })).toBeVisible();
+
+  const titles = [...document.querySelectorAll("a.pr-title")].map((a) => a.textContent);
+  expect(titles).toEqual(["Newest", "Middle", "Oldest"]);
+});
+
 test("arrow keys, Home and End move between tabs; the tab is in the URL and survives a reload", async () => {
   const { screen, router } = await renderRepo();
   await expect.element(tab(screen, /^Open/)).toBeVisible();
