@@ -2364,6 +2364,8 @@ a.repo-link:hover,
 
 .palette-trigger:hover {
   background: var(--accent);
+  /* --muted-foreground on --accent is 4.4:1 in the light theme; text needs 4.5:1. */
+  color: var(--foreground);
 }
 
 .palette-trigger > svg {

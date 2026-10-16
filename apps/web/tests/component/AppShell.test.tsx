@@ -132,3 +132,12 @@ test("breadcrumbs mark the current page", async () => {
   await expect.element(crumbs.getByText("#7")).toHaveAttribute("aria-current", "page");
   await expectNoAxeViolations(screen.container);
 });
+
+// CI's pointer can rest on a header button, so axe must also pass in its hover state.
+test("the header search button keeps its contrast while hovered", async () => {
+  const { screen } = await renderShell(1280);
+  const trigger = screen.getByRole("button", { name: /search/i });
+  await userEvent.hover(trigger);
+
+  await expectNoAxeViolations(document.body);
+});
