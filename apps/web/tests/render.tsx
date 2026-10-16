@@ -16,6 +16,7 @@ import { PreferredI18nProvider } from "../src/application/i18n.tsx";
 import type { PreferencesStore } from "../src/application/preferences.ts";
 import { PreferencesProvider } from "../src/application/preferences-provider.tsx";
 import { RefreshProvider } from "../src/application/refresh-provider.tsx";
+import { createSeenMarkers, SeenContext, type SeenMarkers } from "../src/application/seen.ts";
 import {
   createQueryRefresher,
   createRefreshScheduler,
@@ -50,6 +51,8 @@ interface ProviderOptions {
   github?: GitHubReadPort;
   /** Defaults to one on fake time and signals, never started: it refreshes only on demand. */
   scheduler?: RefreshScheduler;
+  /** Defaults to markers in a fresh in-memory cache. */
+  seen?: SeenMarkers;
 }
 
 export async function renderWithProviders(
@@ -60,6 +63,7 @@ export async function renderWithProviders(
     prefersDark = createFakeColorSchemeQuery(),
     github = createInMemoryGitHub(),
     scheduler = testScheduler(queryClient),
+    seen = createSeenMarkers(inMemoryCache({ now: () => new Date() })),
   }: ProviderOptions = {},
 ) {
   // `render` is async in vitest-browser-react v2.
@@ -71,7 +75,9 @@ export async function renderWithProviders(
             {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
             <HtmlSanitizerContext value={sanitizeHtml}>
               <GitHubProvider github={github}>
-                <RefreshProvider scheduler={scheduler}>{ui}</RefreshProvider>
+                <SeenContext value={seen}>
+                  <RefreshProvider scheduler={scheduler}>{ui}</RefreshProvider>
+                </SeenContext>
               </GitHubProvider>
             </HtmlSanitizerContext>
           </QueryClientProvider>

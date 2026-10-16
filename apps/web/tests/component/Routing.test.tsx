@@ -5,13 +5,13 @@ const heading = (name: string) => ({ level: 1, name }) as const;
 
 test("/repo/a/b then Back returns to / (AC-1.6)", async () => {
   const { screen, router } = await renderApp("/");
-  await expect.element(screen.getByRole("heading", heading("GitHub Dashboard"))).toBeVisible();
+  await expect.element(screen.getByRole("heading", heading("Pull requests"))).toBeVisible();
 
   await router.navigate({ to: "/repo/$owner/$name", params: { owner: "a", name: "b" } });
   await expect.element(screen.getByRole("heading", heading("a / b"))).toBeVisible();
 
   router.history.back();
-  await expect.element(screen.getByRole("heading", heading("GitHub Dashboard"))).toBeVisible();
+  await expect.element(screen.getByRole("heading", heading("Pull requests"))).toBeVisible();
   expect(router.state.location.pathname).toBe("/");
 });
 

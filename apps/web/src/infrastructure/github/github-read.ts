@@ -1,6 +1,7 @@
 import type { GitHubReadPort } from "../../application/github.ts";
 import type { GitHubClient } from "./client.ts";
 import { createFavouritesRead } from "./favourites.ts";
+import { createHomeRead } from "./home.ts";
 import { createPullRequestDetailRead } from "./pr-detail.ts";
 import { ViewerDocument } from "./queries/viewer.graphql.ts";
 import { createRepositoryRead } from "./repos.ts";
@@ -11,6 +12,7 @@ export function createGitHubRead(client: GitHubClient): GitHubReadPort {
     ...createPullRequestDetailRead(client),
     ...createRepositoryRead(client),
     ...createFavouritesRead(client),
+    ...createHomeRead(client),
     async viewer(account) {
       const result = await client.graphql(account.id, ViewerDocument, { login: account.login });
       if (!result.ok) return result;

@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { parseOwner, parsePullNumber, parseRepoName } from "../domain/github-names.ts";
 import { useT } from "../application/i18n.tsx";
+import { parsePrFilters, toPrFilterSearch } from "../application/pr-filters.ts";
 import { GitHubAppCallback } from "../features/auth/GitHubAppCallback.tsx";
 import { SignInPage } from "../features/auth/SignInPage.tsx";
 import { HomePage } from "../features/home/HomePage.tsx";
@@ -78,6 +79,9 @@ const appRoute = createRoute({
 const homeRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/",
+  // The filter bar's state (FR-5.7); a bad param falls back to its default, never throws.
+  // Only non-default fields come out, so a link to Home needs no `search`.
+  validateSearch: (search: Record<string, unknown>) => toPrFilterSearch(parsePrFilters(search)),
   component: HomePage,
 });
 

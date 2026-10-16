@@ -254,4 +254,9 @@ export const fi: Record<MessageKey, string> = {
   fr_quotaUnknown: "Pyyntöjä ei ole vielä tehty.",
   fr_quotaNote:
     "Rajat ovat tilikohtaisia. Automaattinen päivitys hidastuu alle 20 %:ssa ja pysähtyy alle 5 %:ssa nollaukseen asti.",
+  // T20 home
+  hm_loading: "Ladataan pull requesteja…",
+  hm_error: "GitHub ei palauttanut pull requestejasi. Yritä päivittää.",
+  hm_truncated: "Haku löysi yli 1 000 pull requestia; vain ensimmäiset 1 000 näytetään.",
+  pr_mergeChecking: "Tarkistetaan yhdistämiskonflikteja",
 };

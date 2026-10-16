@@ -6,6 +6,7 @@ import type {
   PullRequestRef,
   TimelinePage,
 } from "../domain/pr-detail.ts";
+import type { ActivityItem, PullRequest } from "../domain/pull-request.ts";
 import type { Result } from "../domain/result.ts";
 
 /**
@@ -48,6 +49,47 @@ export interface GitHubReadPort {
     accountId: AccountId,
     nodeIds: readonly string[],
   ): Promise<GitHubResult<readonly FavouriteLookup[]>>;
+  /**
+   * One page of 20 of a Home search (FR-5.4) across every repository the token reaches.
+   * `viewerLogin` picks the viewer's review requests out of the timeline (FR-5.2).
+   * 1 GraphQL request.
+   */
+  searchHome(
+    accountId: AccountId,
+    viewerLogin: string,
+    search: HomeSearch,
+    after: string | null,
+  ): Promise<GitHubResult<PullRequestPage>>;
+  /**
+   * Comments and reviews since each PR's seen marker, for the exact "+N new" (FR-5.3).
+   * At most 10 PRs; one entry per request, in order, null when the PR is gone.
+   * 1 GraphQL request.
+   */
+  getActivitySince(
+    accountId: AccountId,
+    requests: readonly ActivitySinceRequest[],
+  ): Promise<GitHubResult<readonly (readonly ActivityItem[] | null)[]>>;
+}
+
+/** Home's three searches: review requested, authored, reviewed by me (re-review candidates). */
+export const HOME_SEARCHES = ["review-requested", "authored", "reviewed-by"] as const;
+export type HomeSearch = (typeof HOME_SEARCHES)[number];
+
+/** A page of PR rows from a list query. */
+export interface PullRequestPage {
+  readonly pullRequests: readonly PullRequest[];
+  /** The next page's cursor; null on the last page. */
+  readonly nextCursor: string | null;
+  /** Every match GitHub counted. A search returns at most 1,000 of them. */
+  readonly totalCount: number;
+}
+
+export interface ActivitySinceRequest {
+  /** `owner/name`. */
+  readonly repository: string;
+  readonly number: number;
+  /** The seen marker (ISO 8601). */
+  readonly since: string;
 }
 
 export interface Viewer {

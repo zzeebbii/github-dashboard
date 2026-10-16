@@ -24,6 +24,17 @@ export function newActivityCount(
 }
 
 /**
+ * Whether "+N new" needs the exact count: a marker exists and the PR's known activity has
+ * something newer than it. A list row knows only its last comment or review, so false here
+ * means the count is 0 without asking GitHub (docs/architecture/github-query-costs.md).
+ */
+export function hasActivitySince(pr: PullRequest, seenAt: string | null): boolean {
+  if (seenAt === null) return false;
+  const seen = toMillis(seenAt);
+  return pr.activity.some((item) => item.kind !== "commit" && toMillis(item.createdAt) > seen);
+}
+
+/**
  * Stale: no human comment, review or commit for 14 days or more. Bot activity is
  * ignored; the PR's creation counts as the starting point.
  */

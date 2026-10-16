@@ -1,7 +1,7 @@
 import { isAuthoredBy, type PullRequest, sameLogin, type Viewer } from "./pull-request.ts";
 import { isRereviewDue } from "./rereview.ts";
 
-type Section = "needs-review" | "needs-action" | "waiting";
+export type Section = "needs-review" | "needs-action" | "waiting";
 
 /** The reason chip. `team` carries the `org/slug` for "Team: @x". */
 type Reason =
@@ -47,6 +47,21 @@ function ownReadyPr(pr: PullRequest, viewer: Viewer): boolean {
   return isAuthoredBy(pr, viewer.login) && !pr.isDraft;
 }
 
+/**
+ * Rule 5. The pitch says `mergeStateStatus = CLEAN`, but no list query may select it (too
+ * slow, see docs/architecture/github-query-costs.md), so "clean" is read from the fields
+ * the row has: no conflicts, checks passed (or none), and no review still required. Rule 2
+ * already took CHANGES_REQUESTED. What this cannot see is a branch-protection rule beyond
+ * reviews and checks (e.g. "up to date with base"); GitHub still enforces it on merge.
+ */
+function readyToMerge(pr: PullRequest, viewer: Viewer): Reason | null {
+  const clean =
+    pr.mergeable === "MERGEABLE" &&
+    (pr.checkState === "SUCCESS" || pr.checkState === null) &&
+    pr.reviewDecision !== "REVIEW_REQUIRED";
+  return ownReadyPr(pr, viewer) && clean ? { kind: "ready-to-merge" } : null;
+}
+
 function waitingReason(pr: PullRequest): Reason {
   if (pr.isDraft) return { kind: "draft" };
   if (pr.checkState === "PENDING" || pr.checkState === "EXPECTED") return { kind: "ci-running" };
@@ -75,11 +90,7 @@ const RULES: readonly Rule[] = [
     when: (pr, viewer) =>
       ownReadyPr(pr, viewer) && pr.mergeable === "CONFLICTING" ? { kind: "merge-conflicts" } : null,
   },
-  {
-    section: "needs-action",
-    when: (pr, viewer) =>
-      ownReadyPr(pr, viewer) && pr.mergeStateStatus === "CLEAN" ? { kind: "ready-to-merge" } : null,
-  },
+  { section: "needs-action", when: readyToMerge },
   {
     section: "waiting",
     when: (pr, viewer) => (isAuthoredBy(pr, viewer.login) ? waitingReason(pr) : null),

@@ -4,8 +4,8 @@ const notFound = () => Promise.resolve({ ok: false, error: { kind: "notFound" } 
 
 /**
  * A `GitHubReadPort` with no network: answers `viewer` with the given result, the PR
- * detail calls with `notFound`, no repositories and no favourites, unless `overrides`
- * answers them.
+ * detail calls with `notFound`, no repositories, no favourites and empty Home searches,
+ * unless `overrides` answers them.
  */
 export function createInMemoryGitHub(
   viewer: GitHubResult<Viewer> = {
@@ -28,6 +28,13 @@ export function createInMemoryGitHub(
         ok: true,
         value: { data: nodeIds.map((nodeId) => ({ kind: "missing", nodeId })), partialErrors: [] },
       }),
+    searchHome: () =>
+      Promise.resolve({
+        ok: true,
+        value: { data: { pullRequests: [], nextCursor: null, totalCount: 0 }, partialErrors: [] },
+      }),
+    getActivitySince: (_accountId, requests) =>
+      Promise.resolve({ ok: true, value: { data: requests.map(() => []), partialErrors: [] } }),
     ...overrides,
   };
 }

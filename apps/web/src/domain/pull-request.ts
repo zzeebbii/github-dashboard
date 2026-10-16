@@ -22,16 +22,12 @@ export interface Viewer {
 type ReviewDecision = "APPROVED" | "CHANGES_REQUESTED" | "REVIEW_REQUIRED";
 /** Head commit status check rollup. */
 type CheckState = "SUCCESS" | "FAILURE" | "ERROR" | "PENDING" | "EXPECTED";
+/**
+ * `UNKNOWN` while GitHub is still computing it: shown as "checking" until a refresh fills it.
+ * There is no `mergeStateStatus`: it is too slow to select in a list (≈ 0.3 s per PR,
+ * docs/architecture/github-query-costs.md).
+ */
 export type Mergeable = "MERGEABLE" | "CONFLICTING" | "UNKNOWN";
-type MergeStateStatus =
-  | "BEHIND"
-  | "BLOCKED"
-  | "CLEAN"
-  | "DIRTY"
-  | "DRAFT"
-  | "HAS_HOOKS"
-  | "UNKNOWN"
-  | "UNSTABLE";
 
 export type ReviewState = "APPROVED" | "CHANGES_REQUESTED" | "COMMENTED" | "DISMISSED";
 
@@ -73,7 +69,6 @@ export interface PullRequest {
   readonly reviewDecision: ReviewDecision | null;
   readonly checkState: CheckState | null;
   readonly mergeable: Mergeable;
-  readonly mergeStateStatus: MergeStateStatus;
   readonly reviewRequests: readonly ReviewRequest[];
   readonly reviews: readonly Review[];
   /** Date of the head commit (`commits(last:1)`); the "last push". */

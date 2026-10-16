@@ -1256,3 +1256,100 @@ kbd {
     width: auto;
   }
 }
+
+/* T20 home: the title, the three collapsible sections and the notices, after the design. */
+.home-header {
+  margin-bottom: 20px;
+}
+
+.main-inner .home-header h1 {
+  margin: 0;
+}
+
+.home-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+.home-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.home-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.home-section-heading {
+  margin: 0;
+  font-size: inherit;
+}
+
+.home-section-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 0;
+  background: var(--subtle);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-section-toggle svg {
+  color: var(--muted-foreground);
+}
+
+.home-section-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-section-count {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.home-section-hint {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.home-section-empty {
+  margin: 0;
+  padding: 28px 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.home-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.home-notice svg {
+  flex-shrink: 0;
+  color: var(--amber);
+}

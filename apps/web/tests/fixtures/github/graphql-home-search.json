@@ -1,0 +1,1231 @@
+{
+  "_note": "Recorded 2026-10-16: queries/home.graphql.ts (reviewed-by document: row fragment plus commits(last:1) and the latest REVIEW_REQUESTED_EVENT) for `is:pr is:open org:vitejs`, first: 20 (measured cost 1). Node ids, logins (bots too; their __typename is kept), repository names, titles and labels replaced with fixture values.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4991",
+    "x-ratelimit-reset": "1792143799",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "9"
+  },
+  "body": {
+    "data": {
+      "search": {
+        "issueCount": 591,
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOjIw"
+        },
+        "nodes": [
+          {
+            "id": "PR_fixture_1",
+            "number": 23786,
+            "title": "Fixture change 1",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23786",
+            "isDraft": false,
+            "createdAt": "2026-10-16T06:54:05Z",
+            "updatedAt": "2026-10-16T06:57:26Z",
+            "headRefOid": "d7717d71600552e7fa513623486c2b57bf7eff8c",
+            "additions": 1,
+            "deletions": 1,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-1"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "label-1"
+                }
+              ]
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-16T06:49:26Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_2",
+            "number": 1853,
+            "title": "Fixture change 2",
+            "url": "https://github.com/octo-owner-1/repo-2/pull/1853",
+            "isDraft": false,
+            "createdAt": "2026-10-16T01:00:13Z",
+            "updatedAt": "2026-10-16T01:01:14Z",
+            "headRefOid": "1a8be7d1e0557147bb26e6cadae0d9700b6daf9b",
+            "additions": 27,
+            "deletions": 15,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-2"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-2"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": null,
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 1
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "IssueComment",
+                  "createdAt": "2026-10-16T01:00:19Z",
+                  "author": {
+                    "__typename": "Bot",
+                    "login": "octo-user-3"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-08T00:50:47Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_3",
+            "number": 1852,
+            "title": "Fixture change 3",
+            "url": "https://github.com/octo-owner-1/repo-2/pull/1852",
+            "isDraft": false,
+            "createdAt": "2026-10-16T00:59:34Z",
+            "updatedAt": "2026-10-16T01:00:35Z",
+            "headRefOid": "0404528e7d400a6a0c3bf0caba30aed731707185",
+            "additions": 2,
+            "deletions": 4,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-2"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-2"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": null,
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 1
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "IssueComment",
+                  "createdAt": "2026-10-16T00:59:41Z",
+                  "author": {
+                    "__typename": "Bot",
+                    "login": "octo-user-3"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-08T00:47:47Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_4",
+            "number": 23784,
+            "title": "Fixture change 4",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23784",
+            "isDraft": false,
+            "createdAt": "2026-10-16T00:36:36Z",
+            "updatedAt": "2026-10-16T00:36:36Z",
+            "headRefOid": "545ac5ca9decd09f001b4ef066c7eb4239c5c466",
+            "additions": 2,
+            "deletions": 0,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-1"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-16T00:34:48Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_5",
+            "number": 23780,
+            "title": "Fixture change 5",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23780",
+            "isDraft": false,
+            "createdAt": "2026-10-15T15:56:15Z",
+            "updatedAt": "2026-10-15T15:56:15Z",
+            "headRefOid": "48f2cb1f1c12fa1243299f8032557de39b739efd",
+            "additions": 43,
+            "deletions": 3,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-4"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "FAILURE"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-15T15:52:02Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_6",
+            "number": 1511,
+            "title": "Fixture change 6",
+            "url": "https://github.com/octo-owner-1/repo-3/pull/1511",
+            "isDraft": false,
+            "createdAt": "2026-10-15T14:37:54Z",
+            "updatedAt": "2026-10-15T15:42:20Z",
+            "headRefOid": "4ca5410600b1425476af0b341f1b5f21d2027e8d",
+            "additions": 462,
+            "deletions": 34,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-3"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-5"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": null,
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-15T14:56:19Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_7",
+            "number": 23776,
+            "title": "Fixture change 7",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23776",
+            "isDraft": false,
+            "createdAt": "2026-10-15T09:24:58Z",
+            "updatedAt": "2026-10-15T21:32:14Z",
+            "headRefOid": "e326286b75708f95b63efcc928a98fe040a563e0",
+            "additions": 42,
+            "deletions": 1,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-6"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-15T21:32:12Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_8",
+            "number": 23775,
+            "title": "Fixture change 8",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23775",
+            "isDraft": false,
+            "createdAt": "2026-10-15T07:51:37Z",
+            "updatedAt": "2026-10-15T07:51:37Z",
+            "headRefOid": "c87f9aa600f4b5ff0ecbd2d76a749e732c11870c",
+            "additions": 14,
+            "deletions": 10,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-7"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-15T07:39:07Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_9",
+            "number": 611,
+            "title": "Fixture change 9",
+            "url": "https://github.com/octo-owner-1/repo-4/pull/611",
+            "isDraft": false,
+            "createdAt": "2026-10-15T06:28:17Z",
+            "updatedAt": "2026-10-16T03:13:11Z",
+            "headRefOid": "3ff76213e5adc460a1388a6a7fd73214d298e0a8",
+            "additions": 1689,
+            "deletions": 84,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-4"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-8"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": null,
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 1
+            },
+            "reviews": {
+              "totalCount": 1
+            },
+            "latestReviews": {
+              "nodes": [
+                {
+                  "state": "COMMENTED",
+                  "submittedAt": "2026-10-15T06:28:23Z",
+                  "author": {
+                    "__typename": "Bot",
+                    "login": "octo-user-9"
+                  }
+                }
+              ]
+            },
+            "reviewRequests": {
+              "nodes": [
+                {
+                  "requestedReviewer": {
+                    "__typename": "User",
+                    "login": "octo-user-10"
+                  }
+                }
+              ]
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "IssueComment",
+                  "createdAt": "2026-10-15T06:33:08Z",
+                  "author": {
+                    "__typename": "Bot",
+                    "login": "octo-user-11"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-16T02:50:22Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": [
+                {
+                  "createdAt": "2026-10-16T03:13:11Z",
+                  "requestedReviewer": {
+                    "__typename": "User",
+                    "login": "octo-user-10"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "PR_fixture_10",
+            "number": 23774,
+            "title": "Fixture change 10",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23774",
+            "isDraft": false,
+            "createdAt": "2026-10-14T21:41:06Z",
+            "updatedAt": "2026-10-15T19:44:06Z",
+            "headRefOid": "f3bb1b77197d25ccf07e6477559b0d5dc312a70e",
+            "additions": 56,
+            "deletions": 20,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-12"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "FAILURE"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 1
+            },
+            "latestReviews": {
+              "nodes": [
+                {
+                  "state": "COMMENTED",
+                  "submittedAt": "2026-10-15T05:34:10Z",
+                  "author": {
+                    "__typename": "User",
+                    "login": "octo-user-13"
+                  }
+                }
+              ]
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "PullRequestReview",
+                  "createdAt": "2026-10-15T05:34:10Z",
+                  "author": {
+                    "__typename": "User",
+                    "login": "octo-user-13"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T21:36:58Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_11",
+            "number": 23773,
+            "title": "Fixture change 11",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23773",
+            "isDraft": false,
+            "createdAt": "2026-10-14T16:09:45Z",
+            "updatedAt": "2026-10-15T13:12:13Z",
+            "headRefOid": "71a4a04f590d00759d28a695a429a1deae3ff6c6",
+            "additions": 77,
+            "deletions": 2,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-14"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T15:47:15Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_12",
+            "number": 23772,
+            "title": "Fixture change 12",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23772",
+            "isDraft": false,
+            "createdAt": "2026-10-14T15:32:36Z",
+            "updatedAt": "2026-10-15T06:11:38Z",
+            "headRefOid": "1282d3ae6c2966b946a999c83efa28a720caa511",
+            "additions": 89,
+            "deletions": 0,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-15"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-15T06:11:28Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_13",
+            "number": 23771,
+            "title": "Fixture change 13",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23771",
+            "isDraft": false,
+            "createdAt": "2026-10-14T14:04:11Z",
+            "updatedAt": "2026-10-14T14:04:11Z",
+            "headRefOid": "c5c799370edc42b35f07274012e7b50780b027c9",
+            "additions": 2,
+            "deletions": 4,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-1"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T13:58:58Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_14",
+            "number": 23767,
+            "title": "Fixture change 14",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23767",
+            "isDraft": false,
+            "createdAt": "2026-10-14T12:03:40Z",
+            "updatedAt": "2026-10-16T05:11:57Z",
+            "headRefOid": "7e556119293f87d200156bc639a17ad4654e1560",
+            "additions": 209,
+            "deletions": 9,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-16"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-16T05:11:56Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_15",
+            "number": 23765,
+            "title": "Fixture change 15",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23765",
+            "isDraft": false,
+            "createdAt": "2026-10-14T10:34:08Z",
+            "updatedAt": "2026-10-14T10:34:08Z",
+            "headRefOid": "014c091a2ecc22644d3d453dc830954882bebc11",
+            "additions": 117,
+            "deletions": 20,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-17"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "label-1"
+                }
+              ]
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T10:31:47Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_16",
+            "number": 23764,
+            "title": "Fixture change 16",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23764",
+            "isDraft": false,
+            "createdAt": "2026-10-14T10:31:19Z",
+            "updatedAt": "2026-10-15T20:11:22Z",
+            "headRefOid": "94fb5450efcabee49d84e417e3f782369bc177b9",
+            "additions": 70,
+            "deletions": 59,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-18"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 4
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "IssueComment",
+                  "createdAt": "2026-10-15T20:11:21Z",
+                  "author": {
+                    "__typename": "User",
+                    "login": "octo-user-18"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T09:56:34Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_17",
+            "number": 23763,
+            "title": "Fixture change 17",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23763",
+            "isDraft": true,
+            "createdAt": "2026-10-14T09:50:55Z",
+            "updatedAt": "2026-10-14T09:54:17Z",
+            "headRefOid": "7b08e4364d9ebf6d9646461ddebed623a81aa39b",
+            "additions": 799,
+            "deletions": 66,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-17"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "label-1"
+                }
+              ]
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "FAILURE"
+            },
+            "comments": {
+              "totalCount": 1
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "IssueComment",
+                  "createdAt": "2026-10-14T09:54:17Z",
+                  "author": {
+                    "__typename": "Bot",
+                    "login": "octo-user-11"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T09:49:23Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_18",
+            "number": 1508,
+            "title": "Fixture change 18",
+            "url": "https://github.com/octo-owner-1/repo-3/pull/1508",
+            "isDraft": false,
+            "createdAt": "2026-10-14T06:28:11Z",
+            "updatedAt": "2026-10-14T06:28:11Z",
+            "headRefOid": "916a2e7f5a749d8a5e833df1c9368dc26c3c885f",
+            "additions": 82,
+            "deletions": 6,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-3"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-19"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "reviewDecision": null,
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T06:27:23Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_19",
+            "number": 23760,
+            "title": "Fixture change 19",
+            "url": "https://github.com/octo-owner-1/repo-1/pull/23760",
+            "isDraft": false,
+            "createdAt": "2026-10-14T03:58:41Z",
+            "updatedAt": "2026-10-15T10:40:04Z",
+            "headRefOid": "d03e019248c2725222090581030e1e1a6c89059b",
+            "additions": 9,
+            "deletions": 109,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-1"
+            },
+            "author": {
+              "__typename": "User",
+              "login": "octo-user-17"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "label-1"
+                },
+                {
+                  "name": "label-2"
+                }
+              ]
+            },
+            "reviewDecision": "REVIEW_REQUIRED",
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 3
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": [
+                {
+                  "__typename": "IssueComment",
+                  "createdAt": "2026-10-14T04:34:11Z",
+                  "author": {
+                    "__typename": "Bot",
+                    "login": "octo-user-20"
+                  }
+                }
+              ]
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T03:57:54Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PR_fixture_20",
+            "number": 160,
+            "title": "Fixture change 20",
+            "url": "https://github.com/octo-owner-1/repo-5/pull/160",
+            "isDraft": false,
+            "createdAt": "2026-10-14T03:23:42Z",
+            "updatedAt": "2026-10-14T03:23:43Z",
+            "headRefOid": "f41ec728be4858fcd0cb14f435327d7428484bb0",
+            "additions": 4,
+            "deletions": 4,
+            "repository": {
+              "nameWithOwner": "octo-owner-1/repo-5"
+            },
+            "author": {
+              "__typename": "Bot",
+              "login": "octo-user-21"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "label-1"
+                }
+              ]
+            },
+            "reviewDecision": null,
+            "mergeable": "MERGEABLE",
+            "statusCheckRollup": {
+              "state": "SUCCESS"
+            },
+            "comments": {
+              "totalCount": 0
+            },
+            "reviews": {
+              "totalCount": 0
+            },
+            "latestReviews": {
+              "nodes": []
+            },
+            "reviewRequests": {
+              "nodes": []
+            },
+            "lastActivity": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "committedDate": "2026-10-14T03:23:39Z"
+                  }
+                }
+              ]
+            },
+            "lastRequest": {
+              "nodes": []
+            }
+          }
+        ]
+      },
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4991,
+        "resetAt": "2026-10-16T09:43:19Z"
+      }
+    }
+  }
+}

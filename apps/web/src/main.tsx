@@ -15,6 +15,7 @@ import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 import { RefreshProvider } from "./application/refresh-provider.tsx";
 import { createQueryRefresher, createRefreshScheduler } from "./application/refresh-scheduler.ts";
+import { createSeenMarkers, SeenContext } from "./application/seen.ts";
 import { purgeSessionOnlyCaches } from "./application/startup.ts";
 import { createUnauthorizedHandler } from "./application/unauthorized.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
@@ -134,6 +135,9 @@ const accountActions = createAccountActions({
   },
 });
 
+// FR-5.8: when each PR was last opened, per account, on this device.
+const seenMarkers = createSeenMarkers(cache);
+
 /** The shell needs an active account that still has a token; otherwise, sign in. */
 function hasAccount(): boolean {
   const id = accountStore.activeId();
@@ -162,9 +166,11 @@ createRoot(rootElement).render(
                 actions={accountActions}
               >
                 <GitHubProvider github={github}>
-                  <RefreshProvider scheduler={refreshScheduler}>
-                    <RouterProvider router={router} context={{ hasAccount }} />
-                  </RefreshProvider>
+                  <SeenContext value={seenMarkers}>
+                    <RefreshProvider scheduler={refreshScheduler}>
+                      <RouterProvider router={router} context={{ hasAccount }} />
+                    </RefreshProvider>
+                  </SeenContext>
                 </GitHubProvider>
               </AuthProvider>
             </HtmlSanitizerContext>

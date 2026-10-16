@@ -28,7 +28,7 @@ const NOT_FOUND: GitHubError = { kind: "notFound" };
 
 /** Drops the null nodes a partial error leaves; the error itself is in `partialErrors`. */
 const present = <T>(nodes: readonly (T | null)[]): T[] => nodes.filter((n): n is T => n !== null);
-const actor = (raw: RawActor): Actor | null =>
+export const actor = (raw: RawActor): Actor | null =>
   raw === null ? null : { login: raw.login, typename: raw[TYPENAME] };
 
 function timelinePage(raw: TimelineData): TimelinePage {
@@ -58,7 +58,7 @@ function timelinePage(raw: TimelineData): TimelinePage {
   };
 }
 
-function reviewRequest(reviewer: RequestedReviewer | null): ReviewRequest[] {
+export function reviewRequest(reviewer: RequestedReviewer | null): ReviewRequest[] {
   if (reviewer?.[TYPENAME] === "User") return [{ kind: "user", login: reviewer.login }];
   if (reviewer?.[TYPENAME] === "Team") {
     return [{ kind: "team", team: `${reviewer.organization.login}/${reviewer.slug}` }];

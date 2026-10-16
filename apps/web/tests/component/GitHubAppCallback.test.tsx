@@ -44,7 +44,7 @@ test("a valid callback leaves no code or state in the address bar and lands on H
 
   finishExchange?.();
   await expect
-    .element(screen.getByRole("heading", { level: 1, name: "GitHub Dashboard" }))
+    .element(screen.getByRole("heading", { level: 1, name: "Pull requests" }))
     .toBeVisible();
   expect(githubApp.calls.searches).toEqual([`?code=fake-code&state=${GOOD_STATE}`]);
   expect(router.state.location.pathname).toBe("/");
