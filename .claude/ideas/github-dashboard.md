@@ -172,14 +172,16 @@ _Web standards_
 
 **Home section rules** — evaluated in order; first match wins; each PR lands in exactly one section. Implemented as pure functions in `domain/` with table-driven tests.
 
-| #   | Condition                                                                   | Section                 | Reason chip                                      |
-| --- | --------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------ |
-| 1   | You are a requested reviewer (directly or via a team) or a re-review is due | Needs your review       | "Review requested" / "Re-requested" / "Team: @x" |
-| 2   | Your PR, `reviewDecision = CHANGES_REQUESTED`                               | Your PRs · needs action | "Changes requested"                              |
-| 3   | Your PR, head commit check rollup `FAILURE` or `ERROR`                      | needs action            | "CI failing"                                     |
-| 4   | Your PR, `mergeable = CONFLICTING`                                          | needs action            | "Merge conflicts"                                |
-| 5   | Your PR, not draft, `mergeStateStatus = CLEAN`                              | needs action            | "Ready to merge"                                 |
-| 6   | Any other PR of yours (draft, pending review or CI, unknown)                | Your PRs · waiting      | "Draft" / "Awaiting review" / "CI running"       |
+| #   | Condition                                                                                      | Section                 | Reason chip                                      |
+| --- | ---------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------ |
+| 1   | You are a requested reviewer (directly or via a team) or a re-review is due                    | Needs your review       | "Review requested" / "Re-requested" / "Team: @x" |
+| 2   | Your PR, `reviewDecision = CHANGES_REQUESTED`                                                  | Your PRs · needs action | "Changes requested"                              |
+| 3   | Your PR, head commit check rollup `FAILURE` or `ERROR`                                         | needs action            | "CI failing"                                     |
+| 4   | Your PR, `mergeable = CONFLICTING`                                                             | needs action            | "Merge conflicts"                                |
+| 5   | Your PR, not draft, `mergeable = MERGEABLE`, checks passed or none, no review still required ¹ | needs action            | "Ready to merge"                                 |
+| 6   | Any other PR of yours (draft, pending review or CI, unknown)                                   | Your PRs · waiting      | "Draft" / "Awaiting review" / "CI running"       |
+
+¹ Amended 2026-10-16: `mergeStateStatus` exceeds GitHub's 10 s query limit in lists (see `docs/architecture/github-query-costs.md`), so rule 5 no longer checks other branch-protection rules such as "branch must be up to date". The PR panel shows GitHub's exact merge state for one PR at a time.
 
 Drafts never appear in "needs action" except via rule 2.
 

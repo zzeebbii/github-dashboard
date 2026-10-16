@@ -1524,3 +1524,330 @@ button.repo-count:hover,
   cursor: progress;
   opacity: 0.6;
 }
+
+/* T17 sidebar: favourites, the repository search and list, and org access notices. */
+.repo-section {
+  padding: 0 8px 8px;
+}
+
+.repo-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px 6px;
+}
+
+.repo-section-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.repo-refresh,
+.repo-star {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.repo-refresh:hover,
+.repo-star:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.repo-refresh[aria-disabled="true"] svg {
+  animation: spin 1s linear infinite;
+}
+
+.repo-star[aria-pressed="true"] {
+  color: var(--amber);
+}
+
+.repo-star[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+
+.repo-note {
+  margin: 0;
+  padding: 4px 8px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.repo-search {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 6px;
+}
+
+.repo-search-field {
+  position: relative;
+}
+
+.repo-search-field > svg {
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.repo-search-field input {
+  width: 100%;
+  height: 30px;
+  padding: 0 36px 0 30px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 13px;
+}
+
+.repo-search-field input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.repo-search-field input:focus {
+  border-color: var(--border-strong);
+}
+
+.repo-search-field input[data-pattern] {
+  font-family: "Geist Mono", ui-monospace, monospace;
+}
+
+.repo-search-field input[aria-invalid="true"] {
+  border-color: var(--red);
+}
+
+.repo-search-field input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.repo-search-badge {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  height: 20px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--muted);
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  cursor: help;
+}
+
+.repo-search-hint {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0 2px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+
+.repo-search-hint svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* The design's red, mixed toward the text colour so 11.5 px text keeps 4.5:1. */
+.repo-search-hint[data-error] {
+  color: color-mix(in srgb, var(--red) 80%, var(--foreground));
+}
+
+.repo-groups,
+.repo-rows,
+.org-access ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.repo-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.repo-rows[hidden] {
+  display: none;
+}
+
+.repo-group-head {
+  margin: 0;
+  font: inherit;
+}
+
+.repo-group-toggle {
+  width: 100%;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.repo-group-toggle:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.repo-group-toggle svg {
+  flex-shrink: 0;
+  transition: transform 0.12s ease-out;
+}
+
+.repo-group-toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+.repo-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.repo-link {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+a.repo-link:hover,
+.repo-link[aria-current="page"] {
+  background: var(--accent);
+}
+
+.repo-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repo-owner,
+.repo-count {
+  color: var(--muted-foreground);
+}
+
+.repo-count {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.repo-link[data-unavailable] .repo-name {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+
+.repo-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.repo-remove {
+  flex-shrink: 0;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.repo-remove:hover {
+  background: var(--accent);
+}
+
+.org-access {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.org-access-title {
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.org-access-title svg {
+  color: var(--amber);
+}
+
+.org-access ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.org-access li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+.org-access li > span {
+  color: var(--muted-foreground);
+}
+
+.org-access a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  color: var(--foreground);
+  font-weight: 500;
+}

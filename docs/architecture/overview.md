@@ -135,6 +135,10 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
   into their query client. Without Web Locks every tab is its own leader.
 - **Header:** `features/shell/FreshnessContainer.tsx` shows "Updated N min ago", the
   quota popover and the offline banner from the scheduler's state.
+- **Sidebar:** `features/sidebar/RepositoriesContainer.tsx` shows the favourites and the
+  repository list with its organisation access notices. The repository search
+  (`domain/repo-search.ts`) filters the cached list and never makes a request; it refuses
+  regexes that could backtrack catastrophically, since JavaScript has no regex timeout.
 
 ### Startup and accounts
 
