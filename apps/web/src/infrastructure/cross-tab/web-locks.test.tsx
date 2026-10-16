@@ -113,19 +113,23 @@ test("followers receive the leader's message, validated; never their own", async
         remaining: 10,
         resetAt: new Date("2026-10-16T07:00:00Z"),
         lastCost: 1,
+        observedAt: new Date("2026-10-16T06:00:00Z"),
       },
     },
     updates: [{ queryKey: ["prLists", A, "home"], data: { n: 1 }, updatedAt: 1 }],
   } as const;
+  // A response outside a refresh: just the quota.
+  const quota = { type: "quota", accountId: A, quota: message.quota } as const;
 
   leader.crossTab.publish(message);
+  leader.crossTab.publish(quota);
   // An older or broken build's message is dropped, not applied.
   // oxlint-disable-next-line unicorn/require-post-message-target-origin -- reason: BroadcastChannel takes no targetOrigin
   new BroadcastChannel("ghd").postMessage({ type: "refreshed", accountId: "nope" });
 
-  await expect.poll(() => heardByFollower).toEqual([message]);
+  await expect.poll(() => heardByFollower).toEqual([message, quota]);
   await settle();
-  expect(heardByFollower).toHaveLength(1);
+  expect(heardByFollower).toHaveLength(2);
   expect(heardByLeader).toEqual([]);
 });
 

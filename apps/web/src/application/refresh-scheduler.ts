@@ -2,8 +2,9 @@ import type { Query, QueryClient } from "@tanstack/react-query";
 import type { AccountId } from "../domain/account.ts";
 import type { PullRequest } from "../domain/pull-request.ts";
 import { FOCUS_REFRESH_AFTER_MS, nextRefreshDelay, REFRESH_INTERVAL_MS } from "../domain/quota.ts";
-import type { CrossTabPort, QueryUpdate, RefreshedMessage } from "./cross-tab.ts";
+import type { CrossTabMessage, CrossTabPort, QueryUpdate } from "./cross-tab.ts";
 import {
+  latestQuota,
   RATE_LIMIT_POOLS,
   type QuotaSnapshot,
   type RateLimitPool,
@@ -120,7 +121,10 @@ export interface RefreshState {
   readonly lastRefreshAt: Date | null;
   readonly refreshing: boolean;
   readonly online: boolean;
-  /** The active account's pools, as of its last refresh (in whichever tab ran it). */
+  /**
+   * The active account's pools, the latest known: updated on every response that carried
+   * them, in this tab or another one. A pool may have reset since; check its `resetAt`.
+   */
   readonly quota: QuotaSnapshot;
   /** The scheduler's clock, ticking every 30 s while visible, for "Updated N min ago". */
   readonly now: Date;
@@ -198,6 +202,26 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
     return quota;
   }
 
+  /** Per account, the latest quota this tab knows: its own responses and other tabs'. */
+  const knownQuota = new Map<AccountId, QuotaSnapshot>();
+
+  function learn(accountId: AccountId, quota: QuotaSnapshot): QuotaSnapshot {
+    const latest = latestQuota(knownQuota.get(accountId) ?? {}, quota);
+    knownQuota.set(accountId, latest);
+    return latest;
+  }
+
+  /** Any response with quota, refresh or not (opening a PR, a repo page, load more…). */
+  function onRateLimit(accountId: AccountId) {
+    const quota = snapshot(accountId);
+    const latest = learn(accountId, quota);
+    crossTab.publish({ type: "quota", accountId, quota });
+    if (accountId !== state.accountId) return;
+    update({ quota: latest });
+    // The guard reads the same numbers: a request between refreshes can slow or pause the next.
+    schedule();
+  }
+
   /** Until when the guard holds automatic refreshes back (epoch ms; 0 when it does not). */
   function pausedUntil(accountId: AccountId): number {
     const delay = nextRefreshDelay(rateLimits.get(accountId, "graphql"), REFRESH_INTERVAL_MS);
@@ -250,7 +274,7 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
         updates = await refresher.refresh(accountId);
       } finally {
         const at = clock.now();
-        const quota = snapshot(accountId);
+        const quota = learn(accountId, snapshot(accountId));
         lastRefresh.set(accountId, at);
         const wasManual = manualPending;
         manualPending = false;
@@ -273,12 +297,18 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
     return running;
   }
 
-  function onMessage(message: RefreshedMessage) {
+  function onMessage(message: CrossTabMessage) {
+    const quota = learn(message.accountId, message.quota);
+    const active = message.accountId === state.accountId;
+    if (message.type === "quota") {
+      if (active) update({ quota });
+      return;
+    }
     lastRefresh.set(message.accountId, message.at);
-    if (message.accountId !== state.accountId) return;
+    if (!active) return;
     const before = refresher.pullRequests(message.accountId);
     refresher.apply(message.updates);
-    update({ lastRefreshAt: message.at, quota: message.quota });
+    update({ lastRefreshAt: message.at, quota });
     notify({
       manual: false,
       changed: message.updates.length > 0,
@@ -319,6 +349,7 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
         visibility.subscribe(onVisibility),
         online.subscribe(onOnline),
         crossTab.subscribe(onMessage),
+        rateLimits.subscribe(onRateLimit),
       ];
       crossTab.runAsLeader(() => {
         leader = true;
@@ -344,7 +375,7 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
           accountId === null
             ? null
             : (lastRefresh.get(accountId) ?? refresher.lastUpdated(accountId)),
-        quota: accountId === null ? {} : snapshot(accountId),
+        quota: accountId === null ? {} : learn(accountId, snapshot(accountId)),
       });
       schedule();
     },

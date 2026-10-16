@@ -77,6 +77,12 @@ export function QuotaContainer() {
       untilReset < MINUTE
         ? t("fr_resetsSoon")
         : t("fr_resetsIn", { m: Math.ceil(untilReset / MINUTE) });
+    // Known from an earlier response (before a reload, say): say how old it is.
+    const age = now.getTime() - state.observedAt.getTime();
+    const checked =
+      age < MINUTE
+        ? ""
+        : ` · ${t("fr_quotaChecked", { ago: format.relative(state.observedAt, now) })}`;
     return {
       key: pool,
       name: t(`fr_pool_${pool}`),
@@ -85,7 +91,7 @@ export function QuotaContainer() {
       percent: state.limit > 0 ? (state.remaining / state.limit) * 100 : 0,
       level: quotaLevel(state),
       window: pool === "search" ? t("fr_perMin") : t("fr_perHour"),
-      reset: `${resets} · ${format.date(state.resetAt, { timeStyle: "short" })}`,
+      reset: `${resets} · ${format.date(state.resetAt, { timeStyle: "short" })}${checked}`,
     };
   };
   const rows = RATE_LIMIT_POOLS.flatMap(row);

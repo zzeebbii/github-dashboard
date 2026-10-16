@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CrossTabPort, RefreshedMessage } from "../../application/cross-tab.ts";
+import type { CrossTabMessage, CrossTabPort } from "../../application/cross-tab.ts";
 import { RATE_LIMIT_POOLS } from "../../application/rate-limits.ts";
 import { toAccountId } from "../../domain/account.ts";
 
@@ -21,19 +21,24 @@ const PoolSchema = z.object({
   remaining: z.number(),
   resetAt: z.date(),
   lastCost: z.number().nullable(),
+  observedAt: z.date(),
 });
+const QuotaSchema = z.partialRecord(z.enum(RATE_LIMIT_POOLS), PoolSchema);
 
-const MessageSchema = z.object({
-  type: z.literal("refreshed"),
-  accountId: z.string(),
-  at: z.date(),
-  quota: z.partialRecord(z.enum(RATE_LIMIT_POOLS), PoolSchema),
-  updates: z.array(
-    z.object({ queryKey: z.array(z.unknown()), data: z.unknown(), updatedAt: z.number() }),
-  ),
-});
+const MessageSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("refreshed"),
+    accountId: z.string(),
+    at: z.date(),
+    quota: QuotaSchema,
+    updates: z.array(
+      z.object({ queryKey: z.array(z.unknown()), data: z.unknown(), updatedAt: z.number() }),
+    ),
+  }),
+  z.object({ type: z.literal("quota"), accountId: z.string(), quota: QuotaSchema }),
+]);
 
-function parse(raw: unknown): RefreshedMessage | null {
+function parse(raw: unknown): CrossTabMessage | null {
   const parsed = MessageSchema.safeParse(raw);
   const accountId = parsed.success ? toAccountId(parsed.data.accountId) : null;
   return parsed.success && accountId !== null ? { ...parsed.data, accountId } : null;

@@ -348,4 +348,6 @@ export const fi: Catalogue = {
   fr_refreshedNew: "Tiedot päivitetty, uusia: {n}",
   // session sharing
   am_sessionTabs: "Kirjautunut, kunnes suljet viimeisen välilehden",
+  // Quota indicator fix
+  fr_quotaChecked: "tarkistettu {ago}",
 };

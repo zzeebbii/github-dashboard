@@ -14,13 +14,22 @@ export interface QueryUpdate {
 }
 
 /** What a tab tells the others after it refreshed. */
-export interface RefreshedMessage {
+interface RefreshedMessage {
   readonly type: "refreshed";
   readonly accountId: AccountId;
   readonly at: Date;
   readonly quota: QuotaSnapshot;
   readonly updates: readonly QueryUpdate[];
 }
+
+/** What a tab tells the others after any response carried quota, refresh or not. */
+interface QuotaMessage {
+  readonly type: "quota";
+  readonly accountId: AccountId;
+  readonly quota: QuotaSnapshot;
+}
+
+export type CrossTabMessage = RefreshedMessage | QuotaMessage;
 
 export interface CrossTabPort {
   /**
@@ -29,6 +38,6 @@ export interface CrossTabPort {
    */
   runAsLeader(onLeader: () => void): void;
   /** Delivered to every other tab, never back to this one. */
-  publish(message: RefreshedMessage): void;
-  subscribe(listener: (message: RefreshedMessage) => void): () => void;
+  publish(message: CrossTabMessage): void;
+  subscribe(listener: (message: CrossTabMessage) => void): () => void;
 }

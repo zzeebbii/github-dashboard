@@ -128,7 +128,7 @@ async function setup() {
   const cache = inMemoryCache(clock);
   const client = createGitHubClient({
     auth,
-    tracker: createRateLimitTracker(clock),
+    tracker: createRateLimitTracker(clock, null),
     cache,
     clock,
     onUnauthorized: () => undefined,

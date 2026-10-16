@@ -43,7 +43,7 @@ async function setup() {
   await auth.signIn({ token: TOKEN, rememberMe: false });
   const clock = { now: () => NOW };
   const cache = inMemoryCache(clock);
-  const tracker = createRateLimitTracker(clock);
+  const tracker = createRateLimitTracker(clock, null);
   const unauthorized: AccountId[] = [];
   const client = createGitHubClient({
     auth,
@@ -88,6 +88,7 @@ describe("GitHub GraphQL client", () => {
       remaining: 4996,
       resetAt: new Date("2026-10-16T06:36:07Z"),
       lastCost: 1,
+      observedAt: NOW,
     });
   });
 

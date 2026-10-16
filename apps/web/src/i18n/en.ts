@@ -354,6 +354,8 @@ export const en = {
   fr_refreshedNew: "Dashboard refreshed, {n} new",
   // session sharing
   am_sessionTabs: "Signed in until you close the last tab",
+  // Quota indicator fix
+  fr_quotaChecked: "checked {ago}",
 } as const satisfies Readonly<Record<string, string | Plural>>;
 
 export type MessageKey = keyof typeof en;

@@ -133,6 +133,11 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
   (`infrastructure/cross-tab/web-locks.ts`). After every refresh, in any tab, it posts
   what changed and the quota on `BroadcastChannel('ghd')`; the other tabs put that data
   into their query client. Without Web Locks every tab is its own leader.
+- **Quota:** the rate-limit tracker (`infrastructure/github/rate-limit.ts`) tells the
+  scheduler after every response that carried rate-limit info, refresh or not. The
+  scheduler shows it at once, re-checks the guard, and posts it to the other tabs (a
+  `quota` message). The tracker keeps the last state per account in this tab's
+  `sessionStorage`, so a reload served from the cache still shows it, with its age.
 - **Header:** `features/shell/FreshnessContainer.tsx` shows "Updated N min ago", the
   quota popover and the offline banner from the scheduler's state.
 - **Announcement:** each refresh reaches `onRefreshed` once, with the cached list PRs
