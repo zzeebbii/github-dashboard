@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { parseOwner, parsePullNumber, parseRepoName } from "../domain/github-names.ts";
 import { useT } from "../application/i18n.tsx";
+import { GitHubAppCallback } from "../features/auth/GitHubAppCallback.tsx";
 import { SignInPage } from "../features/auth/SignInPage.tsx";
 import { HomePage } from "../features/home/HomePage.tsx";
 import { PrPanel } from "../features/pr/PrPanel.tsx";
@@ -51,6 +52,13 @@ const signInRoute = createRoute({
     const navigate = useNavigate();
     return <SignInPage onContinue={() => void navigate({ to: "/" })} />;
   },
+});
+
+/** GitHub App sign-in returns here (FR-2.5); outside the shell, like sign-in. */
+const githubAppCallbackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/auth/callback",
+  component: GitHubAppCallback,
 });
 
 /** Pathless layout: every child renders inside the shell and needs an active account. */
@@ -107,6 +115,7 @@ const pullRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   signInRoute,
+  githubAppCallbackRoute,
   appRoute.addChildren([homeRoute, settingsRoute, repoRoute.addChildren([pullRoute])]),
 ]);
 

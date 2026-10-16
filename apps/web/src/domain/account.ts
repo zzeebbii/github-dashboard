@@ -8,8 +8,11 @@
 /** GitHub's numeric user id as a string. Construct only via `toAccountId()`. */
 export type AccountId = string & { readonly __brand: "AccountId" };
 
-/** `github_pat_` prefix: fine-grained. Anything else GitHub accepts: classic. */
-export type TokenType = "classic" | "fine-grained";
+/**
+ * `github_pat_` prefix: fine-grained. `ghu_`: a GitHub App user token (FR-2.5), which has
+ * no scopes. Anything else GitHub accepts: classic.
+ */
+export type TokenType = "classic" | "fine-grained" | "github-app";
 
 export interface Account {
   readonly id: AccountId;

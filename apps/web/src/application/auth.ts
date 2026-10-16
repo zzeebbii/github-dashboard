@@ -2,7 +2,7 @@ import type { Account, AccountId } from "../domain/account.ts";
 
 /**
  * The auth port (ADR-0016). Features depend on this, never on `fetch` or storage.
- * `PatAuth` implements it today; `GitHubAppAuth` arrives later behind the same shape.
+ * `PatAuth` implements it; `GitHubAppAuth` wraps it and adds the GitHub App accounts.
  */
 export interface AuthPort {
   /** Validates the token, stores it and the account, and makes it the active account. */
@@ -11,8 +11,26 @@ export interface AuthPort {
   refresh(accountId: AccountId): Promise<Account>;
   /** Deletes this account's token and account record. Other accounts are untouched. */
   signOut(accountId: AccountId): void;
-  /** null when this account has no stored token. */
-  currentToken(accountId: AccountId): string | null;
+  /**
+   * null when this account has no usable token. Async because a GitHub App token that is
+   * about to expire is refreshed first, so a request never goes out with a stale one.
+   */
+  currentToken(accountId: AccountId): Promise<string | null>;
+}
+
+/**
+ * The GitHub App web flow (FR-2.5, FR-2.11). Only provided when the deployment configures
+ * it; features treat its absence as "disabled".
+ */
+export interface GitHubAppSignInPort {
+  /** Sends the browser to GitHub's authorisation page. */
+  start(): Promise<void>;
+  /**
+   * Handles the query string GitHub redirected back with (`?code=…&state=…`): checks
+   * `state`, exchanges the code and signs the account in. The caller removes the query
+   * string from the address bar before calling this.
+   */
+  complete(search: string): Promise<SignInResult>;
 }
 
 export interface SignInRequest {
@@ -37,7 +55,9 @@ export type AuthErrorKind =
   | "sso-required"
   | "rate-limited"
   | "network"
-  | "unexpected-response";
+  | "unexpected-response"
+  /** A GitHub App callback with a missing, wrong, reused or expired `state`, or no code. */
+  | "invalid-callback";
 
 // Every prefixed GitHub token (ghp_, gho_, ghu_, ghs_, ghr_, github_pat_), legacy
 // unprefixed 40-hex tokens, and whatever follows "Bearer" if a header was echoed back.

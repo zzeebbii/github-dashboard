@@ -1,10 +1,11 @@
 import { expect, test, vi } from "vitest";
 import { AuthProvider } from "../../src/application/auth-provider.tsx";
-import type { SignInResult } from "../../src/application/auth.ts";
+import type { GitHubAppSignInPort, SignInResult } from "../../src/application/auth.ts";
 import { type Account, toAccountId } from "../../src/domain/account.ts";
 import { SignInPage } from "../../src/features/auth/SignInPage.tsx";
 import { createInMemoryAccountStore } from "../fakes/in-memory-account-store.ts";
 import { createInMemoryAuth } from "../fakes/in-memory-auth.ts";
+import { createInMemoryGitHubApp } from "../fakes/in-memory-github-app.ts";
 import { expectNoAxeViolations } from "../axe.ts";
 import { renderWithProviders } from "../render.tsx";
 import { guardAgainstTokenLeaks } from "../token-leak-guard.ts";
@@ -42,11 +43,15 @@ const results: Record<string, SignInResult> = {
   },
 };
 
-async function renderSignIn() {
+async function renderSignIn(githubApp: GitHubAppSignInPort | null = null) {
   const accountStore = createInMemoryAccountStore();
   const onContinue = vi.fn<() => void>();
   const screen = await renderWithProviders(
-    <AuthProvider auth={createInMemoryAuth(accountStore, results)} accountStore={accountStore}>
+    <AuthProvider
+      auth={createInMemoryAuth(accountStore, results)}
+      accountStore={accountStore}
+      githubApp={githubApp}
+    >
       <SignInPage onContinue={onContinue} />
     </AuthProvider>,
   );
@@ -113,4 +118,36 @@ test("the sign-in page has no axe violations in either theme", async () => {
   const { screen } = await renderSignIn();
 
   await expectNoAxeViolations(screen.container);
+});
+
+const APP_BUTTON = "Sign in with GitHub App";
+
+test("without GitHub App config the button is disabled and says why (AC-2.3)", async () => {
+  const { screen } = await renderSignIn();
+
+  const button = screen.getByRole("button", { name: APP_BUTTON });
+  await expect.element(button).toBeDisabled();
+  await expect
+    .element(button)
+    .toHaveAccessibleDescription(
+      "GitHub App sign-in is not set up for this deployment. Sign in with a personal access token instead.",
+    );
+  await expectNoAxeViolations(screen.container);
+});
+
+test("with GitHub App config the button starts the redirect (AC-2.3)", async () => {
+  const githubApp = createInMemoryGitHubApp({
+    account: baseAccount,
+    missingPermissions: [],
+    ssoAuthorizationNeeded: false,
+  });
+  const { screen } = await renderSignIn(githubApp.port);
+
+  const button = screen.getByRole("button", { name: APP_BUTTON });
+  await expect.element(button).toBeEnabled();
+  await expect.element(button).not.toHaveAttribute("aria-describedby");
+  await expectNoAxeViolations(screen.container);
+
+  await button.click();
+  expect(githubApp.calls.starts).toBe(1);
 });

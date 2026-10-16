@@ -29,16 +29,19 @@ interface RecordedRequest {
   readonly ifNoneMatch: string | null;
 }
 
-type Responder = Fixture | (() => Response);
-const toResolver = (f: Responder) => () => (typeof f === "function" ? f() : replay(f));
+type Responder = Fixture | ((request: Request) => Response | Promise<Response>);
+const toResolver =
+  (f: Responder) =>
+  ({ request }: { request: Request }) =>
+    typeof f === "function" ? f(request) : replay(f);
 
 /** A resolver answering with each responder in turn; the last one repeats. */
 function inTurn(responders: readonly [Responder, ...Responder[]]) {
   let next = 0;
-  return () => {
+  return (info: { request: Request }) => {
     const responder = responders[Math.min(next, responders.length - 1)] ?? responders[0];
     next += 1;
-    return toResolver(responder)();
+    return toResolver(responder)(info);
   };
 }
 
@@ -97,6 +100,10 @@ export function setupGitHubServer() {
     /** Answers `GET <path>` (relative to api.github.com) with each responder in turn. */
     rest(path: string, ...responders: [Responder, ...Responder[]]) {
       server.use(http.get(`${API_URL}${path}`, inTurn(responders)));
+    },
+    /** Answers `POST <url>` on any origin (the GitHub App exchange handler) in turn. */
+    post(url: string, ...responders: [Responder, ...Responder[]]) {
+      server.use(http.post(url, inTurn(responders)));
     },
     /** Requests made and GraphQL points spent so far in this test. */
     async budget(): Promise<{ readonly requests: number; readonly graphqlCost: number }> {

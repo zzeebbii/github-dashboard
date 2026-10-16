@@ -1,0 +1,15 @@
+{
+  "_note": "POST to the GitHub App exchange handler (docs/architecture/github-app-exchange.md). Field values are GitHub's documented constants (8 h, 6 months); tokens are fake.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": {
+    "access_token": "ghu_FAKE_app_user_token_for_tests_only",
+    "expires_in": 28800,
+    "refresh_token": "ghr_FAKE_app_refresh_token_for_tests_only",
+    "refresh_token_expires_in": 15897600,
+    "token_type": "bearer",
+    "scope": ""
+  }
+}

@@ -78,7 +78,7 @@ describe("PatAuth.signIn", () => {
     expect(result.missingPermissions).toEqual([]);
     expect(accounts.list()).toEqual([result.account]);
     expect(accounts.activeId()).toBe(ACCOUNT_ID);
-    expect(auth.currentToken(ACCOUNT_ID)).toBe(FINE_GRAINED_TOKEN);
+    await expect(auth.currentToken(ACCOUNT_ID)).resolves.toBe(FINE_GRAINED_TOKEN);
     // Token only in sessionStorage; the account record never holds it.
     expect(sessionStorage.getItem(`ghd:token:${ACCOUNT_ID}`)).toBe(FINE_GRAINED_TOKEN);
     expect(JSON.stringify(entriesOf(localStorage))).not.toContain(FINE_GRAINED_TOKEN);
@@ -92,6 +92,19 @@ describe("PatAuth.signIn", () => {
 
     expect(account.tokenType).toBe("classic");
     expect(account.scopes).toEqual(["repo", "read:org"]);
+  });
+
+  it("treats a ghu_ token as a GitHub App token with no scopes and no write warning", async () => {
+    github.respond(classicRepo, probeOk);
+    const { auth } = setup();
+
+    const { account } = await auth.signIn({
+      token: "ghu_fake_app_user_token_for_tests",
+      rememberMe: false,
+    });
+
+    expect(account.tokenType).toBe("github-app");
+    expect(account.scopes).toEqual([]);
   });
 
   it("keeps the token in localStorage with remember me", async () => {
@@ -202,7 +215,7 @@ describe("PatAuth session", () => {
     auth.signOut(ACCOUNT_ID);
     expect(accounts.list()).toEqual([]);
     expect(accounts.activeId()).toBeNull();
-    expect(auth.currentToken(ACCOUNT_ID)).toBeNull();
+    await expect(auth.currentToken(ACCOUNT_ID)).resolves.toBeNull();
     expect(storageDump()).not.toContain(FINE_GRAINED_TOKEN);
     await expect(auth.refresh(ACCOUNT_ID)).rejects.toMatchObject({ kind: "invalid-token" });
   });

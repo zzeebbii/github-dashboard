@@ -6,6 +6,7 @@ import { useT } from "../../application/i18n.tsx";
 import { tokenWarnings } from "../../domain/account.ts";
 import type { MessageKey } from "../../i18n/en.ts";
 import { TokenWarnings } from "../../ui/auth/TokenWarnings.tsx";
+import { GitHubAppButton } from "./GitHubAppButton.tsx";
 
 const errorKeys = {
   "invalid-format": "si_errInvalidFormat",
@@ -14,6 +15,7 @@ const errorKeys = {
   "rate-limited": "si_errRateLimited",
   network: "si_errNetwork",
   "unexpected-response": "si_errUnexpected",
+  "invalid-callback": "ga_errInvalidCallback",
 } as const satisfies Record<AuthErrorKind, MessageKey>;
 
 interface SignInPageProps {
@@ -72,6 +74,7 @@ export function SignInPage({ onContinue }: SignInPageProps) {
   return (
     <main>
       <h1>{t("si_heading")}</h1>
+      {result === null && <GitHubAppButton />}
       {account === null || result === null ? (
         <form onSubmit={onSubmit} aria-busy={pending}>
           <p>{t("si_intro")}</p>

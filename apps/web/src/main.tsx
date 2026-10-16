@@ -1,6 +1,6 @@
 // Must stay the first import: it validates the build environment and switches Zod to
 // jitless mode before any other module builds a schema (the CSP forbids `new Function`).
-import "./config/env.ts";
+import { env } from "./config/env.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
@@ -14,6 +14,7 @@ import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
+import { createGitHubAppAuth } from "./infrastructure/auth/github-app-auth.ts";
 import { createPatAuth } from "./infrastructure/auth/pat-auth.ts";
 import { createTokenStorage } from "./infrastructure/auth/token-storage.ts";
 import { createLocalAccountStore } from "./infrastructure/local-account-store.ts";
@@ -54,7 +55,20 @@ await hydrateQueries(queryClient, cache, { timeoutMs: 300 });
 persistQueries(queryClient, cache);
 
 const accountStore = createLocalAccountStore();
-const auth = createPatAuth({ tokens: createTokenStorage(), accounts: accountStore });
+const tokens = createTokenStorage();
+const patAuth = createPatAuth({ tokens, accounts: accountStore });
+// GitHub App sign-in only when both variables are set (FR-2.5); otherwise PAT alone.
+const githubApp =
+  env.githubApp === null
+    ? null
+    : createGitHubAppAuth({
+        config: env.githubApp,
+        base: patAuth,
+        tokens,
+        accounts: accountStore,
+        clock,
+      });
+const auth = githubApp ?? patAuth;
 const github = createGitHubRead(
   createGitHubClient({
     auth,
@@ -81,7 +95,7 @@ createRoot(rootElement).render(
         <AnnouncerProvider>
           <QueryClientProvider client={queryClient}>
             <HtmlSanitizerContext value={sanitizeHtml}>
-              <AuthProvider auth={auth} accountStore={accountStore}>
+              <AuthProvider auth={auth} accountStore={accountStore} githubApp={githubApp}>
                 <GitHubProvider github={github}>
                   <RouterProvider
                     router={router}

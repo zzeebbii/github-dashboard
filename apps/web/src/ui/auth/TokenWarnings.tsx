@@ -10,17 +10,21 @@ const areaKeys = {
   "org-membership": "tw_areaOrgMembership",
 } as const satisfies Record<PermissionArea, MessageKey>;
 
+const fineGrainedGrants = {
+  "pull-requests": "tw_fgPullRequests",
+  checks: "tw_fgChecks",
+  "org-membership": "tw_fgOrgMembership",
+} as const satisfies Record<PermissionArea, MessageKey>;
+
 const grantKeys = {
   classic: {
     "pull-requests": "tw_classicRepo",
     checks: "tw_classicRepo",
     "org-membership": "tw_classicReadOrg",
   },
-  "fine-grained": {
-    "pull-requests": "tw_fgPullRequests",
-    checks: "tw_fgChecks",
-    "org-membership": "tw_fgOrgMembership",
-  },
+  "fine-grained": fineGrainedGrants,
+  // A GitHub App asks for the same named permissions as a fine-grained token.
+  "github-app": fineGrainedGrants,
 } as const satisfies Record<TokenType, Record<PermissionArea, MessageKey>>;
 
 interface TokenWarningsProps {

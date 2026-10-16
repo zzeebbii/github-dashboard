@@ -74,7 +74,7 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     url: string,
     init: { method: "GET" | "POST"; headers?: Record<string, string>; body?: string },
   ): Promise<Response | GitHubError> {
-    const token = auth.currentToken(accountId);
+    const token = await auth.currentToken(accountId);
     if (token === null) {
       onUnauthorized(accountId);
       return { kind: "unauthorized" };
