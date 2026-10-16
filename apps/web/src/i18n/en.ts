@@ -232,6 +232,26 @@ export const en = {
   pr_new: "+{n} new",
   pr_linesChanged: "Lines changed",
   pr_updated: "Updated",
+  // T14 freshness
+  fr_refresh: "Refresh",
+  fr_updating: "Updating…",
+  fr_updatedNow: "Updated just now",
+  fr_updated: "Updated {ago}",
+  fr_refreshed: "Dashboard refreshed",
+  fr_offline: "You are offline. Showing data last updated {time}.",
+  fr_offlineNoData: "You are offline.",
+  fr_apiQuota: "API quota",
+  fr_left: "{n} left",
+  fr_pool_graphql: "GraphQL API",
+  fr_pool_core: "REST API",
+  fr_pool_search: "Search API",
+  fr_perHour: "Hourly limit",
+  fr_perMin: "Per-minute limit",
+  fr_resetsIn: "Resets in {m} min",
+  fr_resetsSoon: "Resets in < 1 min",
+  fr_quotaUnknown: "No requests made yet.",
+  fr_quotaNote:
+    "Limits apply per GitHub account. Auto-refresh slows down below 20% and pauses below 5% until the reset.",
 } as const;
 
 export type MessageKey = keyof typeof en;

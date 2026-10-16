@@ -235,6 +235,19 @@ describe("GitHub REST client", () => {
     });
   });
 
+  it("sends nothing for that account until a secondary limit's retry-after (FR-3.8)", async () => {
+    github.rest("/users/octocat", secondaryLimit, octocat);
+    const { client, tracker } = await setup();
+
+    await client.rest(ACCOUNT.id, "/users/octocat", UserSchema);
+    const paused = await client.rest(ACCOUNT.id, "/users/octocat", UserSchema);
+
+    const retryAt = new Date(NOW.getTime() + 30_000);
+    expect(paused).toEqual({ ok: false, error: { kind: "secondaryLimit", retryAt } });
+    expect(tracker.pausedUntil(ACCOUNT.id)).toEqual(retryAt);
+    expect(github.requests).toHaveLength(1);
+  });
+
   it("turns a malformed REST body into a schema error", async () => {
     github.rest("/users/octocat", () => HttpResponse.json({ login: 1 }));
     const { client } = await setup();

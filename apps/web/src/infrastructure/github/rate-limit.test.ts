@@ -80,4 +80,17 @@ describe("rate-limit tracker (FR-3.4)", () => {
 
     expect(tracker.get(A, "core")).toBeUndefined();
   });
+
+  it("pauses one account until a secondary limit's retry-after", () => {
+    let now = new Date("2026-10-16T06:00:00Z");
+    const tracker = createRateLimitTracker({ now: () => now });
+    const retryAt = new Date("2026-10-16T06:00:30Z");
+
+    tracker.secondaryLimit(A, retryAt);
+
+    expect(tracker.pausedUntil(A)).toEqual(retryAt);
+    expect(tracker.pausedUntil(B)).toBeUndefined();
+    now = retryAt;
+    expect(tracker.pausedUntil(A)).toBeUndefined();
+  });
 });

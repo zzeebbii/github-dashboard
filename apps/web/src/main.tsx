@@ -13,6 +13,8 @@ import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "./application/i18n.tsx";
 import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
+import { RefreshProvider } from "./application/refresh-provider.tsx";
+import { createQueryRefresher, createRefreshScheduler } from "./application/refresh-scheduler.ts";
 import { purgeSessionOnlyCaches } from "./application/startup.ts";
 import { createUnauthorizedHandler } from "./application/unauthorized.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
@@ -21,6 +23,9 @@ import { createGitHubAppAuth } from "./infrastructure/auth/github-app-auth.ts";
 import { createPatAuth } from "./infrastructure/auth/pat-auth.ts";
 import { createTokenStorage, forgetTokens } from "./infrastructure/auth/token-storage.ts";
 import { createLocalAccountStore } from "./infrastructure/local-account-store.ts";
+import { networkStatus } from "./infrastructure/browser/online.ts";
+import { pageVisibility } from "./infrastructure/browser/visibility.ts";
+import { createWebLocksCrossTab } from "./infrastructure/cross-tab/web-locks.ts";
 import { createIndexedDbCache } from "./infrastructure/cache/indexeddb-cache.ts";
 import { createGitHubClient } from "./infrastructure/github/client.ts";
 import { createGitHubRead } from "./infrastructure/github/github-read.ts";
@@ -80,12 +85,13 @@ await purgeSessionOnlyCaches(accountStore, hasToken, cache);
 await hydrateQueries(queryClient, cache, accountStore.activeId(), { timeoutMs: 300 });
 persistQueries(queryClient, cache);
 
+const tracker = createRateLimitTracker(clock);
 const github = createGitHubRead(
   createGitHubClient({
     auth,
     cache,
     clock,
-    tracker: createRateLimitTracker(clock),
+    tracker,
     // FR-2.8: a 401 signs out that account only and asks for a new token for it.
     onUnauthorized: createUnauthorizedHandler({
       accounts: accountStore,
@@ -96,6 +102,23 @@ const github = createGitHubRead(
     }),
   }),
 );
+
+// FR-3.7–3.9: one leader tab refreshes the active account; the others follow it.
+const refreshScheduler = createRefreshScheduler({
+  clock,
+  timer: (callback, ms) => {
+    const id = setTimeout(callback, ms);
+    return () => {
+      clearTimeout(id);
+    };
+  },
+  visibility: pageVisibility(),
+  online: networkStatus(),
+  crossTab: createWebLocksCrossTab(),
+  rateLimits: tracker,
+  refresher: createQueryRefresher(queryClient),
+});
+refreshScheduler.start();
 
 const accountActions = createAccountActions({
   auth,
@@ -139,7 +162,9 @@ createRoot(rootElement).render(
                 actions={accountActions}
               >
                 <GitHubProvider github={github}>
-                  <RouterProvider router={router} context={{ hasAccount }} />
+                  <RefreshProvider scheduler={refreshScheduler}>
+                    <RouterProvider router={router} context={{ hasAccount }} />
+                  </RefreshProvider>
                 </GitHubProvider>
               </AuthProvider>
             </HtmlSanitizerContext>

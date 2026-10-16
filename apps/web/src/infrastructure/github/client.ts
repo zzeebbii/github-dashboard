@@ -74,6 +74,9 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     url: string,
     init: { method: "GET" | "POST"; headers?: Record<string, string>; body?: string },
   ): Promise<Response | GitHubError> {
+    // FR-3.8: a secondary limit pauses every request of this account until retry-after.
+    const pausedUntil = tracker.pausedUntil(accountId);
+    if (pausedUntil !== undefined) return { kind: "secondaryLimit", retryAt: pausedUntil };
     const token = await auth.currentToken(accountId);
     if (token === null) {
       onUnauthorized(accountId);
@@ -103,9 +106,15 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     return response;
   }
 
-  async function failure(response: Response): Promise<GitHubError> {
+  async function failure(accountId: AccountId, response: Response): Promise<GitHubError> {
     const body = RestErrorSchema.safeParse(await response.json().catch(() => null));
-    return errorFromResponse(response, body.success ? body.data.message : undefined, clock.now());
+    const error = errorFromResponse(
+      response,
+      body.success ? body.data.message : undefined,
+      clock.now(),
+    );
+    if (error.kind === "secondaryLimit") tracker.secondaryLimit(accountId, error.retryAt);
+    return error;
   }
 
   return {
@@ -116,7 +125,7 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
         body: JSON.stringify({ query: document.query, variables }),
       });
       if ("kind" in response) return fail(response);
-      if (!response.ok) return fail(await failure(response));
+      if (!response.ok) return fail(await failure(accountId, response));
 
       const envelope = GraphQLEnvelopeSchema.safeParse(await response.json().catch(() => null));
       if (!envelope.success) return fail(schemaError(envelope.error));
@@ -154,7 +163,7 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
         const reused = schema.safeParse(cached?.data);
         return reused.success ? succeed(reused.data) : fail(schemaError(reused.error));
       }
-      if (!response.ok) return fail(await failure(response));
+      if (!response.ok) return fail(await failure(accountId, response));
 
       const parsed = schema.safeParse(await response.json().catch(() => null));
       if (!parsed.success) return fail(schemaError(parsed.error));
