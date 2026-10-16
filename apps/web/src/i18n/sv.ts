@@ -256,4 +256,15 @@ export const sv: Record<MessageKey, string> = {
   hm_error: "GitHub returnerade inte dina pull requests. Försök uppdatera.",
   hm_truncated: "En sökning gav fler än 1 000 pull requests; bara de första 1 000 visas.",
   pr_mergeChecking: "Söker efter mergekonflikter",
+  // T21 repo page
+  rp_public: "Offentlig",
+  rp_private: "Privat",
+  rp_internal: "Intern",
+  rp_noDescription: "Ingen beskrivning.",
+  rp_staleHint: "Ingen aktivitet på 14+ dagar",
+  rp_loadMore: "Läs in fler",
+  rp_notFound: "Det här repot finns inte, eller så kan det här kontot inte se det.",
+  rp_noAccess:
+    "GitHub nekade det här kontot åtkomst till repot. Kontrollera tokenens åtkomst till organisationen.",
+  rp_error: "GitHub returnerade inte repots pull requests. Försök uppdatera.",
 };

@@ -4,7 +4,7 @@ const notFound = () => Promise.resolve({ ok: false, error: { kind: "notFound" } 
 
 /**
  * A `GitHubReadPort` with no network: answers `viewer` with the given result, the PR
- * detail calls with `notFound`, no repositories, no favourites and empty Home searches,
+ * detail calls and the repository page with `notFound`, no repositories, no favourites and empty Home searches,
  * unless `overrides` answers them.
  */
 export function createInMemoryGitHub(
@@ -35,6 +35,7 @@ export function createInMemoryGitHub(
       }),
     getActivitySince: (_accountId, requests) =>
       Promise.resolve({ ok: true, value: { data: requests.map(() => []), partialErrors: [] } }),
+    listRepoPullRequests: notFound,
     ...overrides,
   };
 }

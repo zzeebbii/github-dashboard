@@ -5,7 +5,7 @@ import { z } from "zod";
  * nullable because a partial error (SSO, token policy) nulls them out.
  */
 
-const RepositorySchema = z.object({
+export const RepositorySchema = z.object({
   id: z.string().min(1),
   nameWithOwner: z.string().regex(/^[^/]+\/[^/]+$/),
   visibility: z.enum(["PUBLIC", "PRIVATE", "INTERNAL"]),

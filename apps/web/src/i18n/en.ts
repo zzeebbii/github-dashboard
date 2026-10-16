@@ -257,6 +257,17 @@ export const en = {
   hm_error: "GitHub did not return your pull requests. Try Refresh.",
   hm_truncated: "A search matched more than 1,000 pull requests; only the first 1,000 are shown.",
   pr_mergeChecking: "Checking for merge conflicts",
+  // T21 repo page
+  rp_public: "Public",
+  rp_private: "Private",
+  rp_internal: "Internal",
+  rp_noDescription: "No description provided.",
+  rp_staleHint: "No activity for 14+ days",
+  rp_loadMore: "Load more",
+  rp_notFound: "This repository does not exist, or this account cannot see it.",
+  rp_noAccess:
+    "GitHub refused this account access to the repository. Check the token's access to its organization.",
+  rp_error: "GitHub did not return this repository's pull requests. Try Refresh.",
 } as const;
 
 export type MessageKey = keyof typeof en;

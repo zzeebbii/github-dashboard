@@ -11,7 +11,8 @@ import {
 } from "@tanstack/react-router";
 import { parseOwner, parsePullNumber, parseRepoName } from "../domain/github-names.ts";
 import { useT } from "../application/i18n.tsx";
-import { parsePrFilters, toPrFilterSearch } from "../application/pr-filters.ts";
+import { type PrFilters, parsePrFilters, toPrFilterSearch } from "../application/pr-filters.ts";
+import { type RepoTab, toRepoTab } from "../domain/repo-tabs.ts";
 import { GitHubAppCallback } from "../features/auth/GitHubAppCallback.tsx";
 import { SignInPage } from "../features/auth/SignInPage.tsx";
 import { HomePage } from "../features/home/HomePage.tsx";
@@ -95,13 +96,19 @@ const settingsRoute = createRoute({
 const repoRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/repo/$owner/$name",
+  // The tab and the filter bar (FR-4.6, FR-5.7), as on Home; the default tab stays out of the URL.
+  validateSearch: (search: Record<string, unknown>): Partial<PrFilters> & { tab?: RepoTab } => {
+    const tab = toRepoTab(search["tab"]);
+    return { ...toPrFilterSearch(parsePrFilters(search)), ...(tab === "open" ? {} : { tab }) };
+  },
   beforeLoad: ({ params }) => {
     if (!parseOwner(params.owner).ok || !parseRepoName(params.name).ok) throw notFound();
   },
   component: function RepoRoute() {
     const { owner, name } = repoRoute.useParams();
+    const { tab } = repoRoute.useSearch();
     return (
-      <RepoPage owner={owner} name={name}>
+      <RepoPage owner={owner} name={name} tab={tab ?? "open"}>
         <Outlet />
       </RepoPage>
     );
