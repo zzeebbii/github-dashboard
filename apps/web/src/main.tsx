@@ -17,13 +17,17 @@ import { hydrateQueries, persistQueries } from "./application/query-hydration.ts
 import { RefreshProvider } from "./application/refresh-provider.tsx";
 import { createQueryRefresher, createRefreshScheduler } from "./application/refresh-scheduler.ts";
 import { createSeenMarkers, SeenContext } from "./application/seen.ts";
-import { purgeSessionOnlyCaches } from "./application/startup.ts";
+import { borrowSessionTokens, purgeSessionOnlyCaches } from "./application/startup.ts";
 import { createUnauthorizedHandler } from "./application/unauthorized.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
 import { createGitHubAppAuth } from "./infrastructure/auth/github-app-auth.ts";
 import { createPatAuth } from "./infrastructure/auth/pat-auth.ts";
-import { createTokenStorage, forgetTokens } from "./infrastructure/auth/token-storage.ts";
+import {
+  createSessionSharing,
+  sharedTokenStorages,
+} from "./infrastructure/auth/session-sharing.ts";
+import { forgetTokens } from "./infrastructure/auth/token-storage.ts";
 import { createLocalAccountStore } from "./infrastructure/local-account-store.ts";
 import { networkStatus } from "./infrastructure/browser/online.ts";
 import { pageVisibility } from "./infrastructure/browser/visibility.ts";
@@ -60,7 +64,9 @@ const queryClient = new QueryClient({
 
 const clock = { now: () => new Date() };
 const cache = createIndexedDbCache({ clock });
-const tokens = createTokenStorage();
+// Session-only tokens are shared with this app's other tabs; every change here is told to them.
+const sessionSharing = createSessionSharing();
+const { tokens, refreshTokens } = sharedTokenStorages(sessionSharing);
 const accountStore = createLocalAccountStore();
 const patAuth = createPatAuth({ tokens, accounts: accountStore });
 // GitHub App sign-in only when both variables are set (FR-2.5); otherwise PAT alone.
@@ -71,6 +77,7 @@ const githubApp =
         config: env.githubApp,
         base: patAuth,
         tokens,
+        refreshTokens,
         accounts: accountStore,
         clock,
       });
@@ -79,10 +86,13 @@ const auth = githubApp ?? patAuth;
 const hasToken = (id: AccountId) => tokens.read(id) !== null;
 
 // Startup, in this order, all before the first render:
+// 0. Borrow the session-only tokens this tab lacks from the other open tabs (at most 250 ms),
+//    so a PR opened in a new tab is signed in, and step 1 spares accounts signed in elsewhere.
 // 1. FR-2.13: purge the cache of accounts whose session-only token is gone. It must finish
 //    before hydration, or the purged records would be restored into the query client.
 // 2. Cache-first (ADR-0017): restore the ACTIVE account's cached query data, waiting at most
 //    300 ms; then save every successful fetch.
+await borrowSessionTokens(accountStore, hasToken, sessionSharing);
 await purgeSessionOnlyCaches(accountStore, hasToken, cache);
 await hydrateQueries(queryClient, cache, accountStore.activeId(), { timeoutMs: 300 });
 persistQueries(queryClient, cache);
@@ -99,6 +109,8 @@ const github = createGitHubRead(
       accounts: accountStore,
       forgetToken: (id) => {
         forgetTokens(id);
+        // The other tabs drop their copies, so the rejected token is not revived from there.
+        sessionSharing.announce(id);
       },
       toSignIn: (account) => void router.navigate({ to: "/sign-in", search: { account } }),
     }),

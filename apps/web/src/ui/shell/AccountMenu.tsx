@@ -24,7 +24,7 @@ interface AccountMenuProps {
 
 const statusKeys = {
   remembered: "am_remembered",
-  session: "am_sessionOnly",
+  session: "am_sessionTabs",
   "signed-out": "am_signedOut",
 } as const;
 

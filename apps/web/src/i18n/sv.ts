@@ -194,7 +194,6 @@ export const sv: Catalogue = {
   am_accounts: "GitHub-konton",
   am_add: "Lägg till GitHub-konto",
   am_remembered: "Ihågkommen på den här enheten",
-  am_sessionOnly: "Inloggad under den här sessionen",
   am_signedOut: "Utloggad",
   am_remove: "Ta bort {login}",
   am_signOutAll: "Logga ut från allt",
@@ -345,4 +344,6 @@ export const sv: Catalogue = {
   st_shortcuts: "Kortkommandon",
   st_listShortcuts: "Flytta i listor med J och K",
   fr_refreshedNew: "Data uppdaterad, nya: {n}",
+  // session sharing
+  am_sessionTabs: "Inloggad tills du stänger den sista fliken",
 };
