@@ -1,0 +1,26 @@
+{
+  "_note": "Recorded 2026-10-16: GET /users/octocat. Body trimmed to a few fields; headers trimmed to the ones the client reads. No token in it.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "etag": "W/\"1dd1886f78932e29eae288c710fe648fc11efe2840d7682040c82da12002429c\"",
+    "x-github-media-type": "github.v3; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4999",
+    "x-ratelimit-reset": "1792132947",
+    "x-ratelimit-resource": "core",
+    "x-ratelimit-used": "1"
+  },
+  "body": {
+    "login": "octocat",
+    "id": 583231,
+    "node_id": "MDQ6VXNlcjU4MzIzMQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
+    "html_url": "https://github.com/octocat",
+    "type": "User",
+    "name": "The Octocat",
+    "company": "@github",
+    "public_repos": 8,
+    "created_at": "2011-01-25T18:44:36Z"
+  }
+}

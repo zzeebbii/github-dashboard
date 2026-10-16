@@ -1,0 +1,66 @@
+{
+  "_synthetic": true,
+  "_source": "Message documented at https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api; the GraphQL type and path are assumed.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4996",
+    "x-ratelimit-reset": "1792132567",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "4"
+  },
+  "body": {
+    "data": {
+      "viewer": {
+        "login": "octo-fixture",
+        "name": "Octo Fixture",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/1000001?v=4",
+        "organizations": {
+          "nodes": [
+            {
+              "__typename": "Organization",
+              "login": "acme",
+              "name": "Acme",
+              "avatarUrl": "https://avatars.githubusercontent.com/u/2000001?v=4",
+              "teams": {
+                "nodes": [
+                  {
+                    "slug": "web"
+                  }
+                ]
+              }
+            },
+            {
+              "__typename": "Organization",
+              "login": "no-app-corp",
+              "name": "No App Corp",
+              "avatarUrl": "https://avatars.githubusercontent.com/u/2000005?v=4",
+              "teams": null
+            }
+          ]
+        }
+      },
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4996,
+        "resetAt": "2026-10-16T06:36:07Z"
+      }
+    },
+    "errors": [
+      {
+        "type": "FORBIDDEN",
+        "path": ["viewer", "organizations", "nodes", 1, "teams"],
+        "locations": [
+          {
+            "line": 11,
+            "column": 9
+          }
+        ],
+        "message": "Resource not accessible by integration"
+      }
+    ]
+  }
+}

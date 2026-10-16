@@ -37,7 +37,11 @@ violation or request to an origin that is not allowed.
 
 ## Quota budget tests
 
-The MSW harness counts requests and sums GraphQL `cost`. Each query asserts its budget
+The MSW harness (`apps/web/tests/msw/github.ts`: `setupGitHubServer()`, then
+`graphql(...)` / `rest(path, ...)` to serve fixtures and `await budget()` for
+`{ requests, graphqlCost }`) counts requests and sums the `rateLimit.cost` every GraphQL
+document selects. Fixtures not recorded from GitHub carry `"_synthetic": true` and a
+`_source`. Each query asserts its budget
 from [ADR-0017](../adr/0017-indexeddb-cache-and-quota-budget.md), for example "Home
 refresh: at most 3 GraphQL queries, at most 50 points". A budget regression fails CI
 like any other bug.

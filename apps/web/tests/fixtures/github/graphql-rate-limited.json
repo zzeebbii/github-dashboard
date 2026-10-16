@@ -1,0 +1,22 @@
+{
+  "_synthetic": true,
+  "_source": "GraphQL primary limit: errors[].type RATE_LIMITED per https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api; message wording assumed.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-reset": "1792132567",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "5000"
+  },
+  "body": {
+    "errors": [
+      {
+        "type": "RATE_LIMITED",
+        "message": "API rate limit exceeded for user ID 1000001."
+      }
+    ]
+  }
+}

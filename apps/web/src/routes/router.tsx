@@ -9,6 +9,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
+import { parseOwner, parsePullNumber, parseRepoName } from "../domain/github-names.ts";
 import { useT } from "../application/i18n.tsx";
 import { SignInPage } from "../features/auth/SignInPage.tsx";
 import { HomePage } from "../features/home/HomePage.tsx";
@@ -74,10 +75,13 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
-// TODO(T12): validate owner and name with domain/github-names.ts once it exists.
+/** Owner and name are checked before anything renders, so no request is built from bad input (FR-3.14). */
 const repoRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/repo/$owner/$name",
+  beforeLoad: ({ params }) => {
+    if (!parseOwner(params.owner).ok || !parseRepoName(params.name).ok) throw notFound();
+  },
   component: function RepoRoute() {
     const { owner, name } = repoRoute.useParams();
     return (
@@ -93,7 +97,7 @@ const pullRoute = createRoute({
   getParentRoute: () => repoRoute,
   path: "pull/$number",
   beforeLoad: ({ params }) => {
-    if (!/^[1-9]\d*$/u.test(params.number)) throw notFound();
+    if (!parsePullNumber(params.number).ok) throw notFound();
   },
   component: function PullRoute() {
     const { owner, name, number } = pullRoute.useParams();
