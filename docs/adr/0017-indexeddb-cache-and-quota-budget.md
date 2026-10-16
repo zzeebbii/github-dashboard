@@ -36,12 +36,19 @@ pauses that account's requests until `retry-after` elapses.
 **Budget** (asserted by tests against recorded GitHub fixtures, counting requests and
 summed GraphQL `cost`):
 
-| Operation                        | Budget                                                            |
-| -------------------------------- | ----------------------------------------------------------------- |
-| Home refresh                     | at most 3 GraphQL search queries, at most 50 points total         |
-| Favourites refresh               | 1 GraphQL query per 25 favourites                                 |
-| Opening a PR                     | at most 2 GraphQL queries + 1 REST call; 0 when served from cache |
-| Steady state (5-minute interval) | under 1,000 GraphQL points per hour                               |
+| Operation                        | Budget                                                                                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home refresh                     | 1 GraphQL search per section per 20 results (3 when each section has ≤ 20 PRs, ≤ 5 for 60), 1 point each; plus ≤ ⌈k/10⌉ one-point "new activity" queries for the k rows with activity since their seen marker |
+| Favourites refresh               | 1 GraphQL query per 25 favourites                                                                                                                                                                             |
+| Opening a PR                     | at most 2 GraphQL queries, 0 REST; 0 when served from cache                                                                                                                                                   |
+| Steady state (5-minute interval) | under 1,000 GraphQL points per hour                                                                                                                                                                           |
+
+**Amended 2026-10-16 (measured).** GitHub stops a GraphQL request after 10 s, and time per
+request, not points, is the real limit for PR lists. `PullRequest.mergeStateStatus` costs about
+0.3 s per PR and is the only field that makes full rows time out, so **no list query requests it**:
+conflicts come from `mergeable`, CI from `PullRequest.statusCheckRollup`. List queries page at
+**20 PRs** (about 4 s, 1 point). Measurements and the list-query design are in
+[docs/architecture/github-query-costs.md](../architecture/github-query-costs.md).
 
 ## Consequences
 
