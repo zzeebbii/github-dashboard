@@ -1,4 +1,5 @@
 import { expect, test, vi } from "vitest";
+import { page } from "vitest/browser";
 import { AuthProvider } from "../../src/application/auth-provider.tsx";
 import type { GitHubAppSignInPort, SignInResult } from "../../src/application/auth.ts";
 import { type Account, toAccountId } from "../../src/domain/account.ts";
@@ -197,3 +198,138 @@ test("after a 401, the page says which account needs a new token", async () => {
     .toBeInTheDocument();
   await expectNoAxeViolations(screen.container);
 });
+
+// sign-in redesign
+test("show token flips the input type without moving the token into React state", async () => {
+  const { screen } = await renderSignIn();
+  const input = screen.getByLabelText("Personal access token");
+  const toggle = screen.getByRole("button", { name: "Show token" });
+  await input.fill("github_pat_FAKE_unknown_to_the_fake");
+
+  await expect.element(toggle).toHaveAttribute("aria-pressed", "false");
+  await toggle.click();
+  await expect.element(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect.element(input).toHaveAttribute("type", "text");
+  await expect.element(input).toHaveValue("github_pat_FAKE_unknown_to_the_fake");
+
+  // Submitting clears the field and hides it again.
+  await screen.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect.element(screen.getByRole("alert")).toBeInTheDocument();
+  await expect.element(input).toHaveAttribute("type", "password");
+  await expect.element(toggle).toHaveAttribute("aria-pressed", "false");
+});
+
+test("the create-token links open GitHub pre-filled with the read permissions", async () => {
+  const { screen } = await renderSignIn();
+
+  const fineGrained = screen.getByRole("link", { name: /Create a fine-grained token on GitHub/ });
+  const href = new URL(fineGrained.element().getAttribute("href") ?? "");
+  expect(href.origin + href.pathname).toBe(
+    "https://github.com/settings/personal-access-tokens/new",
+  );
+  expect(Object.fromEntries(href.searchParams)).toMatchObject({
+    name: "GitHub Dashboard",
+    pull_requests: "read",
+    statuses: "read",
+    contents: "read",
+    members: "read",
+  });
+  await expect.element(fineGrained).toHaveAttribute("target", "_blank");
+
+  const classic = screen.getByRole("link", { name: /Create a classic token instead/ });
+  const classicHref = new URL(classic.element().getAttribute("href") ?? "");
+  expect(classicHref.pathname).toBe("/settings/tokens/new");
+  expect(classicHref.searchParams.get("scopes")).toBe("repo,read:org");
+  await expect.element(classic).toHaveAccessibleDescription(/also grants write access/);
+});
+
+test("while the token is checked the submit button is busy but stays focusable", async () => {
+  const accountStore = createInMemoryAccountStore();
+  const auth = createInMemoryAuth(accountStore, results);
+  const screen = await renderWithProviders(
+    <AuthProvider
+      auth={{ ...auth, signIn: () => new Promise<never>(() => undefined) }}
+      accountStore={accountStore}
+    >
+      <SignInPage onContinue={() => undefined} />
+    </AuthProvider>,
+  );
+
+  await screen.getByLabelText("Personal access token").fill(READ_ONLY_TOKEN);
+  await screen.getByRole("button", { name: "Sign in", exact: true }).click();
+
+  const busy = screen.getByRole("button", { name: "Checking token…" });
+  await expect.element(busy).toHaveAttribute("aria-busy", "true");
+  await expect.element(busy).toHaveAttribute("aria-disabled", "true");
+  await expect.element(busy).not.toHaveAttribute("disabled");
+  (busy.element() as HTMLElement).focus();
+  expect(document.activeElement).toBe(busy.element());
+});
+
+test("the sign-in page has its own theme toggle and language picker", async () => {
+  const { screen } = await renderSignIn();
+
+  await screen.getByRole("button", { name: "Switch to dark theme" }).click();
+  await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(true);
+  await screen.getByRole("button", { name: "Switch to light theme" }).click();
+  await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(false);
+
+  await screen.getByRole("combobox", { name: "Language" }).selectOptions("Suomi");
+  await expect
+    .element(screen.getByRole("heading", { level: 1 }))
+    .toHaveTextContent("Kirjaudu GitHubiin");
+});
+
+const noScroll = () => {
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+};
+
+for (const width of [320, 1280]) {
+  test(`at ${width} px every sign-in state has one h1, a main landmark and no axe violations`, async () => {
+    await page.viewport(width, 800);
+    const githubApp = createInMemoryGitHubApp({
+      account: baseAccount,
+      missingPermissions: [],
+      ssoAuthorizationNeeded: false,
+    });
+
+    // Empty form, GitHub App disabled.
+    const first = await renderSignIn();
+    await expect.element(first.screen.getByRole("main")).toBeInTheDocument();
+    expect(first.screen.getByRole("heading", { level: 1 }).elements()).toHaveLength(1);
+    await expectNoAxeViolations(first.screen.container);
+    noScroll();
+
+    // Error state.
+    await first.signIn("github_pat_FAKE_unknown_to_the_fake");
+    await expect.element(first.screen.getByRole("alert")).toBeInTheDocument();
+    await expectNoAxeViolations(first.screen.container);
+    noScroll();
+
+    // Post-sign-in warnings.
+    await first.signIn(CLASSIC_TOKEN);
+    await expect
+      .element(first.screen.getByRole("region", { name: "About this token" }))
+      .toBeInTheDocument();
+    await expectNoAxeViolations(first.screen.container);
+    noScroll();
+    await first.screen.unmount();
+
+    // GitHub App enabled.
+    const enabled = await renderSignIn(githubApp.port);
+    await expect.element(enabled.screen.getByRole("button", { name: APP_BUTTON })).toBeEnabled();
+    await expectNoAxeViolations(enabled.screen.container);
+    await enabled.screen.unmount();
+
+    // Re-auth.
+    const accountStore = createInMemoryAccountStore();
+    const reauth = await renderWithProviders(
+      <AuthProvider auth={createInMemoryAuth(accountStore, results)} accountStore={accountStore}>
+        <SignInPage onContinue={() => undefined} reauthLogin="octo-fixture" />
+      </AuthProvider>,
+    );
+    await expect.element(reauth.getByText("OC", { exact: true })).toBeInTheDocument();
+    await expectNoAxeViolations(reauth.container);
+    noScroll();
+  });
+}

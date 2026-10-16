@@ -208,7 +208,8 @@ export const fi: Catalogue = {
     "Kaikki tilit, tunnukset, asetukset ja välimuistin tiedot poistetaan tästä selaimesta.",
   am_cancel: "Peruuta",
   si_rememberMe: "Muista minut tällä laitteella",
-  si_rememberMeHint: "Pois päältä: tunnus unohdetaan, kun suljet selaimen.",
+  si_rememberMeHint:
+    "Pois päältä: tunnus säilyy, kunnes suljet viimeisen välilehden. Päällä: se tallennetaan tälle laitteelle.",
   si_reauth:
     "GitHub ei enää hyväksy tilin {login} tunnusta. Kirjaudu uudelleen antamalla uusi tunnus.",
   // T19 pr list
@@ -350,4 +351,20 @@ export const fi: Catalogue = {
   am_sessionTabs: "Kirjautunut, kunnes suljet viimeisen välilehden",
   // Quota indicator fix
   fr_quotaChecked: "tarkistettu {ago}",
+  // sign-in redesign
+  si_tagline: "Pull requestisi ja arviointipyyntösi yhdessä rauhallisessa listassa.",
+  si_showToken: "Näytä tunnus",
+  si_tokenFormats: "Hyväksytyt muodot:",
+  si_or: "tai",
+  si_needToken: "Tarvitsetko tunnuksen?",
+  si_createFineGrained: "Luo hienojakoinen tunnus GitHubissa",
+  si_recommended: "Suositeltu",
+  si_opensInNewTab: "(avautuu uuteen välilehteen)",
+  si_prefilled: "Avautuu näillä lukuoikeuksilla valmiiksi valittuina",
+  si_fgContents: "Repository permissions → Contents: Read-only",
+  si_fgMetadata: "Repository permissions → Metadata: Read-only (lisätään automaattisesti)",
+  si_orgOwnerNote: "Members-oikeus on käytössä vain, kun resurssin omistaja on organisaatio.",
+  si_createClassic: "Luo sen sijaan klassinen tunnus (repo, read:org)",
+  si_classicWarning:
+    "Klassinen tunnus ei voi lukea yksityisiä repositorioita ilman ”repo”-oikeutta, joka antaa myös kirjoitusoikeuden, joten koontinäkymä varoittaa siitä.",
 };

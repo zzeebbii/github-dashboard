@@ -215,7 +215,8 @@ export const en = {
     "This deletes every account, token, preference and cached record from this browser.",
   am_cancel: "Cancel",
   si_rememberMe: "Remember me on this device",
-  si_rememberMeHint: "Off: the token is forgotten when you close the browser.",
+  si_rememberMeHint:
+    "Off: the token is kept until you close the last tab. On: it is stored on this device.",
   si_reauth: "GitHub no longer accepts the token for {login}. Enter a new token to sign in again.",
   // T19 pr list
   pr_filterLabel: "Filter pull requests",
@@ -356,6 +357,22 @@ export const en = {
   am_sessionTabs: "Signed in until you close the last tab",
   // Quota indicator fix
   fr_quotaChecked: "checked {ago}",
+  // sign-in redesign
+  si_tagline: "Your pull requests and review requests in one calm list.",
+  si_showToken: "Show token",
+  si_tokenFormats: "Accepted formats:",
+  si_or: "or",
+  si_needToken: "Need a token?",
+  si_createFineGrained: "Create a fine-grained token on GitHub",
+  si_recommended: "Recommended",
+  si_opensInNewTab: "(opens in a new tab)",
+  si_prefilled: "Opens with these read-only permissions selected",
+  si_fgContents: "Repository permissions → Contents: Read-only",
+  si_fgMetadata: "Repository permissions → Metadata: Read-only (added automatically)",
+  si_orgOwnerNote: "Members applies only when an organisation is the resource owner.",
+  si_createClassic: "Create a classic token instead (repo, read:org)",
+  si_classicWarning:
+    "Classic tokens cannot read private repositories without “repo”, which also grants write access, so the dashboard will warn you.",
 } as const satisfies Readonly<Record<string, string | Plural>>;
 
 export type MessageKey = keyof typeof en;

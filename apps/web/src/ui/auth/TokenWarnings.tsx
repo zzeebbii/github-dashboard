@@ -53,7 +53,7 @@ export function TokenWarnings({
   if (messages.length === 0 && missing.length === 0) return null;
 
   return (
-    <section aria-labelledby={headingId}>
+    <section className="token-warnings" aria-labelledby={headingId}>
       <h2 id={headingId}>{t("tw_heading")}</h2>
       {messages.length > 0 && (
         <ul>
