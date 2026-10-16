@@ -1,0 +1,58 @@
+{
+  "_synthetic": true,
+  "_source": "Shape of graphql-viewer-no-orgs.json (recorded) with two organisations added by hand.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4996",
+    "x-ratelimit-reset": "1792132567",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "4"
+  },
+  "body": {
+    "data": {
+      "viewer": {
+        "login": "octo-fixture",
+        "name": "Octo Fixture",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/1000001?v=4",
+        "organizations": {
+          "nodes": [
+            {
+              "__typename": "Organization",
+              "login": "acme",
+              "name": "Acme",
+              "avatarUrl": "https://avatars.githubusercontent.com/u/2000001?v=4",
+              "teams": {
+                "nodes": [
+                  {
+                    "slug": "web"
+                  },
+                  {
+                    "slug": "platform"
+                  }
+                ]
+              }
+            },
+            {
+              "__typename": "Organization",
+              "login": "octo-labs",
+              "name": "Octo Labs",
+              "avatarUrl": "https://avatars.githubusercontent.com/u/2000002?v=4",
+              "teams": {
+                "nodes": []
+              }
+            }
+          ]
+        }
+      },
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4996,
+        "resetAt": "2026-10-16T06:36:07Z"
+      }
+    }
+  }
+}

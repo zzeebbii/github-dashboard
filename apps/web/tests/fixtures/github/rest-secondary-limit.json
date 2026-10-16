@@ -1,0 +1,18 @@
+{
+  "_synthetic": true,
+  "_source": "Secondary limit per https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api (403 or 429 with retry-after).",
+  "status": 403,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "retry-after": "30",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4999",
+    "x-ratelimit-reset": "1792132947",
+    "x-ratelimit-resource": "core",
+    "x-ratelimit-used": "1"
+  },
+  "body": {
+    "message": "You have exceeded a secondary rate limit. Please wait a few minutes before you try again.",
+    "documentation_url": "https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "_note": "Recorded 2026-10-16: the same GET with If-None-Match set to the ETag above. No body; x-ratelimit-used stayed at 1, so the 304 was free.",
+  "status": 304,
+  "headers": {
+    "etag": "\"1dd1886f78932e29eae288c710fe648fc11efe2840d7682040c82da12002429c\"",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4999",
+    "x-ratelimit-reset": "1792132947",
+    "x-ratelimit-resource": "core",
+    "x-ratelimit-used": "1"
+  },
+  "body": null
+}

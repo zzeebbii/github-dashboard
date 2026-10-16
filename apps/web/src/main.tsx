@@ -7,6 +7,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { AnnouncerProvider } from "./application/announcer.tsx";
 import { AuthProvider } from "./application/auth-provider.tsx";
+import { GitHubProvider } from "./application/github-provider.tsx";
 import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "./application/i18n.tsx";
 import { PreferencesProvider } from "./application/preferences-provider.tsx";
@@ -17,6 +18,9 @@ import { createPatAuth } from "./infrastructure/auth/pat-auth.ts";
 import { createTokenStorage } from "./infrastructure/auth/token-storage.ts";
 import { createLocalAccountStore } from "./infrastructure/local-account-store.ts";
 import { createIndexedDbCache } from "./infrastructure/cache/indexeddb-cache.ts";
+import { createGitHubClient } from "./infrastructure/github/client.ts";
+import { createGitHubRead } from "./infrastructure/github/github-read.ts";
+import { createRateLimitTracker } from "./infrastructure/github/rate-limit.ts";
 import { createLocalPreferencesStore } from "./infrastructure/local-preferences-store.ts";
 import { router } from "./routes/router.tsx";
 // Self-hosted Geist and Geist Mono (FR-1.2): Vite bundles the woff2 files into dist/assets.
@@ -51,6 +55,16 @@ persistQueries(queryClient, cache);
 
 const accountStore = createLocalAccountStore();
 const auth = createPatAuth({ tokens: createTokenStorage(), accounts: accountStore });
+const github = createGitHubRead(
+  createGitHubClient({
+    auth,
+    cache,
+    clock,
+    tracker: createRateLimitTracker(clock),
+    // ponytail: no-op until T10 adds application/unauthorized.ts (sign out that account only).
+    onUnauthorized: () => undefined,
+  }),
+);
 
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
@@ -68,10 +82,12 @@ createRoot(rootElement).render(
           <QueryClientProvider client={queryClient}>
             <HtmlSanitizerContext value={sanitizeHtml}>
               <AuthProvider auth={auth} accountStore={accountStore}>
-                <RouterProvider
-                  router={router}
-                  context={{ hasAccount: () => accountStore.activeId() !== null }}
-                />
+                <GitHubProvider github={github}>
+                  <RouterProvider
+                    router={router}
+                    context={{ hasAccount: () => accountStore.activeId() !== null }}
+                  />
+                </GitHubProvider>
               </AuthProvider>
             </HtmlSanitizerContext>
           </QueryClientProvider>

@@ -1,0 +1,18 @@
+{
+  "_synthetic": true,
+  "_source": "X-GitHub-SSO on a 403, per https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api (the header carries a URL that authorizes the token).",
+  "status": 403,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-sso": "required; url=https://github.com/orgs/sso-corp/sso?authorization_request=FIXTURE",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4999",
+    "x-ratelimit-reset": "1792132947",
+    "x-ratelimit-resource": "core",
+    "x-ratelimit-used": "1"
+  },
+  "body": {
+    "message": "Resource protected by organization SAML enforcement. You must grant your Personal Access token access to this organization.",
+    "documentation_url": "https://docs.github.com/articles/authenticating-to-a-github-organization-with-saml-single-sign-on/"
+  }
+}

@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { render } from "vitest-browser-react";
 import { AnnouncerProvider } from "../src/application/announcer.tsx";
 import { AuthProvider } from "../src/application/auth-provider.tsx";
+import type { GitHubReadPort } from "../src/application/github.ts";
+import { GitHubProvider } from "../src/application/github-provider.tsx";
 import { HtmlSanitizerContext } from "../src/application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "../src/application/i18n.tsx";
 import type { PreferencesStore } from "../src/application/preferences.ts";
@@ -14,6 +16,7 @@ import { createAppRouter } from "../src/routes/router.tsx";
 import { createFakeColorSchemeQuery } from "./fakes/fake-color-scheme-query.ts";
 import { createInMemoryAccountStore } from "./fakes/in-memory-account-store.ts";
 import { createInMemoryAuth } from "./fakes/in-memory-auth.ts";
+import { createInMemoryGitHub } from "./fakes/in-memory-github.ts";
 import { createInMemoryPreferencesStore } from "./fakes/in-memory-preferences-store.ts";
 
 /**
@@ -26,6 +29,7 @@ interface ProviderOptions {
   queryClient?: QueryClient;
   preferencesStore?: PreferencesStore;
   prefersDark?: ColorSchemeQuery;
+  github?: GitHubReadPort;
 }
 
 export async function renderWithProviders(
@@ -34,6 +38,7 @@ export async function renderWithProviders(
     queryClient = testQueryClient(),
     preferencesStore = createInMemoryPreferencesStore(),
     prefersDark = createFakeColorSchemeQuery(),
+    github = createInMemoryGitHub(),
   }: ProviderOptions = {},
 ) {
   // `render` is async in vitest-browser-react v2.
@@ -43,7 +48,9 @@ export async function renderWithProviders(
         <AnnouncerProvider>
           <QueryClientProvider client={queryClient}>
             {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
-            <HtmlSanitizerContext value={sanitizeHtml}>{ui}</HtmlSanitizerContext>
+            <HtmlSanitizerContext value={sanitizeHtml}>
+              <GitHubProvider github={github}>{ui}</GitHubProvider>
+            </HtmlSanitizerContext>
           </QueryClientProvider>
         </AnnouncerProvider>
       </PreferredI18nProvider>
