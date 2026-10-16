@@ -151,3 +151,35 @@ test("with GitHub App config the button starts the redirect (AC-2.3)", async () 
   await button.click();
   expect(githubApp.calls.starts).toBe(1);
 });
+
+// T10
+test("remember me is off by default, and the choice is stored with the account (FR-2.7)", async () => {
+  const { screen, signIn, accountStore, onContinue } = await renderSignIn();
+  const remember = screen.getByLabelText("Remember me on this device");
+  await expect.element(remember).not.toBeChecked();
+
+  await signIn(READ_ONLY_TOKEN);
+  await expect.poll(() => onContinue.mock.calls.length).toBe(1);
+  expect(accountStore.list()[0]?.rememberMe).toBe(false);
+
+  await remember.click();
+  await signIn(READ_ONLY_TOKEN);
+  await expect.poll(() => accountStore.list()[0]?.rememberMe).toBe(true);
+  expect(accountStore.list()).toHaveLength(1);
+});
+
+test("after a 401, the page says which account needs a new token", async () => {
+  const accountStore = createInMemoryAccountStore();
+  const screen = await renderWithProviders(
+    <AuthProvider auth={createInMemoryAuth(accountStore, results)} accountStore={accountStore}>
+      <SignInPage onContinue={() => undefined} reauthLogin="octo-fixture" />
+    </AuthProvider>,
+  );
+
+  await expect
+    .element(
+      screen.getByText("GitHub no longer accepts the token for octo-fixture.", { exact: false }),
+    )
+    .toBeInTheDocument();
+  await expectNoAxeViolations(screen.container);
+});

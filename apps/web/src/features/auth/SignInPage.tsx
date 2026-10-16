@@ -21,13 +21,15 @@ const errorKeys = {
 interface SignInPageProps {
   /** Called once signed in, straight away when there is nothing to warn about. */
   readonly onContinue: () => void;
+  /** Set when GitHub signed this account out (FR-2.8): the user is asked for a new token. */
+  readonly reauthLogin?: string | undefined;
 }
 
 /**
  * PAT sign-in (FR-2.2). The input is uncontrolled and the token is never put in React
  * state, so it does not show up in DevTools and is gone once the request is made.
  */
-export function SignInPage({ onContinue }: SignInPageProps) {
+export function SignInPage({ onContinue, reauthLogin }: SignInPageProps) {
   const t = useT();
   const announce = useAnnounce();
   const { signIn } = useAuth();
@@ -38,14 +40,17 @@ export function SignInPage({ onContinue }: SignInPageProps) {
   const [result, setResult] = useState<SignInResult | null>(null);
 
   async function submit(form: HTMLFormElement) {
-    const token = new FormData(form).get("token");
+    const data = new FormData(form);
+    const token = data.get("token");
+    // Default off (FR-2.7): the token lives in sessionStorage unless the user asks otherwise.
+    const rememberMe = data.get("rememberMe") === "on";
     form.reset();
     setPending(true);
     setError(null);
     try {
       const signedIn = await signIn({
         token: typeof token === "string" ? token : "",
-        rememberMe: false,
+        rememberMe,
       });
       const nothingToSay =
         tokenWarnings(signedIn.account).length === 0 &&
@@ -77,6 +82,7 @@ export function SignInPage({ onContinue }: SignInPageProps) {
       {result === null && <GitHubAppButton />}
       {account === null || result === null ? (
         <form onSubmit={onSubmit} aria-busy={pending}>
+          {reauthLogin !== undefined && <p>{t("si_reauth", { login: reauthLogin })}</p>}
           <p>{t("si_intro")}</p>
           <label htmlFor={tokenId}>{t("si_tokenLabel")}</label>
           <input
@@ -89,6 +95,13 @@ export function SignInPage({ onContinue }: SignInPageProps) {
             required
             aria-describedby={error === null ? undefined : `${tokenId}-error`}
           />
+          <label className="checkbox">
+            <input name="rememberMe" type="checkbox" aria-describedby={`${tokenId}-remember`} />
+            {t("si_rememberMe")}
+          </label>
+          <p id={`${tokenId}-remember`} className="hint">
+            {t("si_rememberMeHint")}
+          </p>
           <button type="submit" disabled={pending}>
             {pending ? t("si_submitting") : t("si_submit")}
           </button>

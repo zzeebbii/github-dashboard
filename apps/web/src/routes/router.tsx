@@ -48,9 +48,13 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/sign-in",
+  // `?account=<login>`: re-enter a token for an account GitHub signed out (FR-2.8). Display only.
+  validateSearch: (search: Record<string, unknown>): { account?: string } =>
+    typeof search["account"] === "string" ? { account: search["account"] } : {},
   component: function SignInRoute() {
     const navigate = useNavigate();
-    return <SignInPage onContinue={() => void navigate({ to: "/" })} />;
+    const { account } = signInRoute.useSearch();
+    return <SignInPage reauthLogin={account} onContinue={() => void navigate({ to: "/" })} />;
   },
 });
 

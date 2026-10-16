@@ -25,6 +25,14 @@ export function createTokenStorage(
       session.removeItem(key(id));
       persistent.removeItem(key(id));
     },
+    /**
+     * "Sign out of everything" (FR-2.9): empties both storages entirely, so the account
+     * records, preferences and anything else of this origin go with the tokens.
+     */
+    clearAll(): void {
+      session.clear();
+      persistent.clear();
+    },
   };
 }
 

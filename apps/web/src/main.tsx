@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { createAccountActions } from "./application/accounts.ts";
 import { AnnouncerProvider } from "./application/announcer.tsx";
 import { AuthProvider } from "./application/auth-provider.tsx";
 import { GitHubProvider } from "./application/github-provider.tsx";
@@ -12,6 +13,8 @@ import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "./application/i18n.tsx";
 import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
+import { purgeSessionOnlyCaches } from "./application/startup.ts";
+import { createUnauthorizedHandler } from "./application/unauthorized.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
 import { createGitHubAppAuth } from "./infrastructure/auth/github-app-auth.ts";
@@ -24,6 +27,7 @@ import { createGitHubRead } from "./infrastructure/github/github-read.ts";
 import { createRateLimitTracker } from "./infrastructure/github/rate-limit.ts";
 import { createLocalPreferencesStore } from "./infrastructure/local-preferences-store.ts";
 import { router } from "./routes/router.tsx";
+import type { AccountId } from "./domain/account.ts";
 // Self-hosted Geist and Geist Mono (FR-1.2): Vite bundles the woff2 files into dist/assets.
 // Imported here rather than via CSS @import so knip sees the dependencies are used.
 import "@fontsource-variable/geist";
@@ -47,15 +51,10 @@ const queryClient = new QueryClient({
   },
 });
 
-// Cache-first (ADR-0017): restore cached query data before the first render, but never
-// wait more than 300 ms for it; then save every successful fetch.
 const clock = { now: () => new Date() };
 const cache = createIndexedDbCache({ clock });
-await hydrateQueries(queryClient, cache, { timeoutMs: 300 });
-persistQueries(queryClient, cache);
-
-const accountStore = createLocalAccountStore();
 const tokens = createTokenStorage();
+const accountStore = createLocalAccountStore();
 const patAuth = createPatAuth({ tokens, accounts: accountStore });
 // GitHub App sign-in only when both variables are set (FR-2.5); otherwise PAT alone.
 const githubApp =
@@ -69,16 +68,54 @@ const githubApp =
         clock,
       });
 const auth = githubApp ?? patAuth;
+// Is a token stored? Sync, unlike auth.currentToken, which may refresh one.
+const hasToken = (id: AccountId) => tokens.read(id) !== null;
+
+// Startup, in this order, all before the first render:
+// 1. FR-2.13: purge the cache of accounts whose session-only token is gone. It must finish
+//    before hydration, or the purged records would be restored into the query client.
+// 2. Cache-first (ADR-0017): restore the ACTIVE account's cached query data, waiting at most
+//    300 ms; then save every successful fetch.
+await purgeSessionOnlyCaches(accountStore, hasToken, cache);
+await hydrateQueries(queryClient, cache, accountStore.activeId(), { timeoutMs: 300 });
+persistQueries(queryClient, cache);
+
 const github = createGitHubRead(
   createGitHubClient({
     auth,
     cache,
     clock,
     tracker: createRateLimitTracker(clock),
-    // ponytail: no-op until T10 adds application/unauthorized.ts (sign out that account only).
-    onUnauthorized: () => undefined,
+    // FR-2.8: a 401 signs out that account only and asks for a new token for it.
+    onUnauthorized: createUnauthorizedHandler({
+      accounts: accountStore,
+      forgetToken: (id) => {
+        tokens.remove(id);
+      },
+      toSignIn: (account) => void router.navigate({ to: "/sign-in", search: { account } }),
+    }),
   }),
 );
+
+const accountActions = createAccountActions({
+  auth,
+  accounts: accountStore,
+  cache,
+  queryClient,
+  hasToken,
+  clearBrowserStorage: () => {
+    tokens.clearAll();
+  },
+  reload: () => {
+    location.reload();
+  },
+});
+
+/** The shell needs an active account that still has a token; otherwise, sign in. */
+function hasAccount(): boolean {
+  const id = accountStore.activeId();
+  return id !== null && hasToken(id);
+}
 
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
@@ -95,12 +132,14 @@ createRoot(rootElement).render(
         <AnnouncerProvider>
           <QueryClientProvider client={queryClient}>
             <HtmlSanitizerContext value={sanitizeHtml}>
-              <AuthProvider auth={auth} accountStore={accountStore} githubApp={githubApp}>
+              <AuthProvider
+                auth={auth}
+                accountStore={accountStore}
+                githubApp={githubApp}
+                actions={accountActions}
+              >
                 <GitHubProvider github={github}>
-                  <RouterProvider
-                    router={router}
-                    context={{ hasAccount: () => accountStore.activeId() !== null }}
-                  />
+                  <RouterProvider router={router} context={{ hasAccount }} />
                 </GitHubProvider>
               </AuthProvider>
             </HtmlSanitizerContext>

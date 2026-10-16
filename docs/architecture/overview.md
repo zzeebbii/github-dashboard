@@ -107,6 +107,22 @@ sequenceDiagram
 - A quota guard slows down and then stops auto-refresh as the rate limit runs low.
   Budgets per operation are asserted by tests.
 
+### Startup and accounts
+
+`main.tsx` does this before the first render, in this order
+([ADR-0016](../adr/0016-auth-port-and-token-storage.md)):
+
+1. `application/startup.ts` purges the cache of every account without "remember me" whose
+   session token is gone (FR-2.13).
+2. `application/query-hydration.ts` restores the cached queries of the **active** account
+   only. Every `CachePort` call takes an `AccountId`; there is no cross-account read.
+
+Afterwards, `application/accounts.ts` switches (re-hydrating the new account), removes
+an account (token, record, queries, cache) or signs out of everything (all Web Storage
+and the IndexedDB database, then a reload). A 401 goes to `application/unauthorized.ts`:
+that account's token is forgotten, its data kept, and the user is sent to
+`/sign-in?account=<login>`.
+
 ## Where to read next
 
 | Topic                               | Document                                                                 |

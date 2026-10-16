@@ -403,3 +403,191 @@ kbd {
   align-items: center;
   gap: 6px;
 }
+
+/* T10: the header's account button and menu (the design's account menu). */
+.account-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.account-button {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.account-warning-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--background);
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+.account-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 60;
+  width: 264px;
+  padding: 4px;
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  animation: popIn 0.12s ease-out;
+}
+
+.account-warning {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--subtle);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.account-warning svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--amber);
+}
+
+.menu-heading {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--accent);
+}
+
+.menu-item-icon,
+.menu-item-avatar {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.menu-item-icon {
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+
+.menu-item-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.menu-item-login {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.menu-item-sub {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.menu-separator {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--border);
+}
+
+.confirm-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--popover);
+  color: var(--foreground);
+  box-shadow: var(--shadow);
+  animation: popIn 0.12s ease-out;
+}
+
+.confirm-dialog::backdrop {
+  background: var(--overlay);
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.confirm-dialog p {
+  margin: 0 0 20px;
+  color: var(--muted-foreground);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-actions button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  cursor: pointer;
+}
+
+.confirm-actions .danger {
+  border-color: var(--red);
+  background: var(--red);
+  color: var(--primary-foreground);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}

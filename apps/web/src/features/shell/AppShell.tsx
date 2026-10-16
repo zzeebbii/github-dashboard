@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useI18n } from "../../application/i18n.tsx";
 import { usePreferences } from "../../application/preferences-provider.tsx";
+import { AccountMenuContainer } from "./AccountMenuContainer.tsx";
 import { Drawer } from "../../ui/shell/Drawer.tsx";
 import { Header } from "../../ui/shell/Header.tsx";
 import { Sidebar } from "../../ui/shell/Sidebar.tsx";
@@ -13,7 +14,7 @@ const MAIN_ID = "main";
  * The frame every signed-in screen renders in (FR-1.7, FR-1.9): skip link, sidebar (a drawer
  * below 768 px), header and the `main` landmark holding the route's content.
  *
- * Later features fill the slots here: the account menu (T10), quota and freshness (T14) and
+ * Later features fill the slots here: quota and freshness (T14) and
  * the repository sections (T17).
  */
 export function AppShell() {
@@ -49,6 +50,7 @@ export function AppShell() {
           onOpenMenu={() => {
             setDrawerOpen(true);
           }}
+          account={<AccountMenuContainer />}
           resolvedTheme={resolvedTheme}
           onToggleTheme={() => {
             updatePreferences({ theme: resolvedTheme === "dark" ? "light" : "dark" });

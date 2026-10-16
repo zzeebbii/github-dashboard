@@ -190,4 +190,26 @@ export const fi: Record<MessageKey, string> = {
   ga_errInvalidCallback:
     "Kirjautumislinkki on virheellinen, vanhentunut tai jo käytetty. Aloita kirjautuminen uudelleen.",
   ga_errRejected: "GitHub ei hyväksynyt kirjautumista. Aloita kirjautuminen uudelleen.",
+  // T10 accounts
+  am_button: "Tilivalikko: {login}",
+  am_accounts: "GitHub-tilit",
+  am_add: "Lisää GitHub-tili",
+  am_remembered: "Muistetaan tällä laitteella",
+  am_sessionOnly: "Kirjautunut tämän istunnon ajan",
+  am_signedOut: "Kirjautunut ulos",
+  am_remove: "Poista {login}",
+  am_signOutAll: "Kirjaudu ulos kaikista",
+  am_switched: "Vaihdettu tiliin {login}",
+  am_removeTitle: "Poistetaanko {login}?",
+  am_removeBody:
+    "Tilin {login} tunnus, suosikit ja välimuistin tiedot poistetaan tästä selaimesta.",
+  am_removeConfirm: "Poista tili",
+  am_signOutAllTitle: "Kirjaudutaanko ulos kaikista?",
+  am_signOutAllBody:
+    "Kaikki tilit, tunnukset, asetukset ja välimuistin tiedot poistetaan tästä selaimesta.",
+  am_cancel: "Peruuta",
+  si_rememberMe: "Muista minut tällä laitteella",
+  si_rememberMeHint: "Pois päältä: tunnus unohdetaan, kun suljet selaimen.",
+  si_reauth:
+    "GitHub ei enää hyväksy tilin {login} tunnusta. Kirjaudu uudelleen antamalla uusi tunnus.",
 };
