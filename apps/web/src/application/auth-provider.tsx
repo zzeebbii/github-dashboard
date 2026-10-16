@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Account, AccountId } from "../domain/account.ts";
+import type { Favourite } from "../domain/favourites.ts";
 import type { AccountActions, AccountStore } from "./accounts.ts";
 import type { AuthPort, GitHubAppSignInPort, SignInRequest, SignInResult } from "./auth.ts";
 
@@ -13,6 +14,10 @@ interface AuthContextValue {
   readonly activeAccount: Account | null;
   readonly actions: AccountActions | undefined;
   readonly refresh: () => void;
+  /** Every account's favourites (FR-4.4), as last read from the store. */
+  readonly favourites: ReadonlyMap<AccountId, readonly Favourite[]>;
+  /** Replaces one account's favourites. */
+  readonly setFavourites: (accountId: AccountId, favourites: readonly Favourite[]) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -34,10 +39,14 @@ export function AuthProvider({
   actions,
   children,
 }: AuthProviderProps) {
-  const snapshot = useCallback(
-    () => ({ accounts: accountStore.list(), activeId: accountStore.activeId() }),
-    [accountStore],
-  );
+  const snapshot = useCallback(() => {
+    const accounts = accountStore.list();
+    return {
+      accounts,
+      activeId: accountStore.activeId(),
+      favourites: new Map(accounts.map((a) => [a.id, accountStore.favourites(a.id)])),
+    };
+  }, [accountStore]);
   const [state, setState] = useState(snapshot);
   const queryClient = useQueryClient();
   const refresh = useCallback(() => {
@@ -56,6 +65,14 @@ export function AuthProvider({
       return result;
     },
     [auth, refresh, queryClient],
+  );
+
+  const setFavourites = useCallback(
+    (accountId: AccountId, favourites: readonly Favourite[]) => {
+      accountStore.setFavourites(accountId, favourites);
+      refresh();
+    },
+    [accountStore, refresh],
   );
 
   const signOut = useCallback(
@@ -90,8 +107,10 @@ export function AuthProvider({
       activeAccount: state.accounts.find((a) => a.id === state.activeId) ?? null,
       actions,
       refresh,
+      favourites: state.favourites,
+      setFavourites,
     }),
-    [signIn, signOut, app, state, actions, refresh],
+    [signIn, signOut, app, state, actions, refresh, setFavourites],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;
@@ -116,6 +135,22 @@ export function useGitHubAppSignIn(): GitHubAppSignInPort | null {
 export function useAccounts(): Pick<AuthContextValue, "accounts" | "activeAccount"> {
   const { accounts, activeAccount } = useAuthContext();
   return { accounts, activeAccount };
+}
+
+const NO_FAVOURITES: readonly Favourite[] = [];
+
+/** One account's stored favourites, and a setter that re-reads the store. */
+export function useFavouriteStore(accountId: AccountId) {
+  const { favourites, setFavourites } = useAuthContext();
+  return {
+    favourites: favourites.get(accountId) ?? NO_FAVOURITES,
+    setFavourites: useCallback(
+      (list: readonly Favourite[]) => {
+        setFavourites(accountId, list);
+      },
+      [setFavourites, accountId],
+    ),
+  };
 }
 
 /** The account actions, each followed by a re-read of the account store. */

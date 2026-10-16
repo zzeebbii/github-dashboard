@@ -42,7 +42,8 @@ export class GitHubQueryError extends Error {
   }
 }
 
-async function unwrap<T>(
+/** A port result as a query function wants it: the value, or a thrown `GitHubQueryError`. */
+export async function unwrap<T>(
   call: Promise<GitHubResult<T>>,
 ): Promise<{ readonly data: T; readonly partialErrors: readonly GitHubError[] }> {
   const result = await call;

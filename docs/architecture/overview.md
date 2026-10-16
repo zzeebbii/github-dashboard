@@ -113,6 +113,10 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
 
 - **What a refresh does:** refetches the active account's mounted queries one after
   another, matched by key (`[store, accountId, ...]`). A new list query needs no wiring.
+  A query with `meta: OWN_REFRESH_ONLY` is left alone and refetches only through its own
+  refetch: the repository list (`application/repos/use-repos.ts`) stays fresh for 24 h
+  that way and reloads from the sidebar's button (AC-4.1). Favourites
+  (`use-favourites.ts`, one query per 25 node ids) refresh with every cycle.
 - **When:** every 5 minutes while visible and online; on focus when the last refresh is
   over 60 s old; on reconnect; and on demand. `domain/quota.ts` doubles the interval
   below 20% of the GraphQL pool and stops it below 5% until the reset. A secondary limit

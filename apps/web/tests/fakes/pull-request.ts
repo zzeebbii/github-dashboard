@@ -13,6 +13,7 @@ export function aPullRequest(overrides: Partial<PullRequest> = {}): PullRequest 
     isDraft: false,
     createdAt: "2026-10-01T00:00:00Z",
     updatedAt: "2026-10-02T00:00:00Z",
+    headSha: "0000000000000000000000000000000000000001",
     additions: 1,
     deletions: 1,
     commentCount: 0,
