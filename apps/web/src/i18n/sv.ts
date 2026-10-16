@@ -1,7 +1,7 @@
-import type { MessageKey } from "./en.ts";
+import type { Catalogue } from "./en.ts";
 
 /** Swedish. Every key in en.ts must be here too: `pnpm i18n:check` enforces it. */
-export const sv: Record<MessageKey, string> = {
+export const sv: Catalogue = {
   accounts: "GitHub-konton",
   addAccount: "Lägg till GitHub-konto",
   home: "Hem",
@@ -11,7 +11,7 @@ export const sv: Record<MessageKey, string> = {
   findRepo: "Hitta ett repo…",
   regexHint: "Reguljära uttryck stöds, t.ex. ^auth|service$",
   invalidRegex: "Ogiltigt uttryck, söker som text",
-  matches: "{n} träffar · regex",
+  matches: { one: "{n} träff · regex", other: "{n} träffar · regex" },
   noRepos: "Inga repon matchar.",
   settings: "Inställningar",
   language: "Språk",
@@ -24,7 +24,8 @@ export const sv: Record<MessageKey, string> = {
   darkTheme: "Byt till mörkt tema",
   switchTo: "Byt konto till",
   pullRequests: "Pull requests",
-  homeSub: "{n} kräver din åtgärd i {r} repon",
+  homeSub: { one: "{n} kräver din åtgärd i {repos}", other: "{n} kräver din åtgärd i {repos}" },
+  homeRepos: { one: "{n} repo", other: "{n} repon" },
   filterPh: "Filtrera på titel, författare, #nummer…",
   drafts: "Utkast",
   reset: "Återställ",
@@ -100,7 +101,7 @@ export const sv: Record<MessageKey, string> = {
   cUnres: "Olösta trådar",
   cRes: "Lösta trådar",
   cPeople: "Personer",
-  showing: "Visar {a} av {b} kommentarer",
+  showing: { one: "Visar {a} av {n} kommentar", other: "Visar {a} av {n} kommentarer" },
   description: "Beskrivning",
   noMatch: "Inget matchar filtren.",
   commented: "kommenterade",
@@ -110,8 +111,7 @@ export const sv: Record<MessageKey, string> = {
   resolve: "Lös",
   unresolve: "Återöppna",
   resolved: "Löst",
-  comment1: "kommentar",
-  commentN: "kommentarer",
+  commentCount: { one: "{n} kommentar", other: "{n} kommentarer" },
   required: "Obligatorisk",
   logs: "Loggar",
   reviewers: "Granskare",
@@ -225,10 +225,13 @@ export const sv: Record<MessageKey, string> = {
   pr_ciFailing: "Kontroller misslyckas",
   pr_ciRunning: "Kontroller körs",
   pr_reviewChanges: "Ändringar",
-  pr_reviewApproved: "{a} av {n} granskare godkände",
+  pr_reviewApproved: {
+    one: "{a} av {n} granskare godkände",
+    other: "{a} av {n} granskare godkände",
+  },
   pr_noReviewers: "Inga granskare",
   pr_comments: "Kommentarer",
-  pr_new: "+{n} nya",
+  pr_new: { one: "+{n} ny", other: "+{n} nya" },
   pr_linesChanged: "Ändrade rader",
   pr_updated: "Uppdaterad",
   // T14 freshness
@@ -269,13 +272,13 @@ export const sv: Record<MessageKey, string> = {
   rp_error: "GitHub returnerade inte repots pull requests. Försök uppdatera.",
   // T17 sidebar
   sb_search: "Sök repon",
-  sb_matches: "{n} träffar",
+  sb_matches: { one: "{n} träff", other: "{n} träffar" },
   sb_tooComplex: "Uttrycket är för komplext, söker som text",
   sb_refresh: "Uppdatera repon",
   sb_loading: "Läser in repon…",
   sb_loadFailed: "Det gick inte att läsa in repon.",
-  sb_repoCount: "{n} repon",
-  sb_openPrs: "{n} öppna pull requests",
+  sb_repoCount: { one: "{n} repo", other: "{n} repon" },
+  sb_openPrs: { one: "{n} öppen pull request", other: "{n} öppna pull requests" },
   sb_favourite: "Favorit: {repo}",
   sb_noFavourites: "Stjärnmärk ett repo för att lägga till det här.",
   sb_unavailable: "Inte tillgänglig",
@@ -336,6 +339,6 @@ export const sv: Record<MessageKey, string> = {
   pp_created: "Öppnad",
   // T25 palette
   pa_title: "Kommandopalett",
-  pa_results: "{n} resultat",
+  pa_results: { one: "{n} resultat", other: "{n} resultat" },
   pa_language: "Språk: {name}",
 };

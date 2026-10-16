@@ -218,6 +218,16 @@ const scenarios = [
     apply: () =>
       mutate("apps/web/src/i18n/sv.ts", (source) => source.replace(/^ {2}kSearch:.*\n/mu, "")),
   },
+  {
+    name: "a plural form that drops English's {n} is caught",
+    guards: "pnpm i18n:check",
+    expect: 'lacks placeholder "{n}"',
+    touches: ["apps/web/src/i18n/fi.ts"],
+    apply: () =>
+      mutate("apps/web/src/i18n/fi.ts", (source) =>
+        source.replace('one: "{n} tulos"', 'one: "yksi tulos"'),
+      ),
+  },
 
   // knip.
   {

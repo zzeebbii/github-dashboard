@@ -54,7 +54,7 @@ test("plain text is a substring search, and clearing it shows everything again",
   const { sidebar, input, visible } = await setup();
 
   await input.fill("BILL");
-  await expect.element(sidebar.getByText("1 matches")).toBeInTheDocument();
+  await expect.element(sidebar.getByText("1 match")).toBeInTheDocument();
   expect(visible()).toEqual(["/repo/acme/billing"]);
 
   await input.fill("");

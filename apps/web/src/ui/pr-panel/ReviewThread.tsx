@@ -32,9 +32,7 @@ export function ReviewThread({ ctx, thread }: { ctx: PanelContext; thread: Threa
           {thread.path}
           {thread.line !== null && <span className="pp-muted">:{thread.line}</span>}
         </code>
-        <span className="pp-muted">
-          {thread.comments.length} {t(thread.comments.length === 1 ? "comment1" : "commentN")}
-        </span>
+        <span className="pp-muted">{t("commentCount", { n: thread.comments.length })}</span>
         {thread.isOutdated && <span className="pp-badge">{t("pp_outdated")}</span>}
         {thread.isResolved && (
           <span className="pp-badge" data-tone="purple">

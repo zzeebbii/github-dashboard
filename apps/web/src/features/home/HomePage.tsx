@@ -108,7 +108,9 @@ function Home({ account }: { account: Account }) {
           <p className="home-subtitle">
             {t("homeSub", {
               n: attention.length,
-              r: new Set(attention.map((row) => row.pr.repository)).size,
+              repos: t("homeRepos", {
+                n: new Set(attention.map((row) => row.pr.repository)).size,
+              }),
             })}
           </p>
         )}
