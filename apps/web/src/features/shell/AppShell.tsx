@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useI18n } from "../../application/i18n.tsx";
 import { usePreferences } from "../../application/preferences-provider.tsx";
+import { RepositoriesContainer } from "../sidebar/RepositoriesContainer.tsx";
 import { AccountMenuContainer } from "./AccountMenuContainer.tsx";
 import { OfflineBannerContainer, QuotaContainer, UpdatedContainer } from "./FreshnessContainer.tsx";
 import { Drawer } from "../../ui/shell/Drawer.tsx";
@@ -16,7 +17,7 @@ const MAIN_ID = "main";
  * below 768 px), header and the `main` landmark holding the route's content.
  *
  * The header carries the quota and "updated" slots; the offline banner opens main (T14).
- * Later features fill the slots here: the repository sections (T17).
+ * The sidebar's repository slot holds the Favourites and Repositories sections (T17).
  */
 export function AppShell() {
   const { t, language, setLanguage } = useI18n();
@@ -24,7 +25,14 @@ export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const sidebar = <Sidebar t={t} language={language} onLanguageChange={setLanguage} />;
+  const sidebar = (
+    <Sidebar
+      t={t}
+      language={language}
+      onLanguageChange={setLanguage}
+      repositories={<RepositoriesContainer />}
+    />
+  );
 
   return (
     <div className="shell">

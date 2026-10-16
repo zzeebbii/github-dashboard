@@ -177,7 +177,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 
 ### Functional Requirements
 
-- **FR-5.1** `domain/sections.ts`: a pure function assigning each PR to one Home section by the ordered rule table in the pitch's Business Rules (rules 1–6), returning section and reason chip.
+- **FR-5.1** `domain/sections.ts`: a pure function assigning each PR to one Home section by the ordered rule table in the pitch's Business Rules (rules 1–6), returning section and reason chip. Rule 5 ("Ready to merge") uses `mergeable`, the CI rollup and the review decision, not `mergeStateStatus` (amended 2026-10-16).
 - **FR-5.2** `domain/rereview.ts`: re-requested when the viewer has ≥ 1 review and either the head commit date is newer than the viewer's latest review or the latest `REVIEW_REQUESTED_EVENT` for the viewer is newer than it.
 - **FR-5.3** `domain/activity.ts`: "+N new" counts comments, reviews and review-thread replies by authors other than the viewer and not bots (`__typename === 'Bot'` or login ending `[bot]`), newer than the seen marker; returns `null` (hidden) when no marker exists. "Stale" = no human comment, review or commit for ≥ 14 days.
 - **FR-5.4** Home queries: up to 3 GraphQL `search(type: ISSUE)` queries — `is:pr is:open review-requested:@me`, `is:pr is:open author:@me`, `is:pr is:open reviewed-by:@me -author:@me` (re-review candidates) — each `first: 20` with cursor pagination to the 1,000-result cap; results merged and de-duplicated by node id. No list query selects `mergeStateStatus`; conflicts come from `mergeable`, CI from `PullRequest.statusCheckRollup`. _Amended 2026-10-16 after measurement: rows of 100 exceed GitHub's 10 s limit — see `docs/architecture/github-query-costs.md`._

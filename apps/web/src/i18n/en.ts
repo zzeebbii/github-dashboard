@@ -268,6 +268,28 @@ export const en = {
   rp_noAccess:
     "GitHub refused this account access to the repository. Check the token's access to its organization.",
   rp_error: "GitHub did not return this repository's pull requests. Try Refresh.",
+  // T17 sidebar
+  sb_search: "Search repositories",
+  sb_matches: "{n} matches",
+  sb_tooComplex: "Pattern too complex to run safely, matching as plain text",
+  sb_refresh: "Refresh repositories",
+  sb_loading: "Loading repositories…",
+  sb_loadFailed: "Could not load repositories.",
+  sb_repoCount: "{n} repositories",
+  sb_openPrs: "{n} open pull requests",
+  sb_favourite: "Favorite {repo}",
+  sb_noFavourites: "Star a repository to add it here.",
+  sb_unavailable: "Unavailable",
+  sb_remove: "Remove",
+  sb_removeFavourite: "Remove {repo} from favorites",
+  sb_costNotice: "{n} favorites: each refresh uses {r} requests of your API quota.",
+  sb_orgAccess: "Some organizations are hidden",
+  sb_unknownOrg: "An organization",
+  sb_reason_sso: "Needs SAML single sign-on authorization for this token",
+  sb_reason_fineGrainedPolicy: "Does not allow this fine-grained token, or has not approved it",
+  sb_reason_appNotInstalled: "The GitHub App is not installed here",
+  sb_fixAccess: "Fix access",
+  sb_fixAccessFor: "Fix access to {org} (opens in a new tab)",
 } as const;
 
 export type MessageKey = keyof typeof en;
