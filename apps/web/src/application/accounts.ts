@@ -1,5 +1,6 @@
 import type { Query, QueryClient } from "@tanstack/react-query";
 import type { Account, AccountId } from "../domain/account.ts";
+import type { Favourite } from "../domain/favourites.ts";
 import type { AuthPort } from "./auth.ts";
 import type { CachePort } from "./cache.ts";
 import { hydrateQueries } from "./query-hydration.ts";
@@ -10,10 +11,14 @@ export interface AccountStore {
   get(id: AccountId): Account | undefined;
   /** Inserts, or replaces the account with the same GitHub user id. */
   upsert(account: Account): void;
-  /** Also clears the active id if it pointed at this account. */
+  /** Also clears the active id if it pointed at this account, and deletes its favourites. */
   remove(id: AccountId): void;
   activeId(): AccountId | null;
   setActive(id: AccountId | null): void;
+  /** The account's favourite repositories (FR-4.4), in the order they were added. */
+  favourites(id: AccountId): readonly Favourite[];
+  /** Replaces them. A 401 keeps them (FR-2.8); only `remove` deletes them. */
+  setFavourites(id: AccountId, favourites: readonly Favourite[]): void;
 }
 
 /**

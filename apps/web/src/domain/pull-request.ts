@@ -65,6 +65,8 @@ export interface PullRequest {
   readonly isDraft: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
+  /** The head commit SHA. With `updatedAt` it keys the detail cache (T22). */
+  readonly headSha: string;
   readonly additions: number;
   readonly deletions: number;
   readonly commentCount: number;

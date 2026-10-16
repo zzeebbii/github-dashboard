@@ -1,4 +1,5 @@
 import type { Account, AccountId } from "../domain/account.ts";
+import type { FavouriteLookup, Repository } from "../domain/favourites.ts";
 import type {
   CheckRun,
   PullRequestDetail,
@@ -33,6 +34,20 @@ export interface GitHubReadPort {
     ref: PullRequestRef,
     headSha: string,
   ): Promise<GitHubResult<readonly CheckRun[]>>;
+  /**
+   * Every repository of the viewer and their organisations (FR-4.1), 100 per page. An
+   * organisation GitHub hides is an `orgAccess` partial error; the rest still load.
+   * 1 GraphQL request, plus 1 per further page of one connection (AC-4.1).
+   */
+  listRepos(accountId: AccountId): Promise<GitHubResult<readonly Repository[]>>;
+  /**
+   * Up to 25 favourites by node id, with their open PRs (FR-4.5, FR-4.7). One lookup per
+   * id, in order. 1 GraphQL request.
+   */
+  refreshFavourites(
+    accountId: AccountId,
+    nodeIds: readonly string[],
+  ): Promise<GitHubResult<readonly FavouriteLookup[]>>;
 }
 
 export interface Viewer {

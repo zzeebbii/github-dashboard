@@ -1,0 +1,1096 @@
+{
+  "_note": "Recorded 2026-10-16: queries/favourites.graphql.ts with 25 public repositories (measured cost 1, 2.0-2.7 s). Owners, repository names, PR authors and titles replaced with fixture values; each repository's PR list trimmed to 2 (totalCount kept).",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4239",
+    "x-ratelimit-reset": "1792139916",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "761"
+  },
+  "body": {
+    "data": {
+      "nodes": [
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOOZZ62A",
+          "nameWithOwner": "octo-owner-1/repo-1",
+          "pullRequests": {
+            "totalCount": 15,
+            "nodes": [
+              {
+                "id": "PR_kwDOOZZ62M6moaKQ",
+                "number": 40,
+                "title": "Fixture change 1",
+                "url": "https://github.com/octo-owner-1/repo-1/pull/40",
+                "isDraft": false,
+                "createdAt": "2025-09-03T11:31:23Z",
+                "updatedAt": "2026-10-12T14:43:33Z",
+                "headRefOid": "fb56fca5f01525574c01ebc7ea9c05348cd69906",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-1"
+                }
+              },
+              {
+                "id": "PR_kwDOOZZ62M63lcWn",
+                "number": 148,
+                "title": "Fixture change 2",
+                "url": "https://github.com/octo-owner-1/repo-1/pull/148",
+                "isDraft": false,
+                "createdAt": "2025-12-08T04:29:24Z",
+                "updatedAt": "2026-10-12T14:43:29Z",
+                "headRefOid": "bb362debb67d568950ae41bb435375ba5ccd81c3",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOLDnCKw",
+          "nameWithOwner": "octo-owner-2/repo-2",
+          "pullRequests": {
+            "totalCount": 5,
+            "nodes": [
+              {
+                "id": "PR_kwDOLDnCK88AAAABIo48ag",
+                "number": 739,
+                "title": "Fixture change 3",
+                "url": "https://github.com/octo-owner-2/repo-2/pull/739",
+                "isDraft": false,
+                "createdAt": "2026-10-15T14:16:28Z",
+                "updatedAt": "2026-10-15T14:21:55Z",
+                "headRefOid": "3d877e231ec116c0555d771bd2b22cb8553f48c0",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-3"
+                }
+              },
+              {
+                "id": "PR_kwDOLDnCK88AAAABIYsJig",
+                "number": 736,
+                "title": "Fixture change 4",
+                "url": "https://github.com/octo-owner-2/repo-2/pull/736",
+                "isDraft": false,
+                "createdAt": "2026-10-14T12:17:09Z",
+                "updatedAt": "2026-10-14T12:19:17Z",
+                "headRefOid": "8a13108fa40e9e1eb4b9be61b8575b22a9370038",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDON8ruCg",
+          "nameWithOwner": "octo-owner-3/repo-3",
+          "pullRequests": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "id": "PR_kwDON8ruCs8AAAABFquvrg",
+                "number": 462,
+                "title": "Fixture change 5",
+                "url": "https://github.com/octo-owner-3/repo-3/pull/462",
+                "isDraft": false,
+                "createdAt": "2026-09-29T09:34:44Z",
+                "updatedAt": "2026-09-29T09:34:53Z",
+                "headRefOid": "421c51c115ad3bc83b87dcb5464669867ee4fe69",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-5"
+                }
+              },
+              {
+                "id": "PR_kwDON8ruCs8AAAABFqklBw",
+                "number": 461,
+                "title": "Fixture change 6",
+                "url": "https://github.com/octo-owner-3/repo-3/pull/461",
+                "isDraft": false,
+                "createdAt": "2026-09-29T09:18:56Z",
+                "updatedAt": "2026-09-29T09:19:02Z",
+                "headRefOid": "ddd03eca1f6f4a7f000b02bfa048e34a73b36615",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-6"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkzNzgxMDY5MDc=",
+          "nameWithOwner": "octo-owner-4/repo-4",
+          "pullRequests": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "id": "PR_kwDOFol0G87NTn0h",
+                "number": 214,
+                "title": "Fixture change 7",
+                "url": "https://github.com/octo-owner-4/repo-4/pull/214",
+                "isDraft": false,
+                "createdAt": "2026-03-25T10:55:52Z",
+                "updatedAt": "2026-10-14T05:40:08Z",
+                "headRefOid": "ba36e3344ec94d5983ba0e3f8567a6f9ab860c46",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-7"
+                }
+              },
+              {
+                "id": "PR_kwDOFol0G88AAAABEGZxCw",
+                "number": 218,
+                "title": "Fixture change 8",
+                "url": "https://github.com/octo-owner-4/repo-4/pull/218",
+                "isDraft": false,
+                "createdAt": "2026-09-18T15:12:12Z",
+                "updatedAt": "2026-10-13T11:43:54Z",
+                "headRefOid": "d75355f4957900a62cf4c575032df66b1b6c47cc",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-8"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOGZnSrg",
+          "nameWithOwner": "octo-owner-5/repo-5",
+          "pullRequests": {
+            "totalCount": 15,
+            "nodes": [
+              {
+                "id": "PR_kwDOGZnSrs8AAAABHojHEQ",
+                "number": 3679,
+                "title": "Fixture change 9",
+                "url": "https://github.com/octo-owner-5/repo-5/pull/3679",
+                "isDraft": false,
+                "createdAt": "2026-10-10T00:16:26Z",
+                "updatedAt": "2026-10-15T23:43:40Z",
+                "headRefOid": "c3acbc1b4706fb5d1e99cc221f8c24d375c86d5a",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-9"
+                }
+              },
+              {
+                "id": "PR_kwDOGZnSrs8AAAABISXUOQ",
+                "number": 3685,
+                "title": "Fixture change 10",
+                "url": "https://github.com/octo-owner-5/repo-5/pull/3685",
+                "isDraft": false,
+                "createdAt": "2026-10-14T00:10:39Z",
+                "updatedAt": "2026-10-15T23:42:02Z",
+                "headRefOid": "37b9c99ead24898b1677924f2ac0e2537e42734d",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-10"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkzMzY3ODg0NjI=",
+          "nameWithOwner": "octo-owner-6/repo-6",
+          "pullRequests": {
+            "totalCount": 8,
+            "nodes": [
+              {
+                "id": "PR_kwDOFBL77s8AAAABIbc4vg",
+                "number": 737,
+                "title": "Fixture change 11",
+                "url": "https://github.com/octo-owner-6/repo-6/pull/737",
+                "isDraft": false,
+                "createdAt": "2026-10-14T15:56:35Z",
+                "updatedAt": "2026-10-14T15:56:36Z",
+                "headRefOid": "28aff6f8778b4cc756fa49ba6bab92474835ba24",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-11"
+                }
+              },
+              {
+                "id": "PR_kwDOFBL77s7F_MFq",
+                "number": 646,
+                "title": "Fixture change 12",
+                "url": "https://github.com/octo-owner-6/repo-6/pull/646",
+                "isDraft": false,
+                "createdAt": "2026-02-24T16:51:26Z",
+                "updatedAt": "2026-02-24T16:51:26Z",
+                "headRefOid": "5349f55da9c981abec6850c146a750156c3856cd",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-12"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkxMDAyOTg4MzU=",
+          "nameWithOwner": "octo-owner-7/repo-7",
+          "pullRequests": {
+            "totalCount": 25,
+            "nodes": [
+              {
+                "id": "PR_kwDOBfpwU88AAAABCMtRNw",
+                "number": 3341,
+                "title": "Fixture change 13",
+                "url": "https://github.com/octo-owner-7/repo-7/pull/3341",
+                "isDraft": true,
+                "createdAt": "2026-09-04T12:38:45Z",
+                "updatedAt": "2026-10-16T07:56:24Z",
+                "headRefOid": "725178ee1649f9272d79f9334bc35ae4ce97705f",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-13"
+                }
+              },
+              {
+                "id": "PR_kwDOBfpwU88AAAABHkkhqg",
+                "number": 3403,
+                "title": "Fixture change 14",
+                "url": "https://github.com/octo-owner-7/repo-7/pull/3403",
+                "isDraft": true,
+                "createdAt": "2026-10-09T16:23:28Z",
+                "updatedAt": "2026-10-15T20:24:47Z",
+                "headRefOid": "5ca6c73d6173fa45370d5c791509200f17d0541b",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-14"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnk1MTU5MDk2OA==",
+          "nameWithOwner": "octo-owner-8/repo-8",
+          "pullRequests": {
+            "totalCount": 9,
+            "nodes": [
+              {
+                "id": "PR_kwDOAxM3OM7vkCwt",
+                "number": 396,
+                "title": "Fixture change 15",
+                "url": "https://github.com/octo-owner-8/repo-8/pull/396",
+                "isDraft": false,
+                "createdAt": "2026-07-09T04:03:48Z",
+                "updatedAt": "2026-07-09T04:03:49Z",
+                "headRefOid": "4020042b6fc20e49a3374f93d04e9e18fa63ada4",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-15"
+                }
+              },
+              {
+                "id": "PR_kwDOAxM3OM7vkCqr",
+                "number": 395,
+                "title": "Fixture change 16",
+                "url": "https://github.com/octo-owner-8/repo-8/pull/395",
+                "isDraft": false,
+                "createdAt": "2026-07-09T04:03:40Z",
+                "updatedAt": "2026-07-09T04:03:41Z",
+                "headRefOid": "bec059458baf9e26628ddd0a93404eb7afcd2515",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-16"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkyNjQ2MjE2MDE=",
+          "nameWithOwner": "octo-owner-9/repo-9",
+          "pullRequests": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "id": "PR_kwDOD8XOIc7v0u5V",
+                "number": 816,
+                "title": "Fixture change 17",
+                "url": "https://github.com/octo-owner-9/repo-9/pull/816",
+                "isDraft": false,
+                "createdAt": "2026-07-09T16:44:30Z",
+                "updatedAt": "2026-10-15T10:19:13Z",
+                "headRefOid": "f467bf643ed3ac4c1f394ddf4ee8bd804e641a81",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-17"
+                }
+              },
+              {
+                "id": "PR_kwDOD8XOIc8AAAABGXeKTQ",
+                "number": 872,
+                "title": "Fixture change 18",
+                "url": "https://github.com/octo-owner-9/repo-9/pull/872",
+                "isDraft": false,
+                "createdAt": "2026-10-02T22:43:55Z",
+                "updatedAt": "2026-10-15T10:18:41Z",
+                "headRefOid": "cb9d5b1bd1f1e9dc083918505ef4654683ddce0f",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-18"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOGjsKaQ",
+          "nameWithOwner": "octo-owner-10/repo-10",
+          "pullRequests": {
+            "totalCount": 2,
+            "nodes": [
+              {
+                "id": "PR_kwDOGjsKac7PSNT5",
+                "number": 298,
+                "title": "Fixture change 19",
+                "url": "https://github.com/octo-owner-10/repo-10/pull/298",
+                "isDraft": false,
+                "createdAt": "2026-04-01T14:48:55Z",
+                "updatedAt": "2026-07-01T12:15:27Z",
+                "headRefOid": "c26515b6daa5865166da67e4f74c883ac7f488ff",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-19"
+                }
+              },
+              {
+                "id": "PR_kwDOGjsKac63qpPr",
+                "number": 268,
+                "title": "Fixture change 20",
+                "url": "https://github.com/octo-owner-10/repo-10/pull/268",
+                "isDraft": false,
+                "createdAt": "2025-12-08T12:17:31Z",
+                "updatedAt": "2026-01-12T15:17:09Z",
+                "headRefOid": "af4957566ae2cad6ba1162a50d4c40ec3822ac87",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-20"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkzMzA1MDI0ODY=",
+          "nameWithOwner": "octo-owner-11/repo-11",
+          "pullRequests": {
+            "totalCount": 108,
+            "nodes": [
+              {
+                "id": "PR_kwDOE7MRVs8AAAABIfmgTQ",
+                "number": 4310,
+                "title": "Fixture change 21",
+                "url": "https://github.com/octo-owner-11/repo-11/pull/4310",
+                "isDraft": false,
+                "createdAt": "2026-10-14T21:44:59Z",
+                "updatedAt": "2026-10-15T23:24:21Z",
+                "headRefOid": "6a19722244ee41d31d13b20b5d3c8b7a7c5dad80",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-21"
+                }
+              },
+              {
+                "id": "PR_kwDOE7MRVs8AAAABId2wig",
+                "number": 4309,
+                "title": "Fixture change 22",
+                "url": "https://github.com/octo-owner-11/repo-11/pull/4309",
+                "isDraft": false,
+                "createdAt": "2026-10-14T19:12:31Z",
+                "updatedAt": "2026-10-15T23:24:03Z",
+                "headRefOid": "136bc46d004a682c20974c79baf69dba57ee37fc",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-22"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkxMjkwNTMxMDE=",
+          "nameWithOwner": "octo-owner-12/repo-12",
+          "pullRequests": {
+            "totalCount": 10,
+            "nodes": [
+              {
+                "id": "PR_kwDOB7Exrc8AAAABCBQBIg",
+                "number": 1079,
+                "title": "Fixture change 23",
+                "url": "https://github.com/octo-owner-12/repo-12/pull/1079",
+                "isDraft": true,
+                "createdAt": "2026-09-03T07:48:29Z",
+                "updatedAt": "2026-09-04T07:13:12Z",
+                "headRefOid": "17cbd2912c2db0fd7ad8ca8648e2981afb597d9f",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-23"
+                }
+              },
+              {
+                "id": "PR_kwDOB7Exrc7hogSN",
+                "number": 1025,
+                "title": "Fixture change 24",
+                "url": "https://github.com/octo-owner-12/repo-12/pull/1025",
+                "isDraft": true,
+                "createdAt": "2026-06-02T04:28:41Z",
+                "updatedAt": "2026-06-10T07:50:47Z",
+                "headRefOid": "16e847006b04736c207cf96504e1c9fad4de5fdf",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-24"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkxNjQ4Nzg2OTI=",
+          "nameWithOwner": "octo-owner-13/repo-13",
+          "pullRequests": {
+            "totalCount": 10,
+            "nodes": [
+              {
+                "id": "PR_kwDOCdPZZM69hS-h",
+                "number": 908,
+                "title": "Fixture change 25",
+                "url": "https://github.com/octo-owner-13/repo-13/pull/908",
+                "isDraft": false,
+                "createdAt": "2026-01-16T03:37:33Z",
+                "updatedAt": "2026-10-15T21:24:45Z",
+                "headRefOid": "144628a026d1561cfd98f5463edc3e810644477b",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-25"
+                }
+              },
+              {
+                "id": "PR_kwDOCdPZZM8AAAABGIL5kA",
+                "number": 963,
+                "title": "Fixture change 26",
+                "url": "https://github.com/octo-owner-13/repo-13/pull/963",
+                "isDraft": false,
+                "createdAt": "2026-10-01T15:59:22Z",
+                "updatedAt": "2026-10-15T12:58:13Z",
+                "headRefOid": "da991094d9167be1644a10feae014c4a5f3a6391",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-26"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOOZPLbQ",
+          "nameWithOwner": "octo-owner-14/repo-14",
+          "pullRequests": {
+            "totalCount": 5,
+            "nodes": [
+              {
+                "id": "PR_kwDOOZPLbc8AAAABIHEXVg",
+                "number": 822,
+                "title": "Fixture change 27",
+                "url": "https://github.com/octo-owner-14/repo-14/pull/822",
+                "isDraft": false,
+                "createdAt": "2026-10-13T06:21:58Z",
+                "updatedAt": "2026-10-16T03:23:55Z",
+                "headRefOid": "3c20f0aee9542a6b1a422d7f09a719051c91d364",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-27"
+                }
+              },
+              {
+                "id": "PR_kwDOOZPLbc8AAAABIRsi8Q",
+                "number": 836,
+                "title": "Fixture change 28",
+                "url": "https://github.com/octo-owner-14/repo-14/pull/836",
+                "isDraft": false,
+                "createdAt": "2026-10-13T22:40:16Z",
+                "updatedAt": "2026-10-16T03:23:53Z",
+                "headRefOid": "aef3a36883f7dfc77bc6d7918a221202b4379688",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-28"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDON_SUJA",
+          "nameWithOwner": "octo-owner-15/repo-15",
+          "pullRequests": {
+            "totalCount": 175,
+            "nodes": [
+              {
+                "id": "PR_kwDON_SUJM8AAAABIQjscA",
+                "number": 1452,
+                "title": "Fixture change 29",
+                "url": "https://github.com/octo-owner-15/repo-15/pull/1452",
+                "isDraft": true,
+                "createdAt": "2026-10-13T20:40:36Z",
+                "updatedAt": "2026-10-15T23:35:11Z",
+                "headRefOid": "f213f0607dac44a4abf87a2d4bc7b2663e6aeb6f",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-29"
+                }
+              },
+              {
+                "id": "PR_kwDON_SUJM8AAAABIannSA",
+                "number": 1458,
+                "title": "Fixture change 30",
+                "url": "https://github.com/octo-owner-15/repo-15/pull/1458",
+                "isDraft": true,
+                "createdAt": "2026-10-14T14:50:52Z",
+                "updatedAt": "2026-10-15T18:55:39Z",
+                "headRefOid": "eb0e99a62d2bc1b5714cccdedc7305f7a9558dc2",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-30"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDONagCKw",
+          "nameWithOwner": "octo-owner-16/repo-16",
+          "pullRequests": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "id": "PR_kwDONagCK88AAAABIZyRKA",
+                "number": 266,
+                "title": "Fixture change 31",
+                "url": "https://github.com/octo-owner-16/repo-16/pull/266",
+                "isDraft": false,
+                "createdAt": "2026-10-14T13:47:01Z",
+                "updatedAt": "2026-10-15T16:05:55Z",
+                "headRefOid": "263da1bafe8879609361a397478360d1e485e3de",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-31"
+                }
+              },
+              {
+                "id": "PR_kwDONagCK88AAAABH70uiw",
+                "number": 263,
+                "title": "Fixture change 32",
+                "url": "https://github.com/octo-owner-16/repo-16/pull/263",
+                "isDraft": false,
+                "createdAt": "2026-10-12T09:27:38Z",
+                "updatedAt": "2026-10-12T10:11:01Z",
+                "headRefOid": "9cda366359de50c3aca91a578466512aacac230f",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-32"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkxODEwNDk4NTk=",
+          "nameWithOwner": "octo-owner-17/repo-17",
+          "pullRequests": {
+            "totalCount": 4,
+            "nodes": [
+              {
+                "id": "PR_kwDOCsqaA88AAAABIuKWJQ",
+                "number": 334,
+                "title": "Fixture change 33",
+                "url": "https://github.com/octo-owner-17/repo-17/pull/334",
+                "isDraft": false,
+                "createdAt": "2026-10-15T21:42:48Z",
+                "updatedAt": "2026-10-15T21:43:25Z",
+                "headRefOid": "55a491a9843ac4341026785d489379cf06afebfd",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-33"
+                }
+              },
+              {
+                "id": "PR_kwDOCsqaA87sAw5X",
+                "number": 315,
+                "title": "Fixture change 34",
+                "url": "https://github.com/octo-owner-17/repo-17/pull/315",
+                "isDraft": false,
+                "createdAt": "2026-06-30T00:39:29Z",
+                "updatedAt": "2026-10-15T21:42:13Z",
+                "headRefOid": "9d59c65812c71349275acc90399646992f9e52f3",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-34"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkyNzc5NTE1OTM=",
+          "nameWithOwner": "octo-owner-18/repo-18",
+          "pullRequests": {
+            "totalCount": 24,
+            "nodes": [
+              {
+                "id": "PR_kwDOEJE0ac8AAAABDYUI7Q",
+                "number": 992,
+                "title": "Fixture change 35",
+                "url": "https://github.com/octo-owner-18/repo-18/pull/992",
+                "isDraft": true,
+                "createdAt": "2026-09-14T00:43:42Z",
+                "updatedAt": "2026-10-04T22:07:52Z",
+                "headRefOid": "dfef3ebbfa247f58d9fdeacab7cbcef295c47744",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-35"
+                }
+              },
+              {
+                "id": "PR_kwDOEJE0ac8AAAABGaYD2g",
+                "number": 997,
+                "title": "Fixture change 36",
+                "url": "https://github.com/octo-owner-18/repo-18/pull/997",
+                "isDraft": true,
+                "createdAt": "2026-10-03T08:45:59Z",
+                "updatedAt": "2026-10-03T09:12:38Z",
+                "headRefOid": "38f5c0ff76d6d3885d7f5851e1cf680c45ebb094",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-36"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkyMDE5NDY3Nzk=",
+          "nameWithOwner": "octo-owner-19/repo-19",
+          "pullRequests": {
+            "totalCount": 12,
+            "nodes": [
+              {
+                "id": "PR_kwDODAl2m88AAAABIm8C3A",
+                "number": 1722,
+                "title": "Fixture change 37",
+                "url": "https://github.com/octo-owner-19/repo-19/pull/1722",
+                "isDraft": false,
+                "createdAt": "2026-10-15T11:41:03Z",
+                "updatedAt": "2026-10-15T13:21:32Z",
+                "headRefOid": "de07fad408fcddeb85721ffdc279f3cb080b6850",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-37"
+                }
+              },
+              {
+                "id": "PR_kwDODAl2m88AAAABH-7TDQ",
+                "number": 1721,
+                "title": "Fixture change 38",
+                "url": "https://github.com/octo-owner-19/repo-19/pull/1721",
+                "isDraft": false,
+                "createdAt": "2026-10-12T14:18:08Z",
+                "updatedAt": "2026-10-12T14:25:22Z",
+                "headRefOid": "d5d5abc69db65dace8460c1539c6f4c561084f36",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-38"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOLMAYdA",
+          "nameWithOwner": "octo-owner-20/repo-20",
+          "pullRequests": {
+            "totalCount": 5,
+            "nodes": [
+              {
+                "id": "PR_kwDOLMAYdM8AAAABCdZQFw",
+                "number": 193,
+                "title": "Fixture change 39",
+                "url": "https://github.com/octo-owner-20/repo-20/pull/193",
+                "isDraft": false,
+                "createdAt": "2026-09-07T03:53:53Z",
+                "updatedAt": "2026-10-15T21:12:48Z",
+                "headRefOid": "4197495e7ab4c698f79fb5fd1adca7caccc1bbe5",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-39"
+                }
+              },
+              {
+                "id": "PR_kwDOLMAYdM8AAAABGolbJQ",
+                "number": 211,
+                "title": "Fixture change 40",
+                "url": "https://github.com/octo-owner-20/repo-20/pull/211",
+                "isDraft": false,
+                "createdAt": "2026-10-05T04:27:17Z",
+                "updatedAt": "2026-10-13T19:43:34Z",
+                "headRefOid": "78754757187921ddc01900b9d7a13d6f53322532",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-40"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOKj-t8A",
+          "nameWithOwner": "octo-owner-21/repo-21",
+          "pullRequests": {
+            "totalCount": 29,
+            "nodes": [
+              {
+                "id": "PR_kwDOKj-t8M8AAAABIlJPqg",
+                "number": 3096,
+                "title": "Fixture change 41",
+                "url": "https://github.com/octo-owner-21/repo-21/pull/3096",
+                "isDraft": false,
+                "createdAt": "2026-10-15T09:00:51Z",
+                "updatedAt": "2026-10-16T07:02:25Z",
+                "headRefOid": "2e2d055374e137e967a46f66360af4adee93e47c",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-41"
+                }
+              },
+              {
+                "id": "PR_kwDOKj-t8M8AAAABIxBylQ",
+                "number": 3102,
+                "title": "Fixture change 42",
+                "url": "https://github.com/octo-owner-21/repo-21/pull/3102",
+                "isDraft": false,
+                "createdAt": "2026-10-16T03:55:34Z",
+                "updatedAt": "2026-10-16T03:58:10Z",
+                "headRefOid": "1c49855994757a2f2fa9a6e59dd6c75a465825db",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-42"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnk4Mjc1NDk4MQ==",
+          "nameWithOwner": "octo-owner-22/repo-22",
+          "pullRequests": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "id": "PR_kwDOBO69pc8AAAABIcO-hQ",
+                "number": 471,
+                "title": "Fixture change 43",
+                "url": "https://github.com/octo-owner-22/repo-22/pull/471",
+                "isDraft": false,
+                "createdAt": "2026-10-14T17:00:52Z",
+                "updatedAt": "2026-10-14T17:01:02Z",
+                "headRefOid": "f29910e4b9bad308bcd0ed800859dda4ad761c3d",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-43"
+                }
+              },
+              {
+                "id": "PR_kwDOBO69pc8AAAABIcNHNg",
+                "number": 470,
+                "title": "Fixture change 44",
+                "url": "https://github.com/octo-owner-22/repo-22/pull/470",
+                "isDraft": false,
+                "createdAt": "2026-10-14T16:58:29Z",
+                "updatedAt": "2026-10-14T16:58:38Z",
+                "headRefOid": "6d6edecc942dc743b495ffe236c0101d57730d75",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-44"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "MDEwOlJlcG9zaXRvcnkyMDAzMDQxMzE=",
+          "nameWithOwner": "octo-owner-23/repo-23",
+          "pullRequests": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "id": "PR_kwDOC_BmA88AAAABIc7hog",
+                "number": 546,
+                "title": "Fixture change 45",
+                "url": "https://github.com/octo-owner-23/repo-23/pull/546",
+                "isDraft": false,
+                "createdAt": "2026-10-14T17:57:18Z",
+                "updatedAt": "2026-10-15T21:55:04Z",
+                "headRefOid": "ca03e98b8ca29c16c2a0cb3f539528d58060860d",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-45"
+                }
+              },
+              {
+                "id": "PR_kwDOC_BmA88AAAABIbpfgw",
+                "number": 545,
+                "title": "Fixture change 46",
+                "url": "https://github.com/octo-owner-23/repo-23/pull/545",
+                "isDraft": false,
+                "createdAt": "2026-10-14T16:12:17Z",
+                "updatedAt": "2026-10-14T16:12:21Z",
+                "headRefOid": "88b787aa837b4811a6098edcae15f280e7ea112d",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-46"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOInNSaA",
+          "nameWithOwner": "octo-owner-24/repo-24",
+          "pullRequests": {
+            "totalCount": 32,
+            "nodes": [
+              {
+                "id": "PR_kwDOInNSaM8AAAABIwqEUA",
+                "number": 2446,
+                "title": "Fixture change 47",
+                "url": "https://github.com/octo-owner-24/repo-24/pull/2446",
+                "isDraft": true,
+                "createdAt": "2026-10-16T03:04:38Z",
+                "updatedAt": "2026-10-16T04:00:33Z",
+                "headRefOid": "1f568ded4d3a0ac88feef55c821c04350b62cda5",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-47"
+                }
+              },
+              {
+                "id": "PR_kwDOInNSaM8AAAABIwiwiQ",
+                "number": 2441,
+                "title": "Fixture change 48",
+                "url": "https://github.com/octo-owner-24/repo-24/pull/2441",
+                "isDraft": true,
+                "createdAt": "2026-10-16T02:48:54Z",
+                "updatedAt": "2026-10-16T03:54:47Z",
+                "headRefOid": "87ffb767bcf5c8c638aeb1870d6fae3c5c560708",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-48"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOR_dibQ",
+          "nameWithOwner": "octo-owner-25/repo-25",
+          "pullRequests": {
+            "totalCount": 34,
+            "nodes": [
+              {
+                "id": "PR_kwDOR_dibc8AAAABEYPvVQ",
+                "number": 169,
+                "title": "Fixture change 49",
+                "url": "https://github.com/octo-owner-25/repo-25/pull/169",
+                "isDraft": false,
+                "createdAt": "2026-09-21T07:03:41Z",
+                "updatedAt": "2026-10-16T00:36:13Z",
+                "headRefOid": "c6e9db26a383ae64dbe968559501fa69c4a54b9c",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-49"
+                }
+              },
+              {
+                "id": "PR_kwDOR_dibc8AAAABIuzrQQ",
+                "number": 286,
+                "title": "Fixture change 50",
+                "url": "https://github.com/octo-owner-25/repo-25/pull/286",
+                "isDraft": false,
+                "createdAt": "2026-10-15T22:57:03Z",
+                "updatedAt": "2026-10-15T22:57:59Z",
+                "headRefOid": "5ee326b24a0a113907fa3aba5c2527c43b19ffe4",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author-50"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4239,
+        "resetAt": "2026-10-16T08:38:36Z"
+      }
+    },
+    "extensions": {
+      "warnings": [
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkzNzgxMDY5MDc= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkzNzgxMDY5MDc=",
+            "next_global_id": "R_kgDOFol0Gw"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkzMzY3ODg0NjI= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkzMzY3ODg0NjI=",
+            "next_global_id": "R_kgDOFBL77g"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkxMDAyOTg4MzU= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkxMDAyOTg4MzU=",
+            "next_global_id": "R_kgDOBfpwUw"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnk1MTU5MDk2OA== is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnk1MTU5MDk2OA==",
+            "next_global_id": "R_kgDOAxM3OA"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkyNjQ2MjE2MDE= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkyNjQ2MjE2MDE=",
+            "next_global_id": "R_kgDOD8XOIQ"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkzMzA1MDI0ODY= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkzMzA1MDI0ODY=",
+            "next_global_id": "R_kgDOE7MRVg"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkxMjkwNTMxMDE= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkxMjkwNTMxMDE=",
+            "next_global_id": "R_kgDOB7ExrQ"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkxNjQ4Nzg2OTI= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkxNjQ4Nzg2OTI=",
+            "next_global_id": "R_kgDOCdPZZA"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkxODEwNDk4NTk= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkxODEwNDk4NTk=",
+            "next_global_id": "R_kgDOCsqaAw"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkyNzc5NTE1OTM= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkyNzc5NTE1OTM=",
+            "next_global_id": "R_kgDOEJE0aQ"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkyMDE5NDY3Nzk= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkyMDE5NDY3Nzk=",
+            "next_global_id": "R_kgDODAl2mw"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnk4Mjc1NDk4MQ== is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnk4Mjc1NDk4MQ==",
+            "next_global_id": "R_kgDOBO69pQ"
+          },
+          "link": "https://docs.github.com"
+        },
+        {
+          "type": "DEPRECATION",
+          "message": "The id MDEwOlJlcG9zaXRvcnkyMDAzMDQxMzE= is deprecated. Update your cache to use the next_global_id from the data payload.",
+          "data": {
+            "legacy_global_id": "MDEwOlJlcG9zaXRvcnkyMDAzMDQxMzE=",
+            "next_global_id": "R_kgDOC_BmAw"
+          },
+          "link": "https://docs.github.com"
+        }
+      ]
+    }
+  }
+}

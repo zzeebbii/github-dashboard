@@ -31,7 +31,8 @@ export type ScheduleTimer = (callback: () => void, ms: number) => () => void;
 
 /**
  * Refreshes the active account's GitHub queries. A query plugs in by its key,
- * `[store, accountId, ...]` (query-hydration.ts), so T16 and T20's lists need no wiring.
+ * `[store, accountId, ...]` (query-hydration.ts), so T16 and T20's lists need no wiring;
+ * one opts out with `meta: OWN_REFRESH_ONLY`.
  */
 interface QueryRefresher {
   /** Refetches the account's mounted queries one at a time; returns the ones that changed. */
@@ -44,10 +45,20 @@ interface QueryRefresher {
 
 const ofAccount = (accountId: AccountId) => (query: Query) => query.queryKey[1] === accountId;
 
+/**
+ * `meta` of a query the schedule leaves alone, manual refresh included: it is neither
+ * marked stale nor refetched, so its own `staleTime` holds. Only its own refetch (a
+ * dedicated button) refreshes it. The repository list uses it to stay 24 h (AC-4.1).
+ */
+export const OWN_REFRESH_ONLY = { refresh: "own" } as const;
+
+const scheduledOf = (accountId: AccountId) => (query: Query) =>
+  query.queryKey[1] === accountId && query.meta?.["refresh"] !== OWN_REFRESH_ONLY.refresh;
+
 export function createQueryRefresher(client: QueryClient): QueryRefresher {
   return {
     async refresh(accountId) {
-      const predicate = ofAccount(accountId);
+      const predicate = scheduledOf(accountId);
       // Unmounted queries refetch when next shown, not now.
       await client.invalidateQueries({ predicate, refetchType: "none" });
       const updates: QueryUpdate[] = [];

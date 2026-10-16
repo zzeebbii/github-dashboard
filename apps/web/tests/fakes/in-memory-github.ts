@@ -3,8 +3,9 @@ import type { GitHubReadPort, GitHubResult, Viewer } from "../../src/application
 const notFound = () => Promise.resolve({ ok: false, error: { kind: "notFound" } } as const);
 
 /**
- * A `GitHubReadPort` with no network: answers `viewer` with the given result, and the PR
- * detail calls with `notFound` unless `overrides` answers them.
+ * A `GitHubReadPort` with no network: answers `viewer` with the given result, the PR
+ * detail calls with `notFound`, no repositories and no favourites, unless `overrides`
+ * answers them.
  */
 export function createInMemoryGitHub(
   viewer: GitHubResult<Viewer> = {
@@ -21,6 +22,12 @@ export function createInMemoryGitHub(
     getPullRequest: notFound,
     getTimelinePage: notFound,
     getCheckRuns: notFound,
+    listRepos: () => Promise.resolve({ ok: true, value: { data: [], partialErrors: [] } }),
+    refreshFavourites: (_accountId, nodeIds) =>
+      Promise.resolve({
+        ok: true,
+        value: { data: nodeIds.map((nodeId) => ({ kind: "missing", nodeId })), partialErrors: [] },
+      }),
     ...overrides,
   };
 }

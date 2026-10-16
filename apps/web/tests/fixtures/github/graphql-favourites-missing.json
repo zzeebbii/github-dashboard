@@ -1,0 +1,77 @@
+{
+  "_note": "Recorded 2026-10-16: queries/favourites.graphql.ts with one public repository and one id that no longer resolves (R_kgDOAAAAAA). Owners, repository names, PR authors and titles replaced with fixture values; PR list trimmed to 2.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4239",
+    "x-ratelimit-reset": "1792139916",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "761"
+  },
+  "body": {
+    "data": {
+      "nodes": [
+        {
+          "__typename": "Repository",
+          "id": "R_kgDOOZZ62A",
+          "nameWithOwner": "octo-owner-26/repo-26",
+          "pullRequests": {
+            "totalCount": 15,
+            "nodes": [
+              {
+                "id": "PR_kwDOOZZ62M6moaKQ",
+                "number": 40,
+                "title": "Fixture change 51",
+                "url": "https://github.com/octo-owner-26/repo-26/pull/40",
+                "isDraft": false,
+                "createdAt": "2025-09-03T11:31:23Z",
+                "updatedAt": "2026-10-12T14:43:33Z",
+                "headRefOid": "fb56fca5f01525574c01ebc7ea9c05348cd69906",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-51"
+                }
+              },
+              {
+                "id": "PR_kwDOOZZ62M63lcWn",
+                "number": 148,
+                "title": "Fixture change 52",
+                "url": "https://github.com/octo-owner-26/repo-26/pull/148",
+                "isDraft": false,
+                "createdAt": "2025-12-08T04:29:24Z",
+                "updatedAt": "2026-10-12T14:43:29Z",
+                "headRefOid": "bb362debb67d568950ae41bb435375ba5ccd81c3",
+                "author": {
+                  "__typename": "Bot",
+                  "login": "octo-author-52"
+                }
+              }
+            ]
+          }
+        },
+        null
+      ],
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4238,
+        "resetAt": "2026-10-16T08:38:36Z"
+      }
+    },
+    "errors": [
+      {
+        "type": "NOT_FOUND",
+        "path": ["nodes", 1],
+        "locations": [
+          {
+            "line": 2,
+            "column": 3
+          }
+        ],
+        "message": "Could not resolve to a node with the global id of 'R_kgDOAAAAAA'."
+      }
+    ]
+  }
+}
