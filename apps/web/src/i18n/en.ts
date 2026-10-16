@@ -210,6 +210,28 @@ export const en = {
   si_rememberMe: "Remember me on this device",
   si_rememberMeHint: "Off: the token is forgotten when you close the browser.",
   si_reauth: "GitHub no longer accepts the token for {login}. Enter a new token to sign in again.",
+  // T19 pr list
+  pr_filterLabel: "Filter pull requests",
+  pr_sortBy: "Sort by",
+  r_reviewRequested: "Review requested",
+  r_reRequested: "Re-requested",
+  r_team: "Team @{team}",
+  r_changesRequested: "Changes requested",
+  r_ciFailing: "CI failing",
+  r_mergeConflicts: "Merge conflicts",
+  r_readyToMerge: "Ready to merge",
+  r_ciRunning: "CI running",
+  r_awaitingReview: "Awaiting review",
+  pr_ciPassing: "Checks passing",
+  pr_ciFailing: "Checks failing",
+  pr_ciRunning: "Checks running",
+  pr_reviewChanges: "Changes",
+  pr_reviewApproved: "{a} of {n} reviewers approved",
+  pr_noReviewers: "No reviewers",
+  pr_comments: "Comments",
+  pr_new: "+{n} new",
+  pr_linesChanged: "Lines changed",
+  pr_updated: "Updated",
 } as const;
 
 export type MessageKey = keyof typeof en;
