@@ -222,7 +222,7 @@ test("a favourite's open count shows from the favourites batch while the rows lo
       }),
   });
   await expect.element(screen.getByText("Loading pull requests…")).toBeVisible();
-  await expect.element(screen.getByText(/7\s*open/)).toBeVisible();
+  await expect.element(screen.getByRole("main").getByText(/7\s*open/)).toBeVisible();
   await expect
     .element(screen.getByRole("button", { name: "Favorite" }))
     .toHaveAttribute("aria-pressed", "true");
