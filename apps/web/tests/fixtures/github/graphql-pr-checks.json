@@ -1,0 +1,329 @@
+{
+  "_note": "Recorded 2026-10-16 against public vitejs/vite#22559 as ONE request holding both pr-detail documents (measured cost 2; each document alone is 1 by GitHub's formula, so `cost` here is 1). Logins replaced with fixture values, HTML bodies replaced, headers trimmed. Every run is completed; one failing run has one annotation.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4992",
+    "x-ratelimit-reset": "1792136208",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "8"
+  },
+  "body": {
+    "data": {
+      "repository": {
+        "object": {
+          "checkSuites": {
+            "nodes": [
+              {
+                "app": {
+                  "name": "GitHub Actions"
+                },
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235040482,
+                      "name": "Semantic Pull Request",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:23Z",
+                      "completedAt": "2026-09-05T02:43:28Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939867109/job/101235040482",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": true
+                    }
+                  ]
+                },
+                "failing": {
+                  "nodes": []
+                }
+              },
+              {
+                "app": {
+                  "name": "GitHub Actions"
+                },
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235045475,
+                      "name": "Run zizmor",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:16Z",
+                      "completedAt": "2026-09-05T02:43:34Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868748/job/101235045475",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    }
+                  ]
+                },
+                "failing": {
+                  "nodes": []
+                }
+              },
+              {
+                "app": {
+                  "name": "GitHub Actions"
+                },
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235046054,
+                      "name": "preview",
+                      "status": "COMPLETED",
+                      "conclusion": "SKIPPED",
+                      "startedAt": "2026-09-05T02:43:14Z",
+                      "completedAt": "2026-09-05T02:43:13Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868780/job/101235046054",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    }
+                  ]
+                },
+                "failing": {
+                  "nodes": []
+                }
+              },
+              {
+                "app": {
+                  "name": "GitHub Actions"
+                },
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235045670,
+                      "name": "Get changed files",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:23Z",
+                      "completedAt": "2026-09-05T02:43:31Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235045670",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235045675,
+                      "name": "Lint: node-24, ubuntu-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:17Z",
+                      "completedAt": "2026-09-05T02:45:01Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235045675",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": true
+                    },
+                    {
+                      "databaseId": 101235084301,
+                      "name": "Build&Test: node-24, macos-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "FAILURE",
+                      "startedAt": "2026-09-05T02:43:40Z",
+                      "completedAt": "2026-09-05T02:48:40Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235084301",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235084327,
+                      "name": "Build&Test: node-26, ubuntu-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:35Z",
+                      "completedAt": "2026-09-05T02:47:09Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235084327",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235084340,
+                      "name": "Build&Test: node-20, ubuntu-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:36Z",
+                      "completedAt": "2026-09-05T02:48:49Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235084340",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235084351,
+                      "name": "Build&Test: node-22, ubuntu-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:40Z",
+                      "completedAt": "2026-09-05T02:48:27Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235084351",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235084358,
+                      "name": "Build&Test: node-24, ubuntu-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:36Z",
+                      "completedAt": "2026-09-05T02:47:27Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235084358",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235084385,
+                      "name": "Build&Test: node-24.15.0, windows-latest",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:35Z",
+                      "completedAt": "2026-09-05T02:49:48Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235084385",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235907104,
+                      "name": "Build & Test Failed",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:50:00Z",
+                      "completedAt": "2026-09-05T02:50:03Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235907104",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235908150,
+                      "name": "Build & Test Passed or Skipped",
+                      "status": "COMPLETED",
+                      "conclusion": "SKIPPED",
+                      "startedAt": "2026-09-05T02:49:49Z",
+                      "completedAt": "2026-09-05T02:49:49Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/actions/runs/33939868806/job/101235908150",
+                      "title": null,
+                      "summary": null,
+                      "isRequired": true
+                    }
+                  ]
+                },
+                "failing": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235084301,
+                      "annotations": {
+                        "nodes": [
+                          {
+                            "path": ".github",
+                            "annotationLevel": "FAILURE",
+                            "title": "",
+                            "message": "Process completed with exit code 1.",
+                            "location": {
+                              "start": {
+                                "line": 72
+                              },
+                              "end": {
+                                "line": 72
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "app": {
+                  "name": "Netlify"
+                },
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235044774,
+                      "name": "Pages changed - vite-docs-main",
+                      "status": "COMPLETED",
+                      "conclusion": "NEUTRAL",
+                      "startedAt": "2026-09-05T02:43:12Z",
+                      "completedAt": "2026-09-05T02:43:17Z",
+                      "detailsUrl": "https://app.netlify.com/projects/vite-docs-main/deploys/6a9b81be621afa0008ca1e6d",
+                      "title": "Deploy canceled",
+                      "summary": "Please check [the logs](https://app.netlify.com/projects/vite-docs-main/deploys/6a9b81be621afa0008ca1e6d).",
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235045480,
+                      "name": "Header rules - vite-docs-main",
+                      "status": "COMPLETED",
+                      "conclusion": "NEUTRAL",
+                      "startedAt": "2026-09-05T02:43:12Z",
+                      "completedAt": "2026-09-05T02:43:17Z",
+                      "detailsUrl": "https://app.netlify.com/projects/vite-docs-main/deploys/6a9b81be621afa0008ca1e6d",
+                      "title": "Deploy canceled",
+                      "summary": "Please check [the logs](https://app.netlify.com/projects/vite-docs-main/deploys/6a9b81be621afa0008ca1e6d).",
+                      "isRequired": false
+                    },
+                    {
+                      "databaseId": 101235046288,
+                      "name": "Redirect rules - vite-docs-main",
+                      "status": "COMPLETED",
+                      "conclusion": "NEUTRAL",
+                      "startedAt": "2026-09-05T02:43:12Z",
+                      "completedAt": "2026-09-05T02:43:17Z",
+                      "detailsUrl": "https://app.netlify.com/projects/vite-docs-main/deploys/6a9b81be621afa0008ca1e6d",
+                      "title": "Deploy canceled",
+                      "summary": "Please check [the logs](https://app.netlify.com/projects/vite-docs-main/deploys/6a9b81be621afa0008ca1e6d).",
+                      "isRequired": false
+                    }
+                  ]
+                },
+                "failing": {
+                  "nodes": []
+                }
+              },
+              {
+                "app": {
+                  "name": "GitHub Advanced Security"
+                },
+                "checkRuns": {
+                  "nodes": [
+                    {
+                      "databaseId": 101235073940,
+                      "name": "zizmor",
+                      "status": "COMPLETED",
+                      "conclusion": "SUCCESS",
+                      "startedAt": "2026-09-05T02:43:26Z",
+                      "completedAt": "2026-09-05T02:43:30Z",
+                      "detailsUrl": "https://github.com/vitejs/vite/runs/101235073940",
+                      "title": "No new alerts in code changed by this pull request",
+                      "summary": "[View all branch alerts](/vitejs/vite/security/code-scanning?query=pr%3A22559+tool%3Azizmor+is%3Aopen).",
+                      "isRequired": false
+                    }
+                  ]
+                },
+                "failing": {
+                  "nodes": []
+                }
+              }
+            ]
+          }
+        }
+      },
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4992,
+        "resetAt": "2026-10-16T07:36:48Z"
+      }
+    }
+  }
+}

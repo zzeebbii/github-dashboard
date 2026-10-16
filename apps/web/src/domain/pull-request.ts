@@ -22,7 +22,7 @@ export interface Viewer {
 type ReviewDecision = "APPROVED" | "CHANGES_REQUESTED" | "REVIEW_REQUIRED";
 /** Head commit status check rollup. */
 type CheckState = "SUCCESS" | "FAILURE" | "ERROR" | "PENDING" | "EXPECTED";
-type Mergeable = "MERGEABLE" | "CONFLICTING" | "UNKNOWN";
+export type Mergeable = "MERGEABLE" | "CONFLICTING" | "UNKNOWN";
 type MergeStateStatus =
   | "BEHIND"
   | "BLOCKED"
@@ -33,7 +33,7 @@ type MergeStateStatus =
   | "UNKNOWN"
   | "UNSTABLE";
 
-type ReviewState = "APPROVED" | "CHANGES_REQUESTED" | "COMMENTED" | "DISMISSED";
+export type ReviewState = "APPROVED" | "CHANGES_REQUESTED" | "COMMENTED" | "DISMISSED";
 
 export interface Review {
   /** null when the account was deleted ("ghost"). */
@@ -43,7 +43,7 @@ export interface Review {
 }
 
 /** A pending review request, for a person or a team (`org/slug`). */
-type ReviewRequest =
+export type ReviewRequest =
   | { readonly kind: "user"; readonly login: string }
   | { readonly kind: "team"; readonly team: string };
 

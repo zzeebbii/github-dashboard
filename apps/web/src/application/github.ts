@@ -1,14 +1,38 @@
-import type { Account } from "../domain/account.ts";
+import type { Account, AccountId } from "../domain/account.ts";
+import type {
+  CheckRun,
+  PullRequestDetail,
+  PullRequestRef,
+  TimelinePage,
+} from "../domain/pr-detail.ts";
 import type { Result } from "../domain/result.ts";
 
 /**
  * The GitHub read port (FR-3.1). The adapter in infrastructure/github/ is the only code
- * that talks to GitHub; features depend on this. Viewer, organisations and teams now;
- * T16, T20 and T22 add the repo list, favourites, Home sections and PR detail.
+ * that talks to GitHub; features depend on this.
  */
 export interface GitHubReadPort {
   /** The signed-in user, their organisations and the teams they belong to in each. */
   viewer(account: Account): Promise<GitHubResult<Viewer>>;
+  /** One PR with its first 50 timeline items (FR-6.2). 1 GraphQL request. */
+  getPullRequest(
+    accountId: AccountId,
+    ref: PullRequestRef,
+  ): Promise<
+    GitHubResult<{ readonly pullRequest: PullRequestDetail; readonly timeline: TimelinePage }>
+  >;
+  /** "Load more": the 50 timeline items after `after` (AC-6.5). 1 GraphQL request. */
+  getTimelinePage(
+    accountId: AccountId,
+    ref: PullRequestRef,
+    after: string,
+  ): Promise<GitHubResult<TimelinePage>>;
+  /** Check runs of the head commit, annotations for failing ones (FR-6.3). 1 GraphQL request. */
+  getCheckRuns(
+    accountId: AccountId,
+    ref: PullRequestRef,
+    headSha: string,
+  ): Promise<GitHubResult<readonly CheckRun[]>>;
 }
 
 export interface Viewer {

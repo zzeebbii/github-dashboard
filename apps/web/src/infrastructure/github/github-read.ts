@@ -1,10 +1,12 @@
 import type { GitHubReadPort } from "../../application/github.ts";
 import type { GitHubClient } from "./client.ts";
+import { createPullRequestDetailRead } from "./pr-detail.ts";
 import { ViewerDocument } from "./queries/viewer.graphql.ts";
 
 /** The `GitHubReadPort` adapter: runs the static documents and maps data onto port types. */
 export function createGitHubRead(client: GitHubClient): GitHubReadPort {
   return {
+    ...createPullRequestDetailRead(client),
     async viewer(account) {
       const result = await client.graphql(account.id, ViewerDocument, { login: account.login });
       if (!result.ok) return result;

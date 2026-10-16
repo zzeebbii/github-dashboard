@@ -1,6 +1,11 @@
 import type { GitHubReadPort, GitHubResult, Viewer } from "../../src/application/github.ts";
 
-/** A `GitHubReadPort` with no network: answers every call with the given result. */
+const notFound = () => Promise.resolve({ ok: false, error: { kind: "notFound" } } as const);
+
+/**
+ * A `GitHubReadPort` with no network: answers `viewer` with the given result, and the PR
+ * detail calls with `notFound` unless `overrides` answers them.
+ */
 export function createInMemoryGitHub(
   viewer: GitHubResult<Viewer> = {
     ok: true,
@@ -9,6 +14,13 @@ export function createInMemoryGitHub(
       partialErrors: [],
     },
   },
+  overrides: Partial<GitHubReadPort> = {},
 ): GitHubReadPort {
-  return { viewer: () => Promise.resolve(viewer) };
+  return {
+    viewer: () => Promise.resolve(viewer),
+    getPullRequest: notFound,
+    getTimelinePage: notFound,
+    getCheckRuns: notFound,
+    ...overrides,
+  };
 }
