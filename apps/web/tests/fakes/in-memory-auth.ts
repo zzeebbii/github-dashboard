@@ -34,6 +34,6 @@ export function createInMemoryAuth(
       tokens.delete(accountId);
       accounts.remove(accountId);
     },
-    currentToken: (accountId) => tokens.get(accountId) ?? null,
+    currentToken: (accountId) => Promise.resolve(tokens.get(accountId) ?? null),
   };
 }

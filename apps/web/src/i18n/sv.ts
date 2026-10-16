@@ -179,4 +179,14 @@ export const sv: Record<MessageKey, string> = {
   tw_fgPullRequests: "Repository permissions → Pull requests: Read-only",
   tw_fgChecks: "Repository permissions → Commit statuses: Read-only",
   tw_fgOrgMembership: "Organization permissions → Members: Read-only",
+  // T11 GitHub App sign-in
+  ga_button: "Logga in med GitHub-appen",
+  ga_disabled:
+    "Inloggning med GitHub-appen är inte konfigurerad för den här installationen. Logga in med en personlig åtkomsttoken i stället.",
+  ga_heading: "Loggar in med GitHub",
+  ga_working: "Slutför inloggningen…",
+  ga_backToSignIn: "Tillbaka till inloggningen",
+  ga_errInvalidCallback:
+    "Inloggningslänken är ogiltig, har gått ut eller har redan använts. Börja om inloggningen.",
+  ga_errRejected: "GitHub godkände inte inloggningen. Börja om inloggningen.",
 };

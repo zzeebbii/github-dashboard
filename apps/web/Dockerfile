@@ -30,6 +30,9 @@ WORKDIR /repo
 COPY tsconfig.base.json tsconfig.json ./
 COPY apps/web apps/web
 
+# Vite inlines VITE_* at build time; both empty leave GitHub App sign-in disabled (FR-2.5).
+ARG VITE_GITHUB_APP_CLIENT_ID=""
+ARG VITE_GITHUB_APP_EXCHANGE_URL=""
 RUN pnpm --filter @ghd/web run build
 
 FROM nginx:1.30-alpine AS runtime

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { render } from "vitest-browser-react";
 import { AnnouncerProvider } from "../src/application/announcer.tsx";
 import { AuthProvider } from "../src/application/auth-provider.tsx";
+import type { GitHubAppSignInPort } from "../src/application/auth.ts";
 import type { GitHubReadPort } from "../src/application/github.ts";
 import { GitHubProvider } from "../src/application/github-provider.tsx";
 import { HtmlSanitizerContext } from "../src/application/html-sanitizer.ts";
@@ -65,12 +66,20 @@ export async function renderWithProviders(
  */
 export async function renderApp(
   path: string,
-  { hasAccount = true, ...options }: ProviderOptions & { hasAccount?: boolean } = {},
+  {
+    hasAccount = true,
+    githubApp = null,
+    ...options
+  }: ProviderOptions & { hasAccount?: boolean; githubApp?: GitHubAppSignInPort | null } = {},
 ) {
   const router = createAppRouter(createMemoryHistory({ initialEntries: [path] }));
   const accountStore = createInMemoryAccountStore();
   const screen = await renderWithProviders(
-    <AuthProvider auth={createInMemoryAuth(accountStore, {})} accountStore={accountStore}>
+    <AuthProvider
+      auth={createInMemoryAuth(accountStore, {})}
+      accountStore={accountStore}
+      githubApp={githubApp}
+    >
       <RouterProvider router={router} context={{ hasAccount: () => hasAccount }} />
     </AuthProvider>,
     options,

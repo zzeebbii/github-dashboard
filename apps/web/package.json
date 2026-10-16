@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --build tsconfig.build.json && vite build",
+    "build": "tsc --build tsconfig.build.json && vite build && node scripts/check-no-client-secret.mjs",
     "preview": "vite preview",
     "test:unit": "vitest run --project unit",
     "test:component": "vitest run --project component",

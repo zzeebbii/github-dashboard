@@ -11,7 +11,7 @@ const StoredAccountSchema = z.object({
   id: z.string(),
   login: z.string(),
   avatarUrl: z.string(),
-  tokenType: z.enum(["classic", "fine-grained"]),
+  tokenType: z.enum(["classic", "fine-grained", "github-app"]),
   scopes: z.array(z.string()),
   rememberMe: z.boolean(),
 });

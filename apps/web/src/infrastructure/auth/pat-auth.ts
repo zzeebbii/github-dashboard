@@ -77,18 +77,24 @@ export function createPatAuth(options: PatAuthOptions): AuthPort {
       throw new AuthError("unexpected-response", "GitHub returned an unexpected user record.");
     }
 
-    const fineGrained = token.startsWith("github_pat_");
+    const tokenType = token.startsWith("github_pat_")
+      ? "fine-grained"
+      : token.startsWith("ghu_")
+        ? "github-app"
+        : "classic";
     return {
       id,
       login: user.data.login,
       avatarUrl: user.data.avatar_url,
-      tokenType: fineGrained ? "fine-grained" : "classic",
-      scopes: fineGrained
-        ? []
-        : (response.headers.get("X-OAuth-Scopes") ?? "")
-            .split(",")
-            .map((scope) => scope.trim())
-            .filter((scope) => scope !== ""),
+      tokenType,
+      // Only classic tokens have OAuth scopes; App user tokens send no X-OAuth-Scopes.
+      scopes:
+        tokenType !== "classic"
+          ? []
+          : (response.headers.get("X-OAuth-Scopes") ?? "")
+              .split(",")
+              .map((scope) => scope.trim())
+              .filter((scope) => scope !== ""),
       rememberMe,
     };
   }
@@ -125,7 +131,7 @@ export function createPatAuth(options: PatAuthOptions): AuthPort {
     },
 
     currentToken(accountId) {
-      return accounts.get(accountId) === undefined ? null : tokens.read(accountId);
+      return Promise.resolve(accounts.get(accountId) === undefined ? null : tokens.read(accountId));
     },
   };
 }

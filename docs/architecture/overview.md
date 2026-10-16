@@ -22,7 +22,8 @@ C4Context
   response with Zod.
 - The only server-side piece ever planned is a small, stateless token-exchange
   handler for GitHub App sign-in. It is not built yet
-  ([ADR-0016](../adr/0016-auth-port-and-token-storage.md)).
+  ([ADR-0016](../adr/0016-auth-port-and-token-storage.md)); the frontend side is, and
+  [github-app-exchange.md](github-app-exchange.md) is the contract between them.
 
 ## Deployment
 

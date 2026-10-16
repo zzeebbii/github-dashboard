@@ -180,6 +180,16 @@ export const en = {
   tw_fgPullRequests: "Repository permissions → Pull requests: Read-only",
   tw_fgChecks: "Repository permissions → Commit statuses: Read-only",
   tw_fgOrgMembership: "Organization permissions → Members: Read-only",
+  // T11 GitHub App sign-in
+  ga_button: "Sign in with GitHub App",
+  ga_disabled:
+    "GitHub App sign-in is not set up for this deployment. Sign in with a personal access token instead.",
+  ga_heading: "Signing in with GitHub",
+  ga_working: "Finishing sign-in…",
+  ga_backToSignIn: "Back to sign-in",
+  ga_errInvalidCallback:
+    "This sign-in link is invalid, expired or already used. Start the sign-in again.",
+  ga_errRejected: "GitHub did not accept the sign-in. Start the sign-in again.",
 } as const;
 
 export type MessageKey = keyof typeof en;

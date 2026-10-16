@@ -180,4 +180,14 @@ export const fi: Record<MessageKey, string> = {
   tw_fgPullRequests: "Repository permissions → Pull requests: Read-only",
   tw_fgChecks: "Repository permissions → Commit statuses: Read-only",
   tw_fgOrgMembership: "Organization permissions → Members: Read-only",
+  // T11 GitHub App sign-in
+  ga_button: "Kirjaudu GitHub-sovelluksella",
+  ga_disabled:
+    "Kirjautumista GitHub-sovelluksella ei ole otettu käyttöön tässä asennuksessa. Kirjaudu henkilökohtaisella käyttöoikeustunnuksella.",
+  ga_heading: "Kirjaudutaan GitHubilla",
+  ga_working: "Viimeistellään kirjautumista…",
+  ga_backToSignIn: "Takaisin kirjautumiseen",
+  ga_errInvalidCallback:
+    "Kirjautumislinkki on virheellinen, vanhentunut tai jo käytetty. Aloita kirjautuminen uudelleen.",
+  ga_errRejected: "GitHub ei hyväksynyt kirjautumista. Aloita kirjautuminen uudelleen.",
 };
