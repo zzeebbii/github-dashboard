@@ -189,4 +189,24 @@ export const sv: Record<MessageKey, string> = {
   ga_errInvalidCallback:
     "Inloggningslänken är ogiltig, har gått ut eller har redan använts. Börja om inloggningen.",
   ga_errRejected: "GitHub godkände inte inloggningen. Börja om inloggningen.",
+  // T10 accounts
+  am_button: "Kontomeny för {login}",
+  am_accounts: "GitHub-konton",
+  am_add: "Lägg till GitHub-konto",
+  am_remembered: "Ihågkommen på den här enheten",
+  am_sessionOnly: "Inloggad under den här sessionen",
+  am_signedOut: "Utloggad",
+  am_remove: "Ta bort {login}",
+  am_signOutAll: "Logga ut från allt",
+  am_switched: "Bytte till {login}",
+  am_removeTitle: "Ta bort {login}?",
+  am_removeBody: "Token, favoriter och cachade data för {login} raderas från den här webbläsaren.",
+  am_removeConfirm: "Ta bort konto",
+  am_signOutAllTitle: "Logga ut från allt?",
+  am_signOutAllBody:
+    "Alla konton, tokens, inställningar och cachade data raderas från den här webbläsaren.",
+  am_cancel: "Avbryt",
+  si_rememberMe: "Kom ihåg mig på den här enheten",
+  si_rememberMeHint: "Av: token glöms när du stänger webbläsaren.",
+  si_reauth: "GitHub godtar inte längre token för {login}. Ange en ny token för att logga in igen.",
 };

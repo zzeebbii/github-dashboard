@@ -25,7 +25,28 @@ export function createTokenStorage(
       session.removeItem(key(id));
       persistent.removeItem(key(id));
     },
+    /**
+     * "Sign out of everything" (FR-2.9): empties both storages entirely, so the account
+     * records, preferences and anything else of this origin go with the tokens.
+     */
+    clearAll(): void {
+      session.clear();
+      persistent.clear();
+    },
   };
+}
+
+/**
+ * What a 401 removes (FR-2.8): this account's access token AND its GitHub App refresh token,
+ * so nothing usable is left behind. The account record stays, for the re-auth prompt.
+ */
+export function forgetTokens(
+  id: AccountId,
+  session: Storage = sessionStorage,
+  persistent: Storage = localStorage,
+): void {
+  createTokenStorage(session, persistent, "token").remove(id);
+  createTokenStorage(session, persistent, "refresh").remove(id);
 }
 
 export type TokenStorage = ReturnType<typeof createTokenStorage>;

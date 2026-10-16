@@ -29,6 +29,7 @@ const PendingSchema = z.object({
   state: z.string().min(1),
   verifier: z.string().min(43),
   createdAt: z.number(),
+  rememberMe: z.boolean(),
 });
 
 const TokenSchema = z.string().regex(/^\w{20,255}$/);
@@ -205,11 +206,14 @@ export function createGitHubAppAuth(options: GitHubAppAuthOptions): AuthPort & G
 
     currentToken,
 
-    async start() {
+    async start({ rememberMe }) {
       const state = randomUrlSafe();
       const verifier = randomUrlSafe();
       const challenge = await codeChallenge(verifier);
-      session.setItem(PENDING_KEY, JSON.stringify({ state, verifier, createdAt: now() }));
+      session.setItem(
+        PENDING_KEY,
+        JSON.stringify({ state, verifier, createdAt: now(), rememberMe }),
+      );
       const params = new URLSearchParams({
         client_id: config.clientId,
         redirect_uri: redirectUri,
@@ -243,8 +247,7 @@ export function createGitHubAppAuth(options: GitHubAppAuthOptions): AuthPort & G
         code_verifier: pending.verifier,
         redirect_uri: redirectUri,
       });
-      // ponytail: always a session-only sign-in; carry T10's remember-me choice through start().
-      const rememberMe = false;
+      const { rememberMe } = pending;
       const result = await base.signIn({ token: data.access_token, rememberMe });
       saveRefresh(result.account.id, data, rememberMe);
       return result;

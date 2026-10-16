@@ -1,11 +1,11 @@
 import { z } from "zod";
 import {
   CACHE_STORES,
-  type CacheAccountId,
   type CachePort,
   type CacheStore,
   type CacheEntry,
 } from "../../application/cache.ts";
+import type { AccountId } from "../../domain/account.ts";
 
 /**
  * CachePort over raw IndexedDB (ADR-0017). One object store per CacheStore, keyed by
@@ -37,6 +37,9 @@ interface Options {
   readonly idb?: IDBFactory | undefined;
 }
 
+// Arrays sort after strings, so [id, []] bounds every string key for this account.
+const accountRange = (accountId: AccountId) => IDBKeyRange.bound([accountId], [accountId, []]);
+
 function settle<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.addEventListener("success", () => resolve(request.result));
@@ -46,9 +49,10 @@ function settle<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
-function toEntry(record: CacheRecord): CacheEntry {
+/** Every read is by account, so the caller's id is the record's id (and branded). */
+function toEntry(accountId: AccountId, record: CacheRecord): CacheEntry {
   return {
-    accountId: record.accountId,
+    accountId,
     key: record.key,
     fetchedAt: new Date(record.fetchedAt),
     ...(record.etag === undefined ? {} : { etag: record.etag }),
@@ -133,7 +137,7 @@ export function createIndexedDbCache(options: Options): CachePort {
     return parsed.success && parsed.data.schemaVersion === version ? parsed.data : undefined;
   }
 
-  async function deleteRecord(accountId: CacheAccountId, store: CacheStore, key: string) {
+  async function deleteRecord(accountId: AccountId, store: CacheStore, key: string) {
     await run(store, "readwrite", (s) => s.delete([accountId, key]));
   }
 
@@ -147,7 +151,7 @@ export function createIndexedDbCache(options: Options): CachePort {
       if (raw === undefined) return undefined;
       const record = parse(raw);
       if (record === undefined) await deleteRecord(accountId, store, key);
-      return record === undefined ? undefined : toEntry(record);
+      return record === undefined ? undefined : toEntry(accountId, record);
     },
 
     async put(accountId, store, key, value) {
@@ -164,21 +168,39 @@ export function createIndexedDbCache(options: Options): CachePort {
 
     delete: deleteRecord,
 
-    async getAll(store) {
-      const raw = (await run<unknown[]>(store, "readonly", (s) => s.getAll())) ?? [];
+    async getAll(accountId, store) {
+      const raw =
+        (await run<unknown[]>(store, "readonly", (s) => s.getAll(accountRange(accountId)))) ?? [];
       return raw.flatMap((r) => {
         const record = parse(r);
-        return record === undefined ? [] : [toEntry(record)];
+        return record === undefined || record.accountId !== accountId
+          ? []
+          : [toEntry(accountId, record)];
       });
     },
 
     async clearAccount(accountId) {
-      // Arrays sort after strings, so [id, []] bounds every string key for this account.
-      await eachStore((s) => s.delete(IDBKeyRange.bound([accountId], [accountId, []])));
+      await eachStore((s) => s.delete(accountRange(accountId)));
     },
 
     async clearAll() {
+      // Empty every store first: deleting the database waits for other tabs to close it,
+      // and the data must be gone now, not then.
       await eachStore((s) => s.clear());
+      const db = await open();
+      if (db !== null) db.close();
+      connection = undefined;
+      if (idb === undefined) return;
+      await new Promise<void>((resolve) => {
+        try {
+          const request = idb.deleteDatabase(name);
+          for (const type of ["success", "error", "blocked"]) {
+            request.addEventListener(type, () => resolve());
+          }
+        } catch {
+          resolve();
+        }
+      });
     },
   };
 }

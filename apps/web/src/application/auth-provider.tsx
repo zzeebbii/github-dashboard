@@ -1,6 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Account, AccountId } from "../domain/account.ts";
-import type { AccountStore } from "./accounts.ts";
+import type { AccountActions, AccountStore } from "./accounts.ts";
 import type { AuthPort, GitHubAppSignInPort, SignInRequest, SignInResult } from "./auth.ts";
 
 interface AuthContextValue {
@@ -10,6 +11,8 @@ interface AuthContextValue {
   readonly signOut: (accountId: AccountId) => void;
   readonly accounts: readonly Account[];
   readonly activeAccount: Account | null;
+  readonly actions: AccountActions | undefined;
+  readonly refresh: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -18,6 +21,8 @@ interface AuthProviderProps {
   readonly auth: AuthPort;
   readonly accountStore: AccountStore;
   readonly githubApp?: GitHubAppSignInPort | null;
+  /** Switch, remove and sign out of everything (T10). Screens that do not use them may omit it. */
+  readonly actions?: AccountActions;
   readonly children: ReactNode;
 }
 
@@ -26,6 +31,7 @@ export function AuthProvider({
   auth,
   accountStore,
   githubApp = null,
+  actions,
   children,
 }: AuthProviderProps) {
   const snapshot = useCallback(
@@ -33,30 +39,39 @@ export function AuthProvider({
     [accountStore],
   );
   const [state, setState] = useState(snapshot);
+  const queryClient = useQueryClient();
+  const refresh = useCallback(() => {
+    setState(snapshot());
+  }, [snapshot]);
 
   const signIn = useCallback(
     async (request: SignInRequest) => {
       const result = await auth.signIn(request);
-      setState(snapshot());
+      // Re-auth after a 401: whatever this account fetched before (its errors included) is
+      // refetched with the new token. Keys are [store, accountId, ...].
+      void queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[1] === result.account.id,
+      });
+      refresh();
       return result;
     },
-    [auth, snapshot],
+    [auth, refresh, queryClient],
   );
 
   const signOut = useCallback(
     (accountId: AccountId) => {
       auth.signOut(accountId);
-      setState(snapshot());
+      refresh();
     },
-    [auth, snapshot],
+    [auth, refresh],
   );
 
   const app = useMemo(
-    () =>
+    (): GitHubAppSignInPort | null =>
       githubApp === null
         ? null
         : {
-            start: () => githubApp.start(),
+            start: (options) => githubApp.start(options),
             complete: async (search: string) => {
               const result = await githubApp.complete(search);
               setState(snapshot());
@@ -73,8 +88,10 @@ export function AuthProvider({
       githubApp: app,
       accounts: state.accounts,
       activeAccount: state.accounts.find((a) => a.id === state.activeId) ?? null,
+      actions,
+      refresh,
     }),
-    [signIn, signOut, app, state],
+    [signIn, signOut, app, state, actions, refresh],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;
@@ -99,4 +116,21 @@ export function useGitHubAppSignIn(): GitHubAppSignInPort | null {
 export function useAccounts(): Pick<AuthContextValue, "accounts" | "activeAccount"> {
   const { accounts, activeAccount } = useAuthContext();
   return { accounts, activeAccount };
+}
+
+/** The account actions, each followed by a re-read of the account store. */
+export function useAccountActions(): AccountActions {
+  const { actions, refresh } = useAuthContext();
+  const wrapped = useMemo(
+    (): AccountActions | undefined =>
+      actions && {
+        switchActive: (id) => actions.switchActive(id).finally(refresh),
+        isSignedIn: actions.isSignedIn,
+        remove: (id) => actions.remove(id).finally(refresh),
+        signOutEverything: () => actions.signOutEverything(),
+      },
+    [actions, refresh],
+  );
+  if (wrapped === undefined) throw new Error("useAccountActions needs <AuthProvider actions>");
+  return wrapped;
 }

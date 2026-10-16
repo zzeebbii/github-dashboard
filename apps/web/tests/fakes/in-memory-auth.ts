@@ -9,7 +9,10 @@ import type { AccountId } from "../../src/domain/account.ts";
 export function createInMemoryAuth(
   accounts: AccountStore,
   results: Readonly<Record<string, SignInResult>>,
-): AuthPort {
+): AuthPort & {
+  forgetToken(accountId: AccountId): void;
+  readonly hasToken: (accountId: AccountId) => boolean;
+} {
   const tokens = new Map<AccountId, string>();
 
   return {
@@ -35,5 +38,10 @@ export function createInMemoryAuth(
       accounts.remove(accountId);
     },
     currentToken: (accountId) => Promise.resolve(tokens.get(accountId) ?? null),
+    hasToken: (accountId) => tokens.has(accountId),
+    /** What a 401 does (application/unauthorized.ts): the token goes, the record stays. */
+    forgetToken(accountId) {
+      tokens.delete(accountId);
+    },
   };
 }

@@ -21,13 +21,15 @@ const errorKeys = {
 interface SignInPageProps {
   /** Called once signed in, straight away when there is nothing to warn about. */
   readonly onContinue: () => void;
+  /** Set when GitHub signed this account out (FR-2.8): the user is asked for a new token. */
+  readonly reauthLogin?: string | undefined;
 }
 
 /**
  * PAT sign-in (FR-2.2). The input is uncontrolled and the token is never put in React
  * state, so it does not show up in DevTools and is gone once the request is made.
  */
-export function SignInPage({ onContinue }: SignInPageProps) {
+export function SignInPage({ onContinue, reauthLogin }: SignInPageProps) {
   const t = useT();
   const announce = useAnnounce();
   const { signIn } = useAuth();
@@ -36,16 +38,20 @@ export function SignInPage({ onContinue }: SignInPageProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<AuthErrorKind | null>(null);
   const [result, setResult] = useState<SignInResult | null>(null);
+  // Default off (FR-2.7): tokens live in sessionStorage unless the user asks otherwise. State,
+  // not FormData, because the GitHub App button sits outside the form and needs it too.
+  const [rememberMe, setRememberMe] = useState(false);
 
   async function submit(form: HTMLFormElement) {
-    const token = new FormData(form).get("token");
+    const data = new FormData(form);
+    const token = data.get("token");
     form.reset();
     setPending(true);
     setError(null);
     try {
       const signedIn = await signIn({
         token: typeof token === "string" ? token : "",
-        rememberMe: false,
+        rememberMe,
       });
       const nothingToSay =
         tokenWarnings(signedIn.account).length === 0 &&
@@ -74,9 +80,10 @@ export function SignInPage({ onContinue }: SignInPageProps) {
   return (
     <main>
       <h1>{t("si_heading")}</h1>
-      {result === null && <GitHubAppButton />}
+      {result === null && <GitHubAppButton rememberMe={rememberMe} />}
       {account === null || result === null ? (
         <form onSubmit={onSubmit} aria-busy={pending}>
+          {reauthLogin !== undefined && <p>{t("si_reauth", { login: reauthLogin })}</p>}
           <p>{t("si_intro")}</p>
           <label htmlFor={tokenId}>{t("si_tokenLabel")}</label>
           <input
@@ -89,6 +96,21 @@ export function SignInPage({ onContinue }: SignInPageProps) {
             required
             aria-describedby={error === null ? undefined : `${tokenId}-error`}
           />
+          <label className="checkbox">
+            <input
+              name="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => {
+                setRememberMe(event.currentTarget.checked);
+              }}
+              aria-describedby={`${tokenId}-remember`}
+            />
+            {t("si_rememberMe")}
+          </label>
+          <p id={`${tokenId}-remember`} className="hint">
+            {t("si_rememberMeHint")}
+          </p>
           <button type="submit" disabled={pending}>
             {pending ? t("si_submitting") : t("si_submit")}
           </button>

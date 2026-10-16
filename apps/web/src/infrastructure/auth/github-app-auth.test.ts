@@ -53,8 +53,8 @@ function setup() {
     time += ms;
   };
   /** Runs start() and returns the authorisation URL it navigated to. */
-  const start = async () => {
-    await auth.start();
+  const start = async ({ rememberMe = false } = {}) => {
+    await auth.start({ rememberMe });
     const url = navigate.mock.lastCall?.[0];
     if (url === undefined) throw new Error("start() did not navigate");
     return new URL(url);
@@ -166,6 +166,19 @@ describe("GitHubAppAuth.complete", () => {
       `ghd:token:${ACCOUNT_ID}`,
     ]);
     expect(JSON.stringify(entriesOf(localStorage))).not.toMatch(/gh[ur]_/);
+  });
+
+  it("with remember me chosen before the redirect, keeps both tokens in localStorage (FR-2.7)", async () => {
+    respondToSignIn();
+    const { auth, start, accounts } = setup();
+    const state = (await start({ rememberMe: true })).searchParams.get("state");
+
+    await auth.complete(`?code=fake-code&state=${state}`);
+
+    expect(accounts.get(ACCOUNT_ID)?.rememberMe).toBe(true);
+    expect(sessionStorage).toHaveLength(0);
+    expect(localStorage.getItem(`ghd:token:${ACCOUNT_ID}`)).toBe(ACCESS);
+    expect(localStorage.getItem(`ghd:refresh:${ACCOUNT_ID}`)).toContain(REFRESH);
   });
 
   // AC-2.8: each is rejected before the exchange URL is called.

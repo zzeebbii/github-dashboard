@@ -1,4 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { type AccountId, toAccountId } from "../domain/account.ts";
 import type { CachePort, CacheStore } from "./cache.ts";
 
 /**
@@ -17,27 +18,32 @@ const isList = (value: unknown): value is readonly unknown[] => Array.isArray(va
 
 function toCacheAddress(
   queryKey: unknown,
-): { store: QueryStore; accountId: string; key: string } | undefined {
+): { store: QueryStore; accountId: AccountId; key: string } | undefined {
   if (!isList(queryKey)) return undefined;
-  const [store, accountId, ...parts] = queryKey;
-  if (!isQueryStore(store) || typeof accountId !== "string") return undefined;
+  const [store, rawAccountId, ...parts] = queryKey;
+  const accountId = typeof rawAccountId === "string" ? toAccountId(rawAccountId) : null;
+  if (!isQueryStore(store) || accountId === null) return undefined;
   return { store, accountId, key: JSON.stringify(parts) };
 }
 
 /**
- * Restores cached query data, giving up after `timeoutMs` so a slow database never blocks
- * first paint. Restored data keeps its original `fetchedAt`, so it is stale and refetches
- * in the background. A late restore never overwrites newer data.
+ * Restores the cached query data of ONE account, the active one (FR-2.12): another
+ * account's records never reach the query client. Call it again after switching account.
+ *
+ * Gives up after `timeoutMs` so a slow database never blocks first paint. Restored data
+ * keeps its original `fetchedAt`, so it is stale and refetches in the background. A late
+ * restore never overwrites newer data.
  */
 export async function hydrateQueries(
   client: QueryClient,
   cache: CachePort,
+  accountId: AccountId | null,
   { timeoutMs }: { readonly timeoutMs: number },
 ): Promise<void> {
-  // ponytail: restores every account's records; filter by the active account once T10 knows it.
+  if (accountId === null) return;
   const restore = Promise.all(
     QUERY_STORES.map(async (store) => {
-      for (const entry of await cache.getAll(store)) {
+      for (const entry of await cache.getAll(accountId, store)) {
         let parts: unknown;
         try {
           parts = JSON.parse(entry.key);
@@ -45,7 +51,7 @@ export async function hydrateQueries(
           continue;
         }
         if (!isList(parts)) continue;
-        const queryKey: unknown[] = [store, entry.accountId, ...parts];
+        const queryKey: unknown[] = [store, accountId, ...parts];
         const updatedAt = entry.fetchedAt.getTime();
         if ((client.getQueryState(queryKey)?.dataUpdatedAt ?? 0) >= updatedAt) continue;
         client.setQueryData(queryKey, entry.data, { updatedAt });

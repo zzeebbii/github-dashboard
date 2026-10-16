@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { expect, test } from "vitest";
+import { toAccountId } from "../../src/domain/account.ts";
 import { hydrateQueries, persistQueries } from "../../src/application/query-hydration.ts";
 import { inMemoryCache } from "../fakes/in-memory-cache.ts";
 import { renderWithProviders, testQueryClient } from "../render.tsx";
 
 // A stand-in for the GitHub queries to come: the key is [store, accountId, ...parts].
 const clock = { now: () => new Date("2026-01-01T00:00:00.000Z") };
-const queryKey = ["prLists", "account-1", "home"];
+const ACCOUNT = toAccountId(1000001)!;
+const queryKey = ["prLists", ACCOUNT, "home"];
 
 function PrCount({ network }: { network: () => Promise<string> }) {
   const { data } = useQuery({ queryKey, queryFn: network });
@@ -25,10 +27,10 @@ function deferred() {
 
 test("cached data renders before the network responds, then the fresh result is written through", async () => {
   const cache = inMemoryCache(clock);
-  await cache.put("account-1", "prLists", JSON.stringify(["home"]), { data: "3 cached PRs" });
+  await cache.put(ACCOUNT, "prLists", JSON.stringify(["home"]), { data: "3 cached PRs" });
   const client = testQueryClient();
   persistQueries(client, cache);
-  await hydrateQueries(client, cache, { timeoutMs: 300 });
+  await hydrateQueries(client, cache, ACCOUNT, { timeoutMs: 300 });
   const network = deferred();
 
   const screen = await renderWithProviders(<PrCount network={() => network.promise} />, {
@@ -38,14 +40,14 @@ test("cached data renders before the network responds, then the fresh result is 
   await expect.element(screen.getByText("3 cached PRs")).toBeInTheDocument();
   network.resolve("5 fresh PRs");
   await expect.element(screen.getByText("5 fresh PRs")).toBeInTheDocument();
-  expect((await cache.get("account-1", "prLists", '["home"]'))?.data).toBe("5 fresh PRs");
+  expect((await cache.get(ACCOUNT, "prLists", '["home"]'))?.data).toBe("5 fresh PRs");
 });
 
 test("a cache that never answers does not hold up hydration past its timeout", async () => {
   const cache = { ...inMemoryCache(clock), getAll: () => new Promise<never>(() => {}) };
   const started = performance.now();
 
-  await hydrateQueries(testQueryClient(), cache, { timeoutMs: 50 });
+  await hydrateQueries(testQueryClient(), cache, ACCOUNT, { timeoutMs: 50 });
 
   expect(performance.now() - started).toBeLessThan(1000);
 });
@@ -59,4 +61,17 @@ test("queries outside the key convention are not persisted", async () => {
   await client.fetchQuery({ queryKey: ["repos", 42], queryFn: () => "x" });
 
   expect(cache.entries.size).toBe(0);
+});
+
+test("hydration restores only the active account's records (AC-2.9)", async () => {
+  const other = toAccountId(2000002)!;
+  const cache = inMemoryCache(clock);
+  await cache.put(ACCOUNT, "prLists", '["home"]', { data: "mine" });
+  await cache.put(other, "prLists", '["home"]', { data: "theirs" });
+  const client = testQueryClient();
+
+  await hydrateQueries(client, cache, ACCOUNT, { timeoutMs: 300 });
+
+  expect(client.getQueryData(queryKey)).toBe("mine");
+  expect(client.getQueryData(["prLists", other, "home"])).toBeUndefined();
 });

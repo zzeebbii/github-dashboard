@@ -1,13 +1,9 @@
-import type {
-  CacheAccountId,
-  CachePort,
-  CacheStore,
-  CacheEntry,
-} from "../../src/application/cache.ts";
+import type { CachePort, CacheStore, CacheEntry } from "../../src/application/cache.ts";
+import type { AccountId } from "../../src/domain/account.ts";
 
 type Entry = CacheEntry & { readonly store: CacheStore };
 
-const id = (accountId: CacheAccountId, store: CacheStore, key: string) =>
+const id = (accountId: AccountId, store: CacheStore, key: string) =>
   JSON.stringify([store, accountId, key]);
 
 /** An in-memory CachePort for component tests. Same contract as the IndexedDB adapter. */
@@ -34,7 +30,10 @@ export function inMemoryCache(clock: { now(): Date }): CachePort & {
       entries.delete(id(accountId, store, key));
       return done;
     },
-    getAll: (store) => Promise.resolve([...entries.values()].filter((e) => e.store === store)),
+    getAll: (accountId, store) =>
+      Promise.resolve(
+        [...entries.values()].filter((e) => e.store === store && e.accountId === accountId),
+      ),
     clearAccount: (accountId) => {
       for (const [k, e] of entries) if (e.accountId === accountId) entries.delete(k);
       return done;

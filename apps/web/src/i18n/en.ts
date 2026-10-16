@@ -190,6 +190,26 @@ export const en = {
   ga_errInvalidCallback:
     "This sign-in link is invalid, expired or already used. Start the sign-in again.",
   ga_errRejected: "GitHub did not accept the sign-in. Start the sign-in again.",
+  // T10 accounts
+  am_button: "Account menu for {login}",
+  am_accounts: "GitHub accounts",
+  am_add: "Add GitHub account",
+  am_remembered: "Remembered on this device",
+  am_sessionOnly: "Signed in for this session",
+  am_signedOut: "Signed out",
+  am_remove: "Remove {login}",
+  am_signOutAll: "Sign out of everything",
+  am_switched: "Switched to {login}",
+  am_removeTitle: "Remove {login}?",
+  am_removeBody: "This deletes the token, favourites and cached data of {login} from this browser.",
+  am_removeConfirm: "Remove account",
+  am_signOutAllTitle: "Sign out of everything?",
+  am_signOutAllBody:
+    "This deletes every account, token, preference and cached record from this browser.",
+  am_cancel: "Cancel",
+  si_rememberMe: "Remember me on this device",
+  si_rememberMeHint: "Off: the token is forgotten when you close the browser.",
+  si_reauth: "GitHub no longer accepts the token for {login}. Enter a new token to sign in again.",
 } as const;
 
 export type MessageKey = keyof typeof en;
