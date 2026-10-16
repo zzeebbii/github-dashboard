@@ -1,8 +1,9 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
 import { en, type MessageKey } from "../i18n/en.ts";
 import { fi } from "../i18n/fi.ts";
 import { sv } from "../i18n/sv.ts";
 import type { Language } from "./preferences.ts";
+import { usePreferences } from "./preferences-provider.tsx";
 
 type Messages = Partial<Record<MessageKey, string>>;
 type Params = Readonly<Record<string, string | number>>;
@@ -54,10 +55,21 @@ export function createFormat(language: Language) {
   };
 }
 
+/** What `useT()` returns. `ui/` components that show fixed copy take it as a `t` prop. */
+export type Translate = (key: MessageKey, params?: Params) => string;
+
+/** Each language named in itself, so a reader finds theirs whatever the current language. */
+export const languageNames: Readonly<Record<Language, string>> = {
+  en: "English",
+  fi: "Suomi",
+  sv: "Svenska",
+};
+export const languages: readonly Language[] = ["en", "fi", "sv"];
+
 interface I18n {
   readonly language: Language;
   readonly setLanguage: (language: Language) => void;
-  readonly t: (key: MessageKey, params?: Params) => string;
+  readonly t: Translate;
   readonly format: ReturnType<typeof createFormat>;
 }
 
@@ -91,6 +103,22 @@ export function I18nProvider({
   );
 
   return <I18nContext value={value}>{children}</I18nContext>;
+}
+
+/** I18nProvider driven by the stored preference, so the choice survives a reload (AC-1.2). */
+export function PreferredI18nProvider({ children }: { children: ReactNode }) {
+  const { preferences, updatePreferences } = usePreferences();
+  const onLanguageChange = useCallback(
+    (language: Language) => {
+      updatePreferences({ language });
+    },
+    [updatePreferences],
+  );
+  return (
+    <I18nProvider language={preferences.language} onLanguageChange={onLanguageChange}>
+      {children}
+    </I18nProvider>
+  );
 }
 
 export function useI18n(): I18n {

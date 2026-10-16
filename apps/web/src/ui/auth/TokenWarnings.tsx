@@ -1,35 +1,30 @@
 import { useId } from "react";
 import type { PermissionArea } from "../../application/auth.ts";
+import type { Translate } from "../../application/i18n.tsx";
 import type { TokenType, TokenWarning } from "../../domain/account.ts";
+import type { MessageKey } from "../../i18n/en.ts";
 
-// Every user-visible string in this component, in one place for the i18n follow-up.
-const STRINGS = {
-  heading: "About this token",
-  writeAccess:
-    "This token can write to your repositories (classic “repo” scope). The dashboard only reads, so a fine-grained token with read-only access is safer.",
-  missingHeading: "Missing read permissions",
-  probeFailed: "The token's permissions could not be checked. Some sections may stay empty.",
-  sso: "An organisation uses SAML single sign-on. Authorise this token for it on GitHub under Settings → Developer settings → Personal access tokens → Configure SSO.",
-  area: {
-    "pull-requests": "Pull requests",
-    checks: "Checks and statuses",
-    "org-membership": "Organisation membership",
+const areaKeys = {
+  "pull-requests": "tw_areaPullRequests",
+  checks: "tw_areaChecks",
+  "org-membership": "tw_areaOrgMembership",
+} as const satisfies Record<PermissionArea, MessageKey>;
+
+const grantKeys = {
+  classic: {
+    "pull-requests": "tw_classicRepo",
+    checks: "tw_classicRepo",
+    "org-membership": "tw_classicReadOrg",
   },
-  grantAt: {
-    classic: {
-      "pull-requests": "add the “repo” scope (private repositories)",
-      checks: "add the “repo” scope (private repositories)",
-      "org-membership": "add the “read:org” scope",
-    },
-    "fine-grained": {
-      "pull-requests": "Repository permissions → Pull requests: Read-only",
-      checks: "Repository permissions → Commit statuses: Read-only",
-      "org-membership": "Organization permissions → Members: Read-only",
-    },
+  "fine-grained": {
+    "pull-requests": "tw_fgPullRequests",
+    checks: "tw_fgChecks",
+    "org-membership": "tw_fgOrgMembership",
   },
-} as const;
+} as const satisfies Record<TokenType, Record<PermissionArea, MessageKey>>;
 
 interface TokenWarningsProps {
+  readonly t: Translate;
   readonly warnings: readonly TokenWarning[];
   readonly tokenType: TokenType;
   /** null: the probe could not run. */
@@ -39,22 +34,23 @@ interface TokenWarningsProps {
 
 /** Write-scope and permission warnings. Text only; nothing here holds a token. */
 export function TokenWarnings({
+  t,
   warnings,
   tokenType,
   missingPermissions,
   ssoAuthorizationNeeded,
 }: TokenWarningsProps) {
   const headingId = useId();
-  const messages: string[] = warnings.map(() => STRINGS.writeAccess);
-  if (missingPermissions === null) messages.push(STRINGS.probeFailed);
-  if (ssoAuthorizationNeeded) messages.push(STRINGS.sso);
+  const messages: string[] = warnings.map(() => t("tw_writeAccess"));
+  if (missingPermissions === null) messages.push(t("tw_probeFailed"));
+  if (ssoAuthorizationNeeded) messages.push(t("tw_sso"));
   const missing = missingPermissions ?? [];
 
   if (messages.length === 0 && missing.length === 0) return null;
 
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId}>{STRINGS.heading}</h2>
+      <h2 id={headingId}>{t("tw_heading")}</h2>
       {messages.length > 0 && (
         <ul>
           {messages.map((message) => (
@@ -64,11 +60,11 @@ export function TokenWarnings({
       )}
       {missing.length > 0 && (
         <>
-          <h3>{STRINGS.missingHeading}</h3>
+          <h3>{t("tw_missingHeading")}</h3>
           <ul>
             {missing.map((area) => (
               <li key={area}>
-                {STRINGS.area[area]}: {STRINGS.grantAt[tokenType][area]}
+                {t(areaKeys[area])}: {t(grantKeys[tokenType][area])}
               </li>
             ))}
           </ul>

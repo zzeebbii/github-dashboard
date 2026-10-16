@@ -1,29 +1,20 @@
 import { type FormEvent, useId, useState } from "react";
 import { useAccounts, useAuth } from "../../application/auth-provider.tsx";
 import { AuthError, type AuthErrorKind, type SignInResult } from "../../application/auth.ts";
+import { useAnnounce } from "../../application/announcer.tsx";
+import { useT } from "../../application/i18n.tsx";
 import { tokenWarnings } from "../../domain/account.ts";
+import type { MessageKey } from "../../i18n/en.ts";
 import { TokenWarnings } from "../../ui/auth/TokenWarnings.tsx";
 
-// Every user-visible string on this page, in one place for the i18n follow-up.
-const STRINGS = {
-  heading: "Sign in to GitHub",
-  intro:
-    "Paste a GitHub personal access token. It stays in this browser and is sent only to api.github.com.",
-  tokenLabel: "Personal access token",
-  submit: "Sign in",
-  submitting: "Checking token…",
-  signedInAs: (login: string) => `Signed in as ${login}.`,
-  continue: "Continue to dashboard",
-  errors: {
-    "invalid-format": "That does not look like a GitHub token. Paste the whole token.",
-    "invalid-token": "This token is invalid, revoked or expired. Create a new one on GitHub.",
-    "sso-required":
-      "An organisation requires SAML single sign-on. Authorise this token for it on GitHub, then try again.",
-    "rate-limited": "GitHub's rate limit was reached. Wait a few minutes and try again.",
-    network: "Could not reach GitHub. Check your connection and try again.",
-    "unexpected-response": "GitHub sent an unexpected answer. Try again later.",
-  } satisfies Record<AuthErrorKind, string>,
-} as const;
+const errorKeys = {
+  "invalid-format": "si_errInvalidFormat",
+  "invalid-token": "si_errInvalidToken",
+  "sso-required": "si_errSso",
+  "rate-limited": "si_errRateLimited",
+  network: "si_errNetwork",
+  "unexpected-response": "si_errUnexpected",
+} as const satisfies Record<AuthErrorKind, MessageKey>;
 
 interface SignInPageProps {
   /** Called once signed in, straight away when there is nothing to warn about. */
@@ -35,6 +26,8 @@ interface SignInPageProps {
  * state, so it does not show up in DevTools and is gone once the request is made.
  */
 export function SignInPage({ onContinue }: SignInPageProps) {
+  const t = useT();
+  const announce = useAnnounce();
   const { signIn } = useAuth();
   const { activeAccount } = useAccounts();
   const tokenId = useId();
@@ -57,7 +50,10 @@ export function SignInPage({ onContinue }: SignInPageProps) {
         signedIn.missingPermissions?.length === 0 &&
         !signedIn.ssoAuthorizationNeeded;
       if (nothingToSay) onContinue();
-      else setResult(signedIn);
+      else {
+        announce(t("si_signedInAs", { login: signedIn.account.login }));
+        setResult(signedIn);
+      }
     } catch (caught) {
       setError(caught instanceof AuthError ? caught.kind : "unexpected-response");
     } finally {
@@ -75,11 +71,11 @@ export function SignInPage({ onContinue }: SignInPageProps) {
 
   return (
     <main>
-      <h1>{STRINGS.heading}</h1>
+      <h1>{t("si_heading")}</h1>
       {account === null || result === null ? (
         <form onSubmit={onSubmit} aria-busy={pending}>
-          <p>{STRINGS.intro}</p>
-          <label htmlFor={tokenId}>{STRINGS.tokenLabel}</label>
+          <p>{t("si_intro")}</p>
+          <label htmlFor={tokenId}>{t("si_tokenLabel")}</label>
           <input
             id={tokenId}
             name="token"
@@ -91,25 +87,26 @@ export function SignInPage({ onContinue }: SignInPageProps) {
             aria-describedby={error === null ? undefined : `${tokenId}-error`}
           />
           <button type="submit" disabled={pending}>
-            {pending ? STRINGS.submitting : STRINGS.submit}
+            {pending ? t("si_submitting") : t("si_submit")}
           </button>
           {error !== null && (
             <p id={`${tokenId}-error`} role="alert">
-              {STRINGS.errors[error]}
+              {t(errorKeys[error])}
             </p>
           )}
         </form>
       ) : (
         <>
-          <p role="status">{STRINGS.signedInAs(account.login)}</p>
+          <p>{t("si_signedInAs", { login: account.login })}</p>
           <TokenWarnings
+            t={t}
             warnings={tokenWarnings(account)}
             tokenType={account.tokenType}
             missingPermissions={result.missingPermissions}
             ssoAuthorizationNeeded={result.ssoAuthorizationNeeded}
           />
           <button type="button" onClick={onContinue}>
-            {STRINGS.continue}
+            {t("si_continue")}
           </button>
         </>
       )}
