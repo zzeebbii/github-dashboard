@@ -1,0 +1,171 @@
+{
+  "_note": "Recorded 2026-10-16 against public vitejs/vite#22559 as ONE request holding both pr-detail documents (measured cost 2; each document alone is 1 by GitHub's formula, so `cost` here is 1). Logins replaced with fixture values, HTML bodies replaced, headers trimmed. reviewThreads hand-written to the schema: the probe did not select them.",
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8",
+    "x-github-media-type": "github.v4; format=json",
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4992",
+    "x-ratelimit-reset": "1792136208",
+    "x-ratelimit-resource": "graphql",
+    "x-ratelimit-used": "8"
+  },
+  "body": {
+    "data": {
+      "repository": {
+        "pullRequest": {
+          "id": "PR_kwDOD1jqbs7hEaSN",
+          "number": 22559,
+          "title": "fix(serve): serve index.html from public subdirectories",
+          "url": "https://github.com/vitejs/vite/pull/22559",
+          "state": "OPEN",
+          "isDraft": false,
+          "bodyHTML": "<p dir=\"auto\">Fixture description.</p>",
+          "createdAt": "2026-05-31T09:25:35Z",
+          "updatedAt": "2026-09-05T02:43:29Z",
+          "headRefOid": "02638e926b6877b21c2c991f575ea7a81ac05c44",
+          "headRefName": "fix/public-subdir-index-html",
+          "baseRefName": "main",
+          "mergeable": "MERGEABLE",
+          "author": {
+            "__typename": "User",
+            "login": "octo-author"
+          },
+          "labels": {
+            "nodes": [
+              {
+                "name": "feat: html",
+                "color": "094d72"
+              },
+              {
+                "name": "p2-nice-to-have",
+                "color": "f4b7ff"
+              }
+            ]
+          },
+          "assignees": {
+            "nodes": []
+          },
+          "milestone": null,
+          "reviewRequests": {
+            "nodes": []
+          },
+          "latestReviews": {
+            "nodes": [
+              {
+                "state": "COMMENTED",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-reviewer"
+                }
+              },
+              {
+                "state": "COMMENTED",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-commenter"
+                }
+              }
+            ]
+          },
+          "reviewThreads": {
+            "nodes": [
+              {
+                "id": "PRRT_fixture_1",
+                "isResolved": false,
+                "isOutdated": false,
+                "path": "packages/vite/src/node/server/middlewares/static.ts",
+                "line": 42,
+                "comments": {
+                  "nodes": [
+                    {
+                      "id": "PRRC_fixture_1",
+                      "url": "https://github.com/vitejs/vite/pull/22559#discussion_r1",
+                      "createdAt": "2026-06-15T11:04:00Z",
+                      "bodyHTML": "<p dir=\"auto\">Fixture text.</p>",
+                      "diffHunk": "@@ -40,3 +40,4 @@\n   const url = req.url\n+  if (url.endsWith('/')) {",
+                      "author": {
+                        "__typename": "User",
+                        "login": "octo-reviewer"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_fixture_2",
+                "isResolved": true,
+                "isOutdated": true,
+                "path": "docs/guide/assets.md",
+                "line": null,
+                "comments": {
+                  "nodes": []
+                }
+              }
+            ]
+          },
+          "timelineItems": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "Y3Vyc29yOnYyOpPPAAABoG9zGGgAqjU1NDg4MTkzNDU="
+            },
+            "nodes": [
+              {
+                "__typename": "PullRequestReview",
+                "id": "PRR_kwDOD1jqbs8AAAABDAclNw",
+                "url": "https://github.com/vitejs/vite/pull/22559#pullrequestreview-4496762167",
+                "state": "CHANGES_REQUESTED",
+                "submittedAt": "2026-06-15T11:05:00Z",
+                "bodyHTML": "",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-reviewer"
+                }
+              },
+              {
+                "__typename": "PullRequestReview",
+                "id": "PRR_kwDOD1jqbs8AAAABDGMAaw",
+                "url": "https://github.com/vitejs/vite/pull/22559#pullrequestreview-4502782059",
+                "state": "COMMENTED",
+                "submittedAt": "2026-06-16T02:32:42Z",
+                "bodyHTML": "<p dir=\"auto\">Fixture text.</p>",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-commenter"
+                }
+              },
+              {
+                "__typename": "IssueComment",
+                "id": "IC_kwDOD1jqbs8AAAABM1erjg",
+                "url": "https://github.com/vitejs/vite/pull/22559#issuecomment-5156350862",
+                "createdAt": "2026-08-02T07:53:49Z",
+                "bodyHTML": "<p dir=\"auto\">Fixture text.</p>",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author"
+                }
+              },
+              {
+                "__typename": "IssueComment",
+                "id": "IC_kwDOD1jqbs8AAAABSrxDkQ",
+                "url": "https://github.com/vitejs/vite/pull/22559#issuecomment-5548819345",
+                "createdAt": "2026-09-05T02:43:29Z",
+                "bodyHTML": "<p dir=\"auto\">Fixture text.</p>",
+                "author": {
+                  "__typename": "User",
+                  "login": "octo-author"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "rateLimit": {
+        "cost": 1,
+        "limit": 5000,
+        "remaining": 4992,
+        "resetAt": "2026-10-16T07:36:48Z"
+      }
+    }
+  }
+}
