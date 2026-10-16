@@ -1,5 +1,10 @@
-import { type InfiniteData, infiniteQueryOptions, useInfiniteQuery } from "@tanstack/react-query";
-import type { Account } from "../../domain/account.ts";
+import {
+  type InfiniteData,
+  type QueryClient,
+  infiniteQueryOptions,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
+import type { Account, AccountId } from "../../domain/account.ts";
 import type { PullRequest } from "../../domain/pull-request.ts";
 import { REFRESH_INTERVAL_MS } from "../../domain/quota.ts";
 import type { GitHubError, GitHubReadPort, RepoPullRequestPage } from "../github.ts";
@@ -14,6 +19,14 @@ interface RepoRef {
   readonly owner: string;
   readonly name: string;
 }
+
+const repoPagesKey = (accountId: AccountId) => ["prLists", accountId, "repo"] as const;
+
+/** Every cached repository-page PR; never a request (the command palette, AC-7.1). */
+export const cachedRepoPullRequests = (client: QueryClient, accountId: AccountId) =>
+  client
+    .getQueriesData<InfiniteData<RepoPage>>({ queryKey: repoPagesKey(accountId) })
+    .flatMap(([, data]) => data?.pages.flatMap((page) => page.page.pullRequests) ?? []);
 
 /**
  * The repository page's open PRs, 20 per page (FR-4.6). Keyed `["prLists", accountId, "repo",
@@ -35,7 +48,7 @@ export function repoPullRequestsQueryOptions(
     readonly unknown[],
     string | null
   >({
-    queryKey: ["prLists", account.id, "repo", `${owner}/${name}`.toLowerCase()],
+    queryKey: [...repoPagesKey(account.id), `${owner}/${name}`.toLowerCase()],
     initialPageParam: null,
     queryFn: async ({ pageParam }) => {
       const { data, partialErrors } = await unwrap(

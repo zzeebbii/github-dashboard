@@ -337,4 +337,8 @@ export const fi: Record<MessageKey, string> = {
   pp_labels: "Tunnisteet",
   pp_milestone: "Virstanpylväs",
   pp_created: "Avattu",
+  // T25 palette
+  pa_title: "Komentopaletti",
+  pa_results: "{n} tulosta",
+  pa_language: "Kieli: {name}",
 };

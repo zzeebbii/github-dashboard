@@ -334,4 +334,8 @@ export const sv: Record<MessageKey, string> = {
   pp_labels: "Etiketter",
   pp_milestone: "Milstolpe",
   pp_created: "Öppnad",
+  // T25 palette
+  pa_title: "Kommandopalett",
+  pa_results: "{n} resultat",
+  pa_language: "Språk: {name}",
 };

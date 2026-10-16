@@ -1,4 +1,4 @@
-import { ChevronRight, Menu, Moon, PanelLeft, Sun } from "lucide-react";
+import { ChevronRight, Menu, Moon, PanelLeft, Search, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Translate } from "../../application/i18n.tsx";
 import type { ResolvedTheme } from "../../application/theme.ts";
@@ -13,6 +13,10 @@ interface HeaderProps {
   readonly onOpenMenu: () => void;
   readonly resolvedTheme: ResolvedTheme;
   readonly onToggleTheme: () => void;
+  /** Opens the command palette (T25). */
+  readonly onOpenPalette: () => void;
+  /** The palette's shortcut as shown, e.g. "⌘K". */
+  readonly paletteShortcut: string;
   /** The API quota indicator (T14). */
   readonly quota?: ReactNode;
   /** "Updated …" and the refresh button (T14). */
@@ -33,6 +37,8 @@ export function Header({
   onOpenMenu,
   resolvedTheme,
   onToggleTheme,
+  onOpenPalette,
+  paletteShortcut,
   quota,
   updated,
   account,
@@ -70,6 +76,17 @@ export function Header({
         </ol>
       </nav>
       <span className="header-spacer" />
+      <button
+        type="button"
+        className="palette-trigger"
+        onClick={onOpenPalette}
+        aria-haspopup="dialog"
+        aria-keyshortcuts="Meta+K Control+K"
+      >
+        <Icon icon={Search} size={14} />
+        <span className="palette-trigger-label">{t("searchAll")}</span>
+        <kbd>{paletteShortcut}</kbd>
+      </button>
       {quota}
       {updated}
       <button
