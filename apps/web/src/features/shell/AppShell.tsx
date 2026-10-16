@@ -1,7 +1,10 @@
 import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useI18n } from "../../application/i18n.tsx";
+import { useAccounts } from "../../application/auth-provider.tsx";
 import { usePreferences } from "../../application/preferences-provider.tsx";
+import { modKeyLabel, useShortcuts } from "../../application/shortcuts.ts";
+import { PaletteContainer } from "../palette/PaletteContainer.tsx";
 import { RepositoriesContainer } from "../sidebar/RepositoriesContainer.tsx";
 import { AccountMenuContainer } from "./AccountMenuContainer.tsx";
 import { OfflineBannerContainer, QuotaContainer, UpdatedContainer } from "./FreshnessContainer.tsx";
@@ -18,12 +21,25 @@ const MAIN_ID = "main";
  *
  * The header carries the quota and "updated" slots; the offline banner opens main (T14).
  * The sidebar's repository slot holds the Favourites and Repositories sections (T17).
+ * ⌘K / Ctrl+K or the header's search button opens the command palette (T25).
  */
 export function AppShell() {
   const { t, language, setLanguage } = useI18n();
   const { resolvedTheme, updatePreferences } = usePreferences();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const { activeAccount } = useAccounts();
+  // The app's global shortcuts, registered once (FR-7.1). ⌘K / Ctrl+K toggles the palette.
+  useShortcuts([
+    {
+      key: "k",
+      mod: true,
+      run: () => {
+        setPaletteOpen((open) => !open);
+      },
+    },
+  ]);
 
   const sidebar = (
     <Sidebar
@@ -66,6 +82,10 @@ export function AppShell() {
           onToggleTheme={() => {
             updatePreferences({ theme: resolvedTheme === "dark" ? "light" : "dark" });
           }}
+          onOpenPalette={() => {
+            setPaletteOpen(true);
+          }}
+          paletteShortcut={modKeyLabel("K")}
         />
         <main id={MAIN_ID} tabIndex={-1} className="main">
           <OfflineBannerContainer />
@@ -74,6 +94,14 @@ export function AppShell() {
           </div>
         </main>
       </div>
+      {paletteOpen && activeAccount !== null && (
+        <PaletteContainer
+          account={activeAccount}
+          onClose={() => {
+            setPaletteOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

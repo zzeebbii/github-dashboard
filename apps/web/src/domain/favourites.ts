@@ -23,7 +23,7 @@ export interface Favourite {
 }
 
 /** An open PR of a favourite: enough to list and count it, and to open it from cache. */
-interface OpenPullRequest {
+export interface OpenPullRequest {
   readonly id: string;
   readonly repository: string;
   readonly number: number;

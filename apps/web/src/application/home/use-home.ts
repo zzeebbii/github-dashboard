@@ -1,4 +1,4 @@
-import { queryOptions, useQueries, useQuery } from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useQueries, useQuery } from "@tanstack/react-query";
 import type { Account, AccountId } from "../../domain/account.ts";
 import { hasActivitySince, newActivityCount } from "../../domain/activity.ts";
 import type { ActivityItem, PullRequest } from "../../domain/pull-request.ts";
@@ -30,8 +30,9 @@ const VIEWER_STALE_MS = 24 * 60 * 60 * 1000;
  * `updatedAt` and marker, so it can only change when those do.
  */
 const homeKeys = {
+  searches: (accountId: AccountId) => ["prLists", accountId, "home"] as const,
   search: (accountId: AccountId, search: HomeSearch) =>
-    ["prLists", accountId, "home", search] as const,
+    [...homeKeys.searches(accountId), search] as const,
   activity: (accountId: AccountId, batch: readonly ActivityKey[]) =>
     ["prLists", accountId, "homeActivity", batch] as const,
   viewer: (accountId: AccountId) => ["repos", accountId, "viewer"] as const,
@@ -77,6 +78,12 @@ export function homeSearchQueryOptions(
     },
   });
 }
+
+/** Every cached Home PR, duplicates included; never a request (the command palette, AC-7.1). */
+export const cachedHomePullRequests = (client: QueryClient, accountId: AccountId) =>
+  client
+    .getQueriesData<SearchResult>({ queryKey: homeKeys.searches(accountId) })
+    .flatMap(([, data]) => data?.pullRequests ?? []);
 
 /** The viewer's teams (`org/slug`), for "Team: @x" requests (FR-5.1). */
 function viewerQueryOptions(github: GitHubReadPort, account: Account) {

@@ -1,8 +1,9 @@
-import { queryOptions, useQueries } from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useQueries } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { AccountId } from "../../domain/account.ts";
 import {
   type FavouriteLookup,
+  type OpenPullRequest,
   type Repository,
   batchesOf,
   reconcileFavourites,
@@ -32,6 +33,16 @@ interface FavouriteBatch {
   readonly lookups: readonly FavouriteLookup[];
   readonly partialErrors: readonly GitHubError[];
 }
+
+/** The open PRs of every cached favourites batch; never a request (the command palette, AC-7.1). */
+export const cachedFavouritePullRequests = (
+  client: QueryClient,
+  accountId: AccountId,
+): OpenPullRequest[] =>
+  client
+    .getQueriesData<FavouriteBatch>({ queryKey: favouriteKeys.all(accountId) })
+    .flatMap(([, data]) => data?.lookups ?? [])
+    .flatMap((lookup) => (lookup.kind === "found" ? lookup.pullRequests : []));
 
 export function favouriteBatchQueryOptions(
   github: GitHubReadPort,

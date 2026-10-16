@@ -335,6 +335,10 @@ export const en = {
   pp_labels: "Labels",
   pp_milestone: "Milestone",
   pp_created: "Opened",
+  // T25 palette
+  pa_title: "Command palette",
+  pa_results: "{n} results",
+  pa_language: "Language: {name}",
 } as const;
 
 export type MessageKey = keyof typeof en;

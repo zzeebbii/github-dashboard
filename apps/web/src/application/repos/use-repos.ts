@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useQuery } from "@tanstack/react-query";
 import type { AccountId } from "../../domain/account.ts";
 import type { Repository } from "../../domain/favourites.ts";
 import type { GitHubError, GitHubReadPort, OrgAccessIssue } from "../github.ts";
@@ -40,6 +40,10 @@ export function reposQueryOptions(github: GitHubReadPort, accountId: AccountId) 
     meta: OWN_REFRESH_ONLY,
   });
 }
+
+/** The cached list only; never a request (the command palette, AC-7.1). */
+export const cachedRepositories = (client: QueryClient, accountId: AccountId) =>
+  client.getQueryData<RepoList>(repoKeys.list(accountId))?.repositories ?? [];
 
 const orgIssue = (error: GitHubError): OrgAccessIssue[] =>
   error.kind === "orgAccess" ? [error.issue] : [];
