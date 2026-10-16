@@ -203,7 +203,6 @@ export const en = {
   am_accounts: "GitHub accounts",
   am_add: "Add GitHub account",
   am_remembered: "Remembered on this device",
-  am_sessionOnly: "Signed in for this session",
   am_signedOut: "Signed out",
   am_remove: "Remove {login}",
   am_signOutAll: "Sign out of everything",
@@ -354,6 +353,8 @@ export const en = {
   st_shortcuts: "Keyboard shortcuts",
   st_listShortcuts: "Move through lists with J and K",
   fr_refreshedNew: "Dashboard refreshed, {n} new",
+  // session sharing
+  am_sessionTabs: "Signed in until you close the last tab",
 } as const satisfies Readonly<Record<string, string | Plural>>;
 
 export type MessageKey = keyof typeof en;

@@ -71,6 +71,10 @@ export function Dialog({
     if (element === null || !open) return undefined;
     // The browser closed it itself (e.g. a cancel it would not let us prevent).
     const closedByBrowser = () => {
+      // The close event is queued, not synchronous. React StrictMode (development) runs this
+      // effect, its cleanup (our own close()) and the effect again; the queued event then
+      // lands after showModal() reopened it and must not close the dialog for real.
+      if (element.open) return;
       latest.current.onClose();
     };
     element.addEventListener("close", closedByBrowser);

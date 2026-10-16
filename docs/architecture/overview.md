@@ -169,8 +169,11 @@ over the list it was opened from (FR-6.1–6.9).
 `main.tsx` does this before the first render, in this order
 ([ADR-0016](../adr/0016-auth-port-and-token-storage.md)):
 
-1. `application/startup.ts` purges the cache of every account without "remember me" whose
-   session token is gone (FR-2.13).
+1. `application/startup.ts` first asks the other open tabs, over `BroadcastChannel('ghd-auth')`
+   (`infrastructure/auth/session-sharing.ts`), for the session-only tokens this tab lacks,
+   waiting at most 250 ms. It then purges the cache of every account without "remember me"
+   whose session token is still missing (FR-2.13), so an account signed in in another tab
+   keeps its cache and a PR opened in a new tab is signed in.
 2. `application/query-hydration.ts` restores the cached queries of the **active** account
    only. Every `CachePort` call takes an `AccountId`; there is no cross-account read.
 
@@ -178,7 +181,8 @@ Afterwards, `application/accounts.ts` switches (re-hydrating the new account), r
 an account (token, record, queries, cache) or signs out of everything (all Web Storage
 and the IndexedDB database, then a reload). A 401 goes to `application/unauthorized.ts`:
 that account's token is forgotten, its data kept, and the user is sent to
-`/sign-in?account=<login>`.
+`/sign-in?account=<login>`. Every token change or removal is broadcast on `ghd-auth`, so
+the other tabs update or drop their session copy.
 
 ## Where to read next
 

@@ -195,7 +195,6 @@ export const fi: Catalogue = {
   am_accounts: "GitHub-tilit",
   am_add: "Lisää GitHub-tili",
   am_remembered: "Muistetaan tällä laitteella",
-  am_sessionOnly: "Kirjautunut tämän istunnon ajan",
   am_signedOut: "Kirjautunut ulos",
   am_remove: "Poista {login}",
   am_signOutAll: "Kirjaudu ulos kaikista",
@@ -348,4 +347,6 @@ export const fi: Catalogue = {
   st_shortcuts: "Pikanäppäimet",
   st_listShortcuts: "Liiku listoissa J- ja K-näppäimillä",
   fr_refreshedNew: "Tiedot päivitetty, uusia: {n}",
+  // session sharing
+  am_sessionTabs: "Kirjautunut, kunnes suljet viimeisen välilehden",
 };

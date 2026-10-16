@@ -79,6 +79,33 @@ third-party scripts, and `sessionStorage` as the default.
 | GitHub device flow                      | GitHub's device-flow endpoints do not allow cross-origin calls either.        |
 | PAT only, no GitHub App                 | Fine-grained, revocable app access is a stated requirement for a later phase. |
 
+## Amendment 2026-10-16: session tokens shared between tabs
+
+`sessionStorage` is per tab, so a PR opened in a new tab landed on sign-in. Session-only
+tokens (and GitHub App refresh tokens without "remember me") are now shared between this
+app's open tabs over a `BroadcastChannel` named `ghd-auth`
+(`infrastructure/auth/session-sharing.ts`):
+
+- At startup, before the FR-2.13 purge, a tab asks for the tokens of its non-remembered
+  accounts that have none here, and waits at most 250 ms for the first answer. An answer
+  is written to this tab's `sessionStorage`, so the purge spares those accounts.
+- A tab answers only from its own `sessionStorage`. Remembered tokens are never sent; every
+  tab already reads them from `localStorage`.
+- Every token write or removal (sign-in, refresh rotation, 401, removing an account, sign
+  out of everything) is broadcast, and the other tabs update or drop their copy.
+- GitHub App refreshes take a Web Lock per account (`ghd-auth-refresh:<id>`), so two tabs
+  holding the same single-use refresh token do not both spend it.
+- Every message is validated with Zod; an unreadable one is dropped.
+- Without `BroadcastChannel`, each tab keeps its own session, as before.
+
+The tokens stay in memory and per-tab `sessionStorage`; they are gone once the last tab
+closes. They still never reach IndexedDB, the query cache or a URL.
+
+**The threat model is unchanged.** A `BroadcastChannel` reaches only documents of the same
+origin, and anything that can run script on our origin can already read `sessionStorage`
+directly. The strict CSP with Trusted Types remains the real defence. The cost line above
+now reads: users with "remember me" off sign in again once the last tab of the app closes.
+
 ## Revisit when
 
 The app is used by other people on shared machines, or a browser storage primitive

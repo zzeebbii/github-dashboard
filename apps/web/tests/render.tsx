@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, StrictMode } from "react";
 import { createAccountActions } from "../src/application/accounts.ts";
 import type { AccountStore, HasToken } from "../src/application/accounts.ts";
 import type { AuthPort } from "../src/application/auth.ts";
@@ -69,22 +69,25 @@ export async function renderWithProviders(
 ) {
   // `render` is async in vitest-browser-react v2.
   return await render(
-    <PreferencesProvider store={preferencesStore} prefersDark={prefersDark}>
-      <PreferredI18nProvider>
-        <AnnouncerProvider>
-          <QueryClientProvider client={queryClient}>
-            {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
-            <HtmlSanitizerContext value={sanitizeHtml}>
-              <GitHubProvider github={github}>
-                <SeenContext value={seen}>
-                  <RefreshProvider scheduler={scheduler}>{ui}</RefreshProvider>
-                </SeenContext>
-              </GitHubProvider>
-            </HtmlSanitizerContext>
-          </QueryClientProvider>
-        </AnnouncerProvider>
-      </PreferredI18nProvider>
-    </PreferencesProvider>,
+    // StrictMode like main.tsx: development double-mounts must not break anything.
+    <StrictMode>
+      <PreferencesProvider store={preferencesStore} prefersDark={prefersDark}>
+        <PreferredI18nProvider>
+          <AnnouncerProvider>
+            <QueryClientProvider client={queryClient}>
+              {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
+              <HtmlSanitizerContext value={sanitizeHtml}>
+                <GitHubProvider github={github}>
+                  <SeenContext value={seen}>
+                    <RefreshProvider scheduler={scheduler}>{ui}</RefreshProvider>
+                  </SeenContext>
+                </GitHubProvider>
+              </HtmlSanitizerContext>
+            </QueryClientProvider>
+          </AnnouncerProvider>
+        </PreferredI18nProvider>
+      </PreferencesProvider>
+    </StrictMode>,
   );
 }
 

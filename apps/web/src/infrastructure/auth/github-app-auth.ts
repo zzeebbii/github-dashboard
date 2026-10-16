@@ -66,6 +66,8 @@ interface GitHubAppAuthOptions {
   /** Signs a token in and owns the access tokens and account records. */
   readonly base: AuthPort;
   readonly tokens: TokenStorage;
+  /** Refresh tokens; defaults to a "refresh" token storage over the browser's storages. */
+  readonly refreshTokens?: TokenStorage;
   readonly accounts: AccountStore;
   readonly clock: { now(): Date };
   /** Where the pending `state` and PKCE verifier live; defaults to sessionStorage. */
@@ -76,12 +78,17 @@ interface GitHubAppAuthOptions {
   readonly navigate?: (url: string) => void;
   /** Injected so tests can count requests; defaults to the global fetch. */
   readonly fetchImpl?: typeof fetch;
+  /** Serialises refreshes across tabs; defaults to the browser's, `undefined` means none. */
+  readonly locks?: LockManager | undefined;
 }
 
 export function createGitHubAppAuth(options: GitHubAppAuthOptions): AuthPort & GitHubAppSignInPort {
   const { config, base, tokens, accounts, clock } = options;
   // Refresh tokens follow the access token's storage rule (FR-2.11), under their own key.
-  const refreshTokens = createTokenStorage(sessionStorage, localStorage, "refresh");
+  const refreshTokens =
+    options.refreshTokens ?? createTokenStorage(sessionStorage, localStorage, "refresh");
+  // navigator.locks is missing outside secure contexts and in older browsers.
+  const locks = "locks" in options ? options.locks : (navigator.locks as LockManager | undefined);
   const session = options.session ?? sessionStorage;
   const redirectUri = `${options.origin ?? location.origin}${CALLBACK_PATH}`;
   const navigate = options.navigate ?? ((url: string) => location.assign(url));
@@ -145,18 +152,29 @@ export function createGitHubAppAuth(options: GitHubAppAuthOptions): AuthPort & G
     refreshTokens.write(id, JSON.stringify(record), rememberMe);
   }
 
+  /** The stored token, if another tab has rotated past `spent` and it is still valid. */
+  function rotatedElsewhere(id: AccountId, spent: string): string | null {
+    const latest = parseJson(RefreshRecordSchema, refreshTokens.read(id));
+    const token = tokens.read(id);
+    const rotated = latest !== null && latest.refreshToken !== spent;
+    return rotated && now() < latest.accessExpiresAt ? token : null;
+  }
+
   /**
    * Trades the refresh token for a new pair. Refresh tokens are single use, so concurrent
-   * requests in this tab share one refresh.
-   *
-   * ponytail: two tabs with "remember me" can still refresh at the same moment and one loses
-   * (GitHub voids the older pair). Serialise with navigator.locks if that shows up.
+   * requests in this tab share one refresh, and tabs take turns under a Web Lock: every tab
+   * holding the same pair (remembered, or shared by session-sharing.ts) reaches the expiry
+   * margin at the same moment. The tab that waited finds the new pair and uses it. If the
+   * new pair's broadcast arrives only after the lock does, its own exchange fails and the
+   * re-read afterwards still finds the new pair.
    */
   function refreshAccess(id: AccountId, record: RefreshRecord, current: string) {
     const inFlight = refreshing.get(id);
     if (inFlight !== undefined) return inFlight;
     const stillValid = () => now() < record.accessExpiresAt;
     const run = async (): Promise<string | null> => {
+      const done = rotatedElsewhere(id, record.refreshToken);
+      if (done !== null) return done;
       if (now() >= record.refreshExpiresAt) return stillValid() ? current : null;
       try {
         const data = await exchange({
@@ -169,10 +187,11 @@ export function createGitHubAppAuth(options: GitHubAppAuthOptions): AuthPort & G
         return data.access_token;
       } catch {
         // An expired token would only earn a 401; null tells the caller there is none.
-        return stillValid() ? current : null;
+        return rotatedElsewhere(id, record.refreshToken) ?? (stillValid() ? current : null);
       }
     };
-    const promise = run().finally(() => refreshing.delete(id));
+    const locked = locks === undefined ? run() : locks.request(`ghd-auth-refresh:${id}`, run);
+    const promise = locked.finally(() => refreshing.delete(id));
     refreshing.set(id, promise);
     return promise;
   }
