@@ -591,3 +591,415 @@ kbd {
   font-size: 12px;
   color: var(--muted-foreground);
 }
+
+/* T19 pr list: the PR row, the windowed list and the filter bar, after the design. */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.filter-search {
+  position: relative;
+  width: min(260px, 100%);
+}
+
+.filter-search svg {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  color: var(--muted-foreground);
+}
+
+.filter-search input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 30px;
+  border: 1px solid var(--input);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+}
+
+.filter-search input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.menu-anchor {
+  position: relative;
+}
+
+.menu-anchor-end {
+  margin-left: auto;
+}
+
+.filter-button {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filter-button:hover {
+  background: var(--accent);
+}
+
+.filter-button svg {
+  color: var(--muted-foreground);
+}
+
+.filter-button-dashed {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: transparent;
+}
+
+.filter-switch {
+  gap: 8px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.filter-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--muted);
+  font-size: 12px;
+}
+
+.switch-track {
+  width: 30px;
+  height: 18px;
+  padding: 2px;
+  display: flex;
+  border-radius: 999px;
+  background: var(--input);
+  transition: background 0.15s;
+}
+
+.switch-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--background);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+
+[aria-checked="true"] > .switch-track {
+  background: var(--primary);
+}
+
+[aria-checked="true"] > .switch-track .switch-thumb {
+  transform: translateX(12px);
+}
+
+.filter-popover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  z-index: 60;
+  width: 240px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 4px;
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  animation: popIn 0.12s ease-out;
+}
+
+.menu-anchor-end .filter-popover {
+  left: auto;
+  right: 0;
+}
+
+.filter-check {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+
+.filter-check[data-checked="true"] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.filter-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-option-detail {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.pr-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pr-empty {
+  margin: 0;
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+/* Tones carry no meaning on their own: every one sits next to text. */
+[data-tone="red"] {
+  --tone: var(--red);
+}
+
+[data-tone="green"] {
+  --tone: var(--green);
+}
+
+[data-tone="amber"] {
+  --tone: var(--amber);
+}
+
+[data-tone="blue"] {
+  --tone: var(--blue);
+}
+
+[data-tone="muted"] {
+  --tone: var(--muted-foreground);
+}
+
+/* A fixed height per density: the windowed list relies on every row being the same. */
+.pr-row {
+  height: 64px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 0 16px;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.pr-row[data-density="compact"] {
+  height: 48px;
+}
+
+.pr-row:hover {
+  background: var(--accent);
+}
+
+.pr-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 56px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pr-status svg,
+.pr-stat[data-tone] svg,
+.reason-chip svg {
+  flex-shrink: 0;
+  color: var(--tone);
+}
+
+.pr-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pr-row[data-density="compact"] .pr-main {
+  gap: 2px;
+}
+
+.pr-title-line,
+.pr-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pr-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pr-title:hover {
+  color: var(--foreground);
+  text-decoration: underline;
+}
+
+.pr-new-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--blue);
+}
+
+.pr-label {
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--muted-foreground);
+}
+
+.pr-meta {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.pr-ref {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.pr-avatar {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--muted);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.reason-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.pr-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.pr-stat[data-tone="amber"] {
+  font-weight: 500;
+}
+
+.pr-ci {
+  width: 16px;
+}
+
+.pr-spin {
+  display: flex;
+  animation: spin 1.2s linear infinite;
+}
+
+.pr-review,
+.pr-comments {
+  min-width: 52px;
+}
+
+.pr-new {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.pr-lines {
+  min-width: 88px;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+/* The design's green and red, mixed toward the text colour so small digits keep 4.5:1. */
+.pr-add {
+  color: color-mix(in srgb, var(--green) 70%, var(--foreground));
+}
+
+.pr-del {
+  color: color-mix(in srgb, var(--red) 80%, var(--foreground));
+}
+
+.pr-updated {
+  min-width: 72px;
+  justify-content: flex-end;
+}
+
+.pr-github {
+  width: 28px;
+  height: 28px;
+}
+
+/* Narrow screens: the stats move to a third line; still one fixed height per density. */
+@media (max-width: 767.98px) {
+  .pr-row {
+    height: 88px;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: center;
+    row-gap: 4px;
+  }
+
+  .pr-row[data-density="compact"] {
+    height: 72px;
+  }
+
+  .pr-stats {
+    grid-column: 2;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .pr-lines,
+  .pr-updated {
+    min-width: 0;
+  }
+}
