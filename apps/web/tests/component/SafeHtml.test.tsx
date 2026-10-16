@@ -4,6 +4,7 @@ import { renderHook } from "vitest-browser-react";
 import { useSanitizeHtml } from "../../src/application/html-sanitizer.ts";
 import { createSanitizeHtml } from "../../src/infrastructure/browser/trusted-types.ts";
 import { SafeHtml } from "../../src/ui/SafeHtml.tsx";
+import { expectNoAxeViolations } from "../axe.ts";
 import { renderWithProviders } from "../render.tsx";
 
 // Composed the way a feature will: the sanitiser comes from the provider in render.tsx.
@@ -144,4 +145,12 @@ describe("the sanitiser", () => {
   test("useSanitizeHtml fails closed without a provider", async () => {
     await expect(renderHook(() => useSanitizeHtml())).rejects.toThrow(/HtmlSanitizerContext/);
   });
+});
+
+test("rendered GitHub HTML has no axe violations in either theme", async () => {
+  const container = await renderBody({
+    html: '<h2>Summary</h2><p>See <a href="https://github.com/o/r/pull/1">#1</a>.</p><ul><li>one</li></ul><img src="https://user-images.githubusercontent.com/x.png" alt="diagram">',
+  });
+
+  await expectNoAxeViolations(container);
 });

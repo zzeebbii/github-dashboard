@@ -5,6 +5,7 @@ import { type Account, toAccountId } from "../../src/domain/account.ts";
 import { SignInPage } from "../../src/features/auth/SignInPage.tsx";
 import { createInMemoryAccountStore } from "../fakes/in-memory-account-store.ts";
 import { createInMemoryAuth } from "../fakes/in-memory-auth.ts";
+import { expectNoAxeViolations } from "../axe.ts";
 import { renderWithProviders } from "../render.tsx";
 import { guardAgainstTokenLeaks } from "../token-leak-guard.ts";
 
@@ -106,4 +107,10 @@ test("an invalid token announces an error and stores nothing (AC-2.1)", async ()
     .toMatchTextContent("This token is invalid, revoked or expired.");
   await expect.element(screen.getByLabelText("Personal access token")).toHaveValue("");
   expect(accountStore.list()).toEqual([]);
+});
+
+test("the sign-in page has no axe violations in either theme", async () => {
+  const { screen } = await renderSignIn();
+
+  await expectNoAxeViolations(screen.container);
 });
