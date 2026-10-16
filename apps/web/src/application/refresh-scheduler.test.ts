@@ -7,6 +7,7 @@ import {
   manualTime,
   settle,
 } from "../../tests/fakes/fake-refresh-ports.ts";
+import { aPullRequest } from "../../tests/fakes/pull-request.ts";
 import { toAccountId } from "../domain/account.ts";
 import { createQueryRefresher, createRefreshScheduler } from "./refresh-scheduler.ts";
 
@@ -63,7 +64,7 @@ function setup({ leader = true } = {}) {
     rateLimits,
     refresher: createQueryRefresher(client),
   });
-  const outcomes: { manual: boolean; changed: boolean }[] = [];
+  const outcomes: { manual: boolean; changed: boolean; before: unknown; after: unknown }[] = [];
   scheduler.onRefreshed((outcome) => outcomes.push(outcome));
   scheduler.start();
   scheduler.setAccount(A);
@@ -122,7 +123,7 @@ describe("refresh scheduler (FR-3.7)", () => {
     await scheduler.refreshNow();
 
     expect(query.fetches()).toBe(1);
-    expect(outcomes).toEqual([{ manual: true, changed: true }]);
+    expect(outcomes).toMatchObject([{ manual: true, changed: true }]);
   });
 
   it("an unchanged automatic refresh is not news", async () => {
@@ -148,7 +149,7 @@ describe("refresh scheduler (FR-3.7)", () => {
 
     await time.advance(5 * MINUTE);
 
-    expect(outcomes).toEqual([{ manual: false, changed: false }]);
+    expect(outcomes).toMatchObject([{ manual: false, changed: false }]);
   });
 
   it("coalesces a refresh requested while one runs", async () => {
@@ -238,7 +239,62 @@ describe("cross-tab (FR-3.9)", () => {
     expect(query.fetches()).toBe(0);
     expect(client.getQueryData(["prLists", A, "home"])).toEqual({ n: 99 });
     expect(scheduler.getState().lastRefreshAt).toEqual(at);
-    expect(outcomes).toEqual([{ manual: false, changed: true }]);
+    expect(outcomes).toMatchObject([{ manual: false, changed: true }]);
+  });
+
+  it("reports a refresh once across tabs: never in a hidden tab, with the PRs before and after", () => {
+    const time = manualTime();
+    const client = new QueryClient();
+    client.setQueryData(["prLists", A, "home"], { ids: ["PR_1"] });
+    const listed = (c: QueryClient) =>
+      (c.getQueryData<{ ids: string[] }>(["prLists", A, "home"])?.ids ?? []).map((id) =>
+        aPullRequest({ id }),
+      );
+    const tab = (visible: boolean) => {
+      const crossTab = inMemoryCrossTab({ leader: false });
+      const scheduler = createRefreshScheduler({
+        clock: time.clock,
+        timer: time.timer,
+        visibility: fakeSignal(visible),
+        online: fakeSignal(true),
+        crossTab,
+        rateLimits: fakeRateLimits(time.clock),
+        refresher: createQueryRefresher(client, listed),
+      });
+      const outcomes: { before: readonly { id: string }[]; after: readonly { id: string }[] }[] =
+        [];
+      scheduler.onRefreshed((outcome) => outcomes.push(outcome));
+      scheduler.start();
+      scheduler.setAccount(A);
+      cleanups.push(() => {
+        scheduler.stop();
+      });
+      return { crossTab, outcomes };
+    };
+    const hidden = tab(false);
+    const shown = tab(true);
+    const message = {
+      type: "refreshed",
+      accountId: A,
+      at: new Date(time.clock.now().getTime() + MINUTE),
+      quota: {},
+      updates: [
+        {
+          queryKey: ["prLists", A, "home"],
+          data: { ids: ["PR_1", "PR_2"] },
+          updatedAt: time.clock.now().getTime() + MINUTE,
+        },
+      ],
+    } as const;
+
+    hidden.crossTab.deliver(message);
+    expect(hidden.outcomes).toEqual([]);
+
+    client.setQueryData(["prLists", A, "home"], { ids: ["PR_1"] }, { updatedAt: 0 });
+    shown.crossTab.deliver(message);
+    expect(shown.outcomes).toHaveLength(1);
+    expect(shown.outcomes[0]?.before.map((pr) => pr.id)).toEqual(["PR_1"]);
+    expect(shown.outcomes[0]?.after.map((pr) => pr.id)).toEqual(["PR_1", "PR_2"]);
   });
 
   it("the leader publishes each refresh with what changed and the quota", async () => {

@@ -12,6 +12,8 @@ export interface Preferences {
   readonly theme: Theme;
   readonly density: Density;
   readonly language: Language;
+  /** J/K/Enter move through and open list rows (FR-7.3). */
+  readonly listShortcutsEnabled: boolean;
 }
 
 export interface PreferencesStore {
@@ -23,4 +25,5 @@ export const defaultPreferences: Preferences = Object.freeze({
   theme: "system",
   density: "comfortable",
   language: "en",
+  listShortcutsEnabled: true,
 });

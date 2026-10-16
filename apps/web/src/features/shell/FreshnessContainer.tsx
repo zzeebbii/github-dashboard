@@ -4,6 +4,7 @@ import { useAccounts } from "../../application/auth-provider.tsx";
 import { useI18n } from "../../application/i18n.tsx";
 import { RATE_LIMIT_POOLS, type RateLimitPool } from "../../application/rate-limits.ts";
 import { useRefreshScheduler, useRefreshState } from "../../application/refresh-provider.tsx";
+import { newSinceRefresh } from "../../domain/activity.ts";
 import { quotaLevel } from "../../domain/quota.ts";
 import { OfflineBanner } from "../../ui/shell/OfflineBanner.tsx";
 import { QuotaPopover, type QuotaRow } from "../../ui/shell/QuotaPopover.tsx";
@@ -22,19 +23,25 @@ export function UpdatedContainer() {
   const announce = useAnnounce();
   const scheduler = useRefreshScheduler();
   const { refreshing, lastRefreshAt, now } = useRefreshState();
-  const accountId = useAccounts().activeAccount?.id ?? null;
+  const { activeAccount } = useAccounts();
+  const accountId = activeAccount?.id ?? null;
+  const login = activeAccount?.login ?? null;
 
   useEffect(() => {
     scheduler.setAccount(accountId);
   }, [scheduler, accountId]);
 
-  // Polite, and only when there is news: a manual refresh, or data that changed.
+  // One polite announcement per refresh, and only with news (FR-7.4): a manual refresh
+  // always says how it went; an automatic one only when it brought new PRs or activity, so
+  // a CI status flipping every 5 minutes stays quiet.
   useEffect(
     () =>
-      scheduler.onRefreshed(({ manual, changed }) => {
-        if (manual || changed) announce(t("fr_refreshed"));
+      scheduler.onRefreshed(({ manual, before, after }) => {
+        const fresh = login === null ? 0 : newSinceRefresh(before, after, login);
+        if (fresh > 0) announce(t("fr_refreshedNew", { n: fresh }));
+        else if (manual) announce(t("fr_refreshed"));
       }),
-    [scheduler, announce, t],
+    [scheduler, announce, t, login],
   );
 
   const label = refreshing

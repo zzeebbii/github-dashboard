@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasActivitySince, isStale, newActivityCount } from "./activity.ts";
+import { hasActivitySince, isStale, newActivityCount, newSinceRefresh } from "./activity.ts";
 import type { ActivityItem, PullRequest } from "./pull-request.ts";
 
 function pr(overrides: Partial<PullRequest> = {}): PullRequest {
@@ -113,5 +113,40 @@ describe("hasActivitySince", () => {
   ];
   it.each(cases)("%s", (_name, activity, seenAt, expected) => {
     expect(hasActivitySince(pr({ activity }), seenAt)).toBe(expected);
+  });
+});
+
+describe("newSinceRefresh (FR-7.4)", () => {
+  const old = pr({ id: "PR_old", updatedAt: day(5) });
+
+  it("counts PRs that were in no list before", () => {
+    expect(newSinceRefresh([old], [old, pr({ id: "PR_a" }), pr({ id: "PR_b" })], "me")).toBe(2);
+  });
+
+  it("counts a PR with a comment or review by another human since its previous version", () => {
+    const commented = { ...old, activity: [item("comment", "bob", day(6))] };
+    const reviewed = { ...old, activity: [item("review", "bob", day(6))] };
+    expect(newSinceRefresh([old], [commented], "me")).toBe(1);
+    expect(newSinceRefresh([old], [reviewed], "me")).toBe(1);
+  });
+
+  it("does not count the viewer's own activity, a bot's, a commit or an unchanged PR", () => {
+    const after = {
+      ...old,
+      activity: [
+        item("comment", "me", day(6)),
+        item("comment", "ci", day(6), "Bot"),
+        item("commit", "bob", day(6)),
+        item("comment", "bob", day(4)),
+      ],
+    };
+    expect(newSinceRefresh([old], [after], "me")).toBe(0);
+    expect(newSinceRefresh([old], [old], "me")).toBe(0);
+  });
+
+  it("counts a PR once, though it is in several lists, and nothing on a first load", () => {
+    const fresh = pr({ id: "PR_a" });
+    expect(newSinceRefresh([old], [fresh, fresh, old, old], "me")).toBe(1);
+    expect(newSinceRefresh([], [fresh, old], "me")).toBe(0);
   });
 });

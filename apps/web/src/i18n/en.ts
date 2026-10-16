@@ -350,6 +350,10 @@ export const en = {
   pa_title: "Command palette",
   pa_results: { one: "{n} result", other: "{n} results" },
   pa_language: "Language: {name}",
+  // T26 shortcuts
+  st_shortcuts: "Keyboard shortcuts",
+  st_listShortcuts: "Move through lists with J and K",
+  fr_refreshedNew: "Dashboard refreshed, {n} new",
 } as const satisfies Readonly<Record<string, string | Plural>>;
 
 export type MessageKey = keyof typeof en;

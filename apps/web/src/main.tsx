@@ -11,6 +11,7 @@ import { AuthProvider } from "./application/auth-provider.tsx";
 import { GitHubProvider } from "./application/github-provider.tsx";
 import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "./application/i18n.tsx";
+import { cachedListPullRequests } from "./application/palette.ts";
 import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 import { RefreshProvider } from "./application/refresh-provider.tsx";
@@ -117,7 +118,7 @@ const refreshScheduler = createRefreshScheduler({
   online: networkStatus(),
   crossTab: createWebLocksCrossTab(),
   rateLimits: tracker,
-  refresher: createQueryRefresher(queryClient),
+  refresher: createQueryRefresher(queryClient, cachedListPullRequests),
 });
 refreshScheduler.start();
 

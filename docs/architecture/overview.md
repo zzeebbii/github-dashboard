@@ -135,6 +135,12 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
   into their query client. Without Web Locks every tab is its own leader.
 - **Header:** `features/shell/FreshnessContainer.tsx` shows "Updated N min ago", the
   quota popover and the offline banner from the scheduler's state.
+- **Announcement:** each refresh reaches `onRefreshed` once, with the cached list PRs
+  before and after it (`application/palette.ts` `cachedListPullRequests`, passed to
+  `createQueryRefresher` in `main.tsx`); an automatic one only in a visible tab, so it is
+  heard once across tabs. `FreshnessContainer` announces "Updated, N new" when
+  `domain/activity.ts` `newSinceRefresh` finds PRs new to the lists or with new activity
+  by others, and "Updated" after a manual refresh with nothing new (FR-7.4).
 - **Sidebar:** `features/sidebar/RepositoriesContainer.tsx` shows the favourites and the
   repository list with its organisation access notices. The repository search
   (`domain/repo-search.ts`) filters the cached list and never makes a request; it refuses

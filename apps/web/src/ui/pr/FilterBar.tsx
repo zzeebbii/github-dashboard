@@ -1,5 +1,5 @@
 import { ArrowUpDown, ChevronDown, CirclePlus, Clock, Search, X } from "lucide-react";
-import { useId } from "react";
+import { type Ref, useId } from "react";
 import type { Translate } from "../../application/i18n.tsx";
 import {
   hasActivePrFilters,
@@ -23,6 +23,8 @@ interface FilterBarProps {
   readonly labels: readonly LabelCount[];
   readonly onChange: (patch: Partial<PrFilters>) => void;
   readonly onReset: () => void;
+  /** The text box, which `/` focuses (FR-7.3). */
+  readonly inputRef?: Ref<HTMLInputElement>;
 }
 
 const updatedKeys = {
@@ -44,7 +46,7 @@ const sortLabelKeys: Record<SortKey, "so_waiting" | "so_updated" | "so_newest" |
  * The design's filter row: text, label, updated (incl. stale), drafts, Reset, and the sort
  * menu on the right (FR-5.7). Controlled: the composer keeps the state in the URL.
  */
-export function FilterBar({ t, filters, labels, onChange, onReset }: FilterBarProps) {
+export function FilterBar({ t, filters, labels, onChange, onReset, inputRef }: FilterBarProps) {
   const inputId = useId();
   const selected = filters.label;
   // Selected labels stay listed even when no PR in the list has them any more.
@@ -63,6 +65,7 @@ export function FilterBar({ t, filters, labels, onChange, onReset }: FilterBarPr
         </label>
         <Icon icon={Search} size={14} />
         <input
+          ref={inputRef}
           id={inputId}
           type="search"
           value={filters.q}

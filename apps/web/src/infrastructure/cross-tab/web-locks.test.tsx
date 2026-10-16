@@ -53,6 +53,7 @@ function tabWithScheduler(time: ReturnType<typeof manualTime>) {
         return Promise.resolve([]);
       },
       apply: () => undefined,
+      pullRequests: () => [],
       lastUpdated: () => time.clock.now(),
     },
   });

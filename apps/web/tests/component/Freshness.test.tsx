@@ -4,7 +4,10 @@ import {
   createQueryRefresher,
   createRefreshScheduler,
 } from "../../src/application/refresh-scheduler.ts";
+import type { GitHubReadPort } from "../../src/application/github.ts";
+import { cachedListPullRequests } from "../../src/application/palette.ts";
 import { type Account, toAccountId } from "../../src/domain/account.ts";
+import type { PullRequest } from "../../src/domain/pull-request.ts";
 import styles from "../../src/styles.css?inline";
 import { expectNoAxeViolations } from "../axe.ts";
 import {
@@ -16,6 +19,8 @@ import {
 } from "../fakes/fake-refresh-ports.ts";
 import { createInMemoryAccountStore } from "../fakes/in-memory-account-store.ts";
 import { createInMemoryAuth } from "../fakes/in-memory-auth.ts";
+import { createInMemoryGitHub } from "../fakes/in-memory-github.ts";
+import { aPullRequest } from "../fakes/pull-request.ts";
 import { renderApp, testQueryClient } from "../render.tsx";
 import { guardAgainstTokenLeaks } from "../token-leak-guard.ts";
 
@@ -45,13 +50,13 @@ afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
-async function setup({ width = 1280 } = {}) {
+async function setup({ width = 1280, github }: { width?: number; github?: GitHubReadPort } = {}) {
   await page.viewport(width, 800);
   const time = manualTime();
   const online = fakeSignal(true);
   const rateLimits = fakeRateLimits(time.clock);
   const queryClient = testQueryClient();
-  const refresher = createQueryRefresher(queryClient);
+  const refresher = createQueryRefresher(queryClient, cachedListPullRequests);
   let refreshes = 0;
   const scheduler = createRefreshScheduler({
     clock: time.clock,
@@ -84,6 +89,7 @@ async function setup({ width = 1280 } = {}) {
     hasToken: auth.hasToken,
     queryClient,
     scheduler,
+    ...(github === undefined ? {} : { github }),
   });
   await expect.element(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
   // The first refresh is due as soon as the shell sets the account.
@@ -117,6 +123,67 @@ test("shows how old the data is, live, and refreshes on demand with an announcem
   await expect.element(page.getByRole("status")).toHaveTextContent("Dashboard refreshed");
   await expect.element(refreshButton()).toHaveAccessibleName("Refresh, Updated just now");
   await expectNoAxeViolations(document.body);
+});
+
+const toReview = (id: string, title: string) =>
+  aPullRequest({
+    id,
+    title,
+    author: { login: "bob", typename: "User" },
+    reviewRequests: [{ kind: "user", login: ACCOUNT.login }],
+  });
+
+test("each refresh is announced at most once, politely, with what is new (AC-7.4)", async () => {
+  let listed: readonly PullRequest[] = [toReview("PR_1", "First")];
+  const github = createInMemoryGitHub(undefined, {
+    searchHome: (_accountId, _login, search) => {
+      const pullRequests = search === "review-requested" ? listed : [];
+      return Promise.resolve({
+        ok: true,
+        value: {
+          data: { pullRequests, nextCursor: null, totalCount: pullRequests.length },
+          partialErrors: [],
+        },
+      });
+    },
+  });
+  const { time, refreshes } = await setup({ github });
+  await expect.element(page.getByText("First")).toBeVisible();
+
+  // The app's one live region, as a screen reader sees it.
+  const live = page
+    .getByRole("status")
+    .elements()
+    .find((element) => element.getAttribute("aria-live") === "polite");
+  expect(live?.parentElement).toBe(document.body);
+  const announced: string[] = [];
+  const observer = new MutationObserver((records) => {
+    for (const node of records.flatMap((record) => [...record.addedNodes])) {
+      if (node.textContent !== null && node.textContent !== "") announced.push(node.textContent);
+    }
+  });
+  if (live !== undefined) observer.observe(live, { childList: true, subtree: true });
+
+  // An automatic refresh that brings nothing new stays quiet.
+  await time.advance(5 * MINUTE);
+  expect(refreshes()).toBe(2);
+  await settle();
+  expect(announced).toEqual([]);
+
+  // One that brings a new PR says so, once.
+  listed = [toReview("PR_2", "Second"), ...listed];
+  await time.advance(5 * MINUTE);
+  expect(refreshes()).toBe(3);
+  await expect.element(page.getByText("Second")).toBeVisible();
+  await expect.poll(() => announced).toEqual(["Dashboard refreshed, 1 new"]);
+
+  // A manual one always answers, once, even with nothing new.
+  await refreshButton().click();
+  expect(refreshes()).toBe(4);
+  await expect.poll(() => announced).toEqual(["Dashboard refreshed, 1 new", "Dashboard refreshed"]);
+  await settle();
+  expect(announced).toHaveLength(2);
+  observer.disconnect();
 });
 
 test("offline shows the banner with the last refresh time; online refreshes (AC-3.9)", async () => {

@@ -341,4 +341,8 @@ export const sv: Catalogue = {
   pa_title: "Kommandopalett",
   pa_results: { one: "{n} resultat", other: "{n} resultat" },
   pa_language: "Språk: {name}",
+  // T26 shortcuts
+  st_shortcuts: "Kortkommandon",
+  st_listShortcuts: "Flytta i listor med J och K",
+  fr_refreshedNew: "Data uppdaterad, nya: {n}",
 };
