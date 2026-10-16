@@ -8,14 +8,14 @@ import {
 export const GOOD_STATE = "fake-good-state";
 
 /**
- * A `GitHubAppSignInPort` with no network and no navigation. `starts` counts redirects
- * begun; `searches` records each query string handed to `complete`.
+ * A `GitHubAppSignInPort` with no network and no navigation. `starts` records each redirect
+ * begun, with its options; `searches` records each query string handed to `complete`.
  */
 export function createInMemoryGitHubApp(result: SignInResult) {
-  const calls = { starts: 0, searches: [] as string[] };
+  const calls = { starts: [] as { rememberMe: boolean }[], searches: [] as string[] };
   const port: GitHubAppSignInPort = {
-    start() {
-      calls.starts += 1;
+    start(options) {
+      calls.starts.push(options);
       return Promise.resolve();
     },
     complete(search) {

@@ -19,7 +19,7 @@ import { createUnauthorizedHandler } from "./application/unauthorized.ts";
 import { sanitizeHtml } from "./infrastructure/browser/trusted-types.ts";
 import { createGitHubAppAuth } from "./infrastructure/auth/github-app-auth.ts";
 import { createPatAuth } from "./infrastructure/auth/pat-auth.ts";
-import { createTokenStorage } from "./infrastructure/auth/token-storage.ts";
+import { createTokenStorage, forgetTokens } from "./infrastructure/auth/token-storage.ts";
 import { createLocalAccountStore } from "./infrastructure/local-account-store.ts";
 import { createIndexedDbCache } from "./infrastructure/cache/indexeddb-cache.ts";
 import { createGitHubClient } from "./infrastructure/github/client.ts";
@@ -90,7 +90,7 @@ const github = createGitHubRead(
     onUnauthorized: createUnauthorizedHandler({
       accounts: accountStore,
       forgetToken: (id) => {
-        tokens.remove(id);
+        forgetTokens(id);
       },
       toSignIn: (account) => void router.navigate({ to: "/sign-in", search: { account } }),
     }),

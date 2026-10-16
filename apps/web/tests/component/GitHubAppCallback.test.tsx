@@ -28,7 +28,7 @@ test("a valid callback leaves no code or state in the address bar and lands on H
   });
   const { screen, router } = await renderApp(`/auth/callback?code=fake-code&state=${GOOD_STATE}`, {
     githubApp: {
-      start: () => githubApp.port.start(),
+      start: (options) => githubApp.port.start(options),
       complete: async (search) => {
         await exchange;
         return githubApp.port.complete(search);

@@ -36,4 +36,17 @@ export function createTokenStorage(
   };
 }
 
+/**
+ * What a 401 removes (FR-2.8): this account's access token AND its GitHub App refresh token,
+ * so nothing usable is left behind. The account record stays, for the re-auth prompt.
+ */
+export function forgetTokens(
+  id: AccountId,
+  session: Storage = sessionStorage,
+  persistent: Storage = localStorage,
+): void {
+  createTokenStorage(session, persistent, "token").remove(id);
+  createTokenStorage(session, persistent, "refresh").remove(id);
+}
+
 export type TokenStorage = ReturnType<typeof createTokenStorage>;

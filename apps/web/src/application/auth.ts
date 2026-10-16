@@ -23,8 +23,11 @@ export interface AuthPort {
  * it; features treat its absence as "disabled".
  */
 export interface GitHubAppSignInPort {
-  /** Sends the browser to GitHub's authorisation page. */
-  start(): Promise<void>;
+  /**
+   * Sends the browser to GitHub's authorisation page. `rememberMe` is kept with the pending
+   * attempt and applied to the tokens `complete` stores, as for a PAT (FR-2.7).
+   */
+  start(options: { readonly rememberMe: boolean }): Promise<void>;
   /**
    * Handles the query string GitHub redirected back with (`?code=…&state=…`): checks
    * `state`, exchanges the code and signs the account in. The caller removes the query

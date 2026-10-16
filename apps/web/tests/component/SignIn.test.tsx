@@ -149,7 +149,21 @@ test("with GitHub App config the button starts the redirect (AC-2.3)", async () 
   await expectNoAxeViolations(screen.container);
 
   await button.click();
-  expect(githubApp.calls.starts).toBe(1);
+  expect(githubApp.calls.starts).toEqual([{ rememberMe: false }]);
+});
+
+test("the remember-me choice goes with a GitHub App sign-in (FR-2.7)", async () => {
+  const githubApp = createInMemoryGitHubApp({
+    account: baseAccount,
+    missingPermissions: [],
+    ssoAuthorizationNeeded: false,
+  });
+  const { screen } = await renderSignIn(githubApp.port);
+
+  await screen.getByLabelText("Remember me on this device").click();
+  await screen.getByRole("button", { name: APP_BUTTON }).click();
+
+  expect(githubApp.calls.starts).toEqual([{ rememberMe: true }]);
 });
 
 // T10

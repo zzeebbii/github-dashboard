@@ -1,6 +1,6 @@
 import { beforeEach, expect, test } from "vitest";
 import { toAccountId } from "../../domain/account.ts";
-import { createTokenStorage } from "./token-storage.ts";
+import { createTokenStorage, forgetTokens } from "./token-storage.ts";
 
 const ID = toAccountId(1000001)!;
 const TOKEN = "github_pat_FAKE_token_storage_fixture";
@@ -48,5 +48,17 @@ test("clearAll empties both storages, not only the tokens", () => {
   tokens.clearAll();
 
   expect(localStorage.length).toBe(0);
+  expect(sessionStorage.length).toBe(0);
+});
+
+test("a 401 forgets the access and the refresh token, in both storages, of that account only", () => {
+  const other = toAccountId(1000002)!;
+  createTokenStorage().write(ID, TOKEN, true);
+  createTokenStorage(sessionStorage, localStorage, "refresh").write(ID, "refresh-record", false);
+  createTokenStorage().write(other, TOKEN, true);
+
+  forgetTokens(ID);
+
+  expect(Object.keys(localStorage)).toEqual([`ghd:token:${other}`]);
   expect(sessionStorage.length).toBe(0);
 });

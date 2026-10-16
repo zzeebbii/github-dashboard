@@ -67,11 +67,11 @@ export function AuthProvider({
   );
 
   const app = useMemo(
-    () =>
+    (): GitHubAppSignInPort | null =>
       githubApp === null
         ? null
         : {
-            start: () => githubApp.start(),
+            start: (options) => githubApp.start(options),
             complete: async (search: string) => {
               const result = await githubApp.complete(search);
               setState(snapshot());

@@ -6,7 +6,7 @@ import { useT } from "../../application/i18n.tsx";
  * "Sign in with GitHub App" (FR-2.5, AC-2.3). Always shown; disabled, with the reason as
  * its description, until the deployment sets both GitHub App variables.
  */
-export function GitHubAppButton() {
+export function GitHubAppButton({ rememberMe }: { readonly rememberMe: boolean }) {
   const t = useT();
   const githubApp = useGitHubAppSignIn();
   const hintId = useId();
@@ -18,7 +18,7 @@ export function GitHubAppButton() {
     setPending(true);
     setFailed(false);
     // On success the page navigates to GitHub, so only failure needs handling.
-    githubApp.start().catch(() => {
+    githubApp.start({ rememberMe }).catch(() => {
       setPending(false);
       setFailed(true);
     });

@@ -38,12 +38,13 @@ export function SignInPage({ onContinue, reauthLogin }: SignInPageProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<AuthErrorKind | null>(null);
   const [result, setResult] = useState<SignInResult | null>(null);
+  // Default off (FR-2.7): tokens live in sessionStorage unless the user asks otherwise. State,
+  // not FormData, because the GitHub App button sits outside the form and needs it too.
+  const [rememberMe, setRememberMe] = useState(false);
 
   async function submit(form: HTMLFormElement) {
     const data = new FormData(form);
     const token = data.get("token");
-    // Default off (FR-2.7): the token lives in sessionStorage unless the user asks otherwise.
-    const rememberMe = data.get("rememberMe") === "on";
     form.reset();
     setPending(true);
     setError(null);
@@ -79,7 +80,7 @@ export function SignInPage({ onContinue, reauthLogin }: SignInPageProps) {
   return (
     <main>
       <h1>{t("si_heading")}</h1>
-      {result === null && <GitHubAppButton />}
+      {result === null && <GitHubAppButton rememberMe={rememberMe} />}
       {account === null || result === null ? (
         <form onSubmit={onSubmit} aria-busy={pending}>
           {reauthLogin !== undefined && <p>{t("si_reauth", { login: reauthLogin })}</p>}
@@ -96,7 +97,15 @@ export function SignInPage({ onContinue, reauthLogin }: SignInPageProps) {
             aria-describedby={error === null ? undefined : `${tokenId}-error`}
           />
           <label className="checkbox">
-            <input name="rememberMe" type="checkbox" aria-describedby={`${tokenId}-remember`} />
+            <input
+              name="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => {
+                setRememberMe(event.currentTarget.checked);
+              }}
+              aria-describedby={`${tokenId}-remember`}
+            />
             {t("si_rememberMe")}
           </label>
           <p id={`${tokenId}-remember`} className="hint">
