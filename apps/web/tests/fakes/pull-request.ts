@@ -20,7 +20,6 @@ export function aPullRequest(overrides: Partial<PullRequest> = {}): PullRequest 
     reviewDecision: null,
     checkState: null,
     mergeable: "UNKNOWN",
-    mergeStateStatus: "UNKNOWN",
     reviewRequests: [],
     reviews: [],
     headCommittedAt: null,

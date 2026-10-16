@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStale, newActivityCount } from "./activity.ts";
+import { hasActivitySince, isStale, newActivityCount } from "./activity.ts";
 import type { ActivityItem, PullRequest } from "./pull-request.ts";
 
 function pr(overrides: Partial<PullRequest> = {}): PullRequest {
@@ -21,7 +21,6 @@ function pr(overrides: Partial<PullRequest> = {}): PullRequest {
     reviewDecision: null,
     checkState: null,
     mergeable: "UNKNOWN",
-    mergeStateStatus: "UNKNOWN",
     reviewRequests: [],
     reviews: [],
     headCommittedAt: null,
@@ -101,5 +100,18 @@ describe("isStale", () => {
 
   it.each(cases)("%s", (_name, overrides, expected) => {
     expect(isStale(pr(overrides), now)).toBe(expected);
+  });
+});
+
+describe("hasActivitySince", () => {
+  const seen = day(5);
+  const cases: readonly [string, readonly ActivityItem[], string | null, boolean][] = [
+    ["no marker: hidden, nothing to count", [item("comment", "bob", day(6))], null, false],
+    ["the last comment is older than the marker", [item("comment", "bob", day(4))], seen, false],
+    ["a commit does not count", [item("commit", "bob", day(6))], seen, false],
+    ["a newer comment, even the viewer's own", [item("comment", "me", day(6))], seen, true],
+  ];
+  it.each(cases)("%s", (_name, activity, seenAt, expected) => {
+    expect(hasActivitySince(pr({ activity }), seenAt)).toBe(expected);
   });
 });

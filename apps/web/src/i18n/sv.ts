@@ -251,4 +251,9 @@ export const sv: Record<MessageKey, string> = {
   fr_quotaUnknown: "Inga förfrågningar har gjorts ännu.",
   fr_quotaNote:
     "Gränserna gäller per GitHub-konto. Automatisk uppdatering saktar ner under 20 % och pausas under 5 % tills återställningen.",
+  // T20 home
+  hm_loading: "Läser in pull requests…",
+  hm_error: "GitHub returnerade inte dina pull requests. Försök uppdatera.",
+  hm_truncated: "En sökning gav fler än 1 000 pull requests; bara de första 1 000 visas.",
+  pr_mergeChecking: "Söker efter mergekonflikter",
 };

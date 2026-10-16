@@ -116,7 +116,13 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
   A query with `meta: OWN_REFRESH_ONLY` is left alone and refetches only through its own
   refetch: the repository list (`application/repos/use-repos.ts`) stays fresh for 24 h
   that way and reloads from the sidebar's button (AC-4.1). Favourites
-  (`use-favourites.ts`, one query per 25 node ids) refresh with every cycle.
+  (`use-favourites.ts`, one query per 25 node ids) refresh with every cycle, as do Home's
+  three searches (`application/home/use-home.ts`, one query per search, paged by 20). Home's
+  viewer teams (a day) and lazy "+N new" counts (keyed by `updatedAt` and seen marker) opt
+  out. Seen markers (`application/seen.ts`) live in the cache's `seen` store, per account
+  and device; the list row is shared by every list query
+  (`infrastructure/github/queries/pr-row.fragment.ts`, see
+  [github-query-costs.md](github-query-costs.md)).
 - **When:** every 5 minutes while visible and online; on focus when the last refresh is
   over 60 s old; on reconnect; and on demand. `domain/quota.ts` doubles the interval
   below 20% of the GraphQL pool and stops it below 5% until the reset. A secondary limit

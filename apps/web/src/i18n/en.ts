@@ -252,6 +252,11 @@ export const en = {
   fr_quotaUnknown: "No requests made yet.",
   fr_quotaNote:
     "Limits apply per GitHub account. Auto-refresh slows down below 20% and pauses below 5% until the reset.",
+  // T20 home
+  hm_loading: "Loading pull requests…",
+  hm_error: "GitHub did not return your pull requests. Try Refresh.",
+  hm_truncated: "A search matched more than 1,000 pull requests; only the first 1,000 are shown.",
+  pr_mergeChecking: "Checking for merge conflicts",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -6,6 +6,7 @@ import {
   CircleDashed,
   CircleX,
   ExternalLink,
+  GitMerge,
   GitPullRequest,
   GitPullRequestDraft,
   LoaderCircle,
@@ -14,7 +15,7 @@ import {
   TriangleAlert,
   Users,
 } from "lucide-react";
-import { useId } from "react";
+import { type MouseEvent, useId } from "react";
 import type { createFormat, Translate } from "../../application/i18n.tsx";
 import type { Density } from "../../application/preferences.ts";
 import type { PullRequest } from "../../domain/pull-request.ts";
@@ -33,6 +34,13 @@ export interface PrRowData {
   readonly newCount: number | null;
   /** Where the title links: the PR panel in this app. */
   readonly href: string;
+  /**
+   * In-app navigation for a plain click on the title; a modified or middle click (new tab)
+   * is left to the browser. Without it the link is an ordinary one.
+   */
+  readonly onOpen?: () => void;
+  /** "Open in GitHub" was clicked (FR-5.8 sets the seen marker). */
+  readonly onOpenGitHub?: () => void;
 }
 
 interface PrRowProps extends PrRowData {
@@ -150,6 +158,10 @@ function reviewIndicator(t: Translate, pr: PullRequest): Indicator & { text: str
   return { icon: CircleDashed, tone: "muted", text: "—", label: t("pr_noReviewers") };
 }
 
+/** A plain left click, which the app may handle itself; anything else opens a new tab. */
+const isPlainClick = (event: MouseEvent) =>
+  event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+
 /**
  * One PR in a list, after the design's `row(p, i, repoView, hideFirstBorder)`. Every BR-11
  * field, the reason chip and "+N new" (FR-5.6). GitHub content (title, logins, labels) is
@@ -168,6 +180,8 @@ export function PrRow({
   reason,
   newCount,
   href,
+  onOpen,
+  onOpenGitHub,
 }: PrRowProps) {
   const id = useId();
   const login = pr.author?.login ?? "ghost";
@@ -185,6 +199,11 @@ export function PrRow({
             className="pr-title"
             aria-labelledby={`${id}-status ${id}-title`}
             title={pr.title}
+            onClick={(event) => {
+              if (onOpen === undefined || !isPlainClick(event)) return;
+              event.preventDefault();
+              onOpen();
+            }}
           >
             <span id={`${id}-title`}>{pr.title}</span>
           </a>
@@ -221,6 +240,11 @@ export function PrRow({
             {t("conflicts")}
           </span>
         )}
+        {pr.mergeable === "UNKNOWN" && (
+          <span className="pr-stat" data-tone="muted" title={t("pr_mergeChecking")}>
+            <Icon icon={GitMerge} size={14} label={t("pr_mergeChecking")} />
+          </span>
+        )}
         <span className="pr-stat pr-ci" data-tone={ci?.tone} title={ci?.label}>
           {ci !== null && (
             <span className={ci.spin === true ? "pr-spin" : undefined}>
@@ -249,7 +273,13 @@ export function PrRow({
         </span>
         {/* Defence in depth: never an href GitHub did not give us (e.g. `javascript:`). */}
         {pr.url.startsWith("https://github.com/") && (
-          <a href={pr.url} className="icon-button pr-github" target="_blank" rel="noreferrer">
+          <a
+            href={pr.url}
+            className="icon-button pr-github"
+            target="_blank"
+            rel="noreferrer"
+            onClick={onOpenGitHub}
+          >
             <Icon icon={ExternalLink} size={14} label={t("openGithub")} />
           </a>
         )}

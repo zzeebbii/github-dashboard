@@ -61,7 +61,7 @@ const ReviewThreadSchema = z.object({
   ),
 });
 
-const RequestedReviewerSchema = z.discriminatedUnion("__typename", [
+export const RequestedReviewerSchema = z.discriminatedUnion("__typename", [
   z.object({ __typename: z.literal("User"), login: z.string() }),
   z.object({
     __typename: z.literal("Team"),

@@ -27,7 +27,6 @@ function pr(overrides: Partial<PullRequest> = {}): PullRequest {
     reviewDecision: null,
     checkState: null,
     mergeable: "UNKNOWN",
-    mergeStateStatus: "UNKNOWN",
     reviewRequests: [],
     reviews: [],
     headCommittedAt: null,
@@ -112,7 +111,7 @@ const cases: readonly [string, PullRequest, Placement | null][] = [
   // Rule 4
   [
     "4: merge conflicts",
-    mine({ mergeable: "CONFLICTING", mergeStateStatus: "DIRTY" }),
+    mine({ mergeable: "CONFLICTING" }),
     { section: "needs-action", reason: { kind: "merge-conflicts" } },
   ],
   [
@@ -123,18 +122,33 @@ const cases: readonly [string, PullRequest, Placement | null][] = [
   // Rule 5
   [
     "5: ready to merge",
-    mine({ checkState: "SUCCESS", mergeable: "MERGEABLE", mergeStateStatus: "CLEAN" }),
+    mine({ checkState: "SUCCESS", mergeable: "MERGEABLE" }),
     { section: "needs-action", reason: { kind: "ready-to-merge" } },
   ],
   [
+    "5: approved, no checks, mergeable",
+    mine({ reviewDecision: "APPROVED", mergeable: "MERGEABLE" }),
+    { section: "needs-action", reason: { kind: "ready-to-merge" } },
+  ],
+  [
+    "5: mergeability still being computed waits",
+    mine({ checkState: "SUCCESS", mergeable: "UNKNOWN" }),
+    { section: "waiting", reason: { kind: "awaiting-review" } },
+  ],
+  [
+    "5: a required review still missing waits",
+    mine({ reviewDecision: "REVIEW_REQUIRED", checkState: "SUCCESS", mergeable: "MERGEABLE" }),
+    { section: "waiting", reason: { kind: "awaiting-review" } },
+  ],
+  [
     "5: draft that is clean waits",
-    mine({ isDraft: true, mergeStateStatus: "CLEAN" }),
+    mine({ isDraft: true, mergeable: "MERGEABLE" }),
     { section: "waiting", reason: { kind: "draft" } },
   ],
   // Rule 6
   [
     "6: CI running",
-    mine({ checkState: "PENDING", mergeStateStatus: "BLOCKED" }),
+    mine({ checkState: "PENDING", mergeable: "MERGEABLE" }),
     { section: "waiting", reason: { kind: "ci-running" } },
   ],
   [
@@ -144,7 +158,7 @@ const cases: readonly [string, PullRequest, Placement | null][] = [
   ],
   [
     "6: awaiting review",
-    mine({ reviewDecision: "REVIEW_REQUIRED", checkState: "SUCCESS", mergeStateStatus: "BLOCKED" }),
+    mine({ reviewDecision: "REVIEW_REQUIRED", checkState: "SUCCESS" }),
     { section: "waiting", reason: { kind: "awaiting-review" } },
   ],
   ["6: unknown state", mine(), { section: "waiting", reason: { kind: "awaiting-review" } }],
@@ -166,21 +180,19 @@ describe("placePullRequest", () => {
   it("never puts a draft in needs action except via rule 2", () => {
     const checks = ["SUCCESS", "FAILURE", "ERROR", "PENDING", "EXPECTED", null] as const;
     const mergeables = ["MERGEABLE", "CONFLICTING", "UNKNOWN"] as const;
-    const states = ["CLEAN", "DIRTY", "BLOCKED", "UNKNOWN"] as const;
     const decisions = ["APPROVED", "CHANGES_REQUESTED", "REVIEW_REQUIRED", null] as const;
     for (const checkState of checks)
       for (const mergeable of mergeables)
-        for (const mergeStateStatus of states)
-          for (const reviewDecision of decisions) {
-            const placement = placePullRequest(
-              mine({ isDraft: true, checkState, mergeable, mergeStateStatus, reviewDecision }),
-              viewer,
-            );
-            const expected: Placement =
-              reviewDecision === "CHANGES_REQUESTED"
-                ? { section: "needs-action", reason: { kind: "changes-requested" } }
-                : { section: "waiting", reason: { kind: "draft" } };
-            expect(placement).toEqual(expected);
-          }
+        for (const reviewDecision of decisions) {
+          const placement = placePullRequest(
+            mine({ isDraft: true, checkState, mergeable, reviewDecision }),
+            viewer,
+          );
+          const expected: Placement =
+            reviewDecision === "CHANGES_REQUESTED"
+              ? { section: "needs-action", reason: { kind: "changes-requested" } }
+              : { section: "waiting", reason: { kind: "draft" } };
+          expect(placement).toEqual(expected);
+        }
   });
 });
