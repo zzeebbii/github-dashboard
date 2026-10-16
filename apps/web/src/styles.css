@@ -370,19 +370,6 @@ kbd {
   }
 }
 
-/* Placeholder PR panel over the repository page (the real sheet is T24). */
-.panel {
-  position: fixed;
-  inset: 0 0 0 auto;
-  width: min(720px, 100vw);
-  padding: 24px;
-  overflow: auto;
-  background: var(--background);
-  border-left: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  animation: sheetIn 0.18s ease-out;
-}
-
 .radio-group {
   margin: 0 0 20px;
   padding: 0;
@@ -1850,4 +1837,508 @@ a.repo-link:hover,
   width: fit-content;
   color: var(--foreground);
   font-weight: 500;
+}
+
+/* T24 pr panel: the side sheet (ui/Dialog.tsx), its header, tabs and the three tab panels,
+   after the design's sheet. Tones sit on icons, borders and tints; text stays foreground
+   so it keeps 4.5:1. `sheetIn` is off under reduced motion (the rule near the top). */
+[data-tone="purple"] {
+  --tone: var(--purple);
+}
+
+.pr-sheet {
+  margin: 0 0 0 auto;
+  width: min(1040px, 72vw);
+  max-width: 100vw;
+  height: 100%;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: var(--shadow);
+  animation: sheetIn 0.2s ease-out;
+}
+
+.pr-sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-sheet::backdrop {
+  background: var(--overlay);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@media (max-width: 767.98px) {
+  .pr-sheet {
+    width: 100vw;
+  }
+}
+
+.pp-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pp-repo {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.pp-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pp-state,
+.pp-tone {
+  display: inline-flex;
+  color: var(--tone);
+}
+
+.pp-state {
+  margin-top: 3px;
+}
+
+.pp-title-block {
+  flex: 1;
+  min-width: min(280px, 100%);
+}
+
+.pp-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+/* Focused on open, programmatically: no ring around a heading. */
+.pp-title:focus {
+  outline: none;
+}
+
+.pp-number {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.pp-merge-line {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.pp-merge-line strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.pp-merge-line code,
+.pp-facts code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--muted);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.pp-button {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pp-button:hover {
+  background: var(--accent);
+}
+
+.pp-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 24px 56px;
+  background: var(--subtle);
+}
+
+.pp-content > [role="tabpanel"] {
+  max-width: 880px;
+}
+
+.pp-notice {
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+.pp-muted {
+  color: var(--muted-foreground);
+}
+
+.pp-card {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.pp-card > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pp-empty {
+  padding: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.pp-presets {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: var(--muted);
+}
+
+.pp-preset {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pp-preset[aria-pressed="true"] {
+  background: var(--background);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.pp-description {
+  margin-bottom: 16px;
+}
+
+.pp-body {
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.pp-body > div > :first-child {
+  margin-top: 0;
+}
+
+.pp-body > div > :last-child {
+  margin-bottom: 0;
+}
+
+.pp-body pre {
+  overflow-x: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--muted);
+  font-size: 12px;
+}
+
+.pp-body code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.pp-body a {
+  color: var(--foreground);
+}
+
+.pp-details ul,
+.pp-check-group > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pp-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pp-item-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.pp-item > .pp-item-head {
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-bots {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: transparent;
+}
+
+.pp-bots > .pp-item {
+  margin: 0 8px 8px;
+}
+
+.pp-thread > summary {
+  background: var(--subtle);
+  font-size: 12.5px;
+}
+
+.pp-thread > summary code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.pp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid color-mix(in oklab, var(--tone, var(--border)) 40%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--tone, transparent) 12%, transparent);
+  color: var(--foreground);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pp-badge > svg {
+  color: var(--tone, currentColor);
+}
+
+.pp-diff {
+  margin: 0;
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.pp-diff-line {
+  display: block;
+  padding: 0 12px;
+  white-space: pre;
+}
+
+.pp-diff-line[data-sign="+"] {
+  background: color-mix(in oklab, var(--green) 12%, transparent);
+}
+
+.pp-diff-line[data-sign="-"] {
+  background: color-mix(in oklab, var(--red) 12%, transparent);
+}
+
+.pp-reply + .pp-reply {
+  border-top: 1px solid var(--border);
+}
+
+.pp-checks,
+.pp-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pp-check-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.pp-check-summary p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.pp-check-summary .pp-check-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pp-check-group > summary {
+  background: var(--subtle);
+  font-weight: 600;
+}
+
+.pp-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--muted);
+  font-size: 11px;
+}
+
+.pp-run {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.pp-run-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pp-run-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.pp-run-name {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.pp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.pp-run-output,
+.pp-annotations {
+  margin: 8px 0 0 26px;
+  font-size: 12.5px;
+}
+
+.pp-run-title {
+  margin: 0;
+  font-weight: 500;
+}
+
+.pp-run-summary,
+.pp-annotations pre {
+  margin: 4px 0 0;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.pp-annotations {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in oklab, var(--red) 30%, var(--border));
+  border-radius: 8px;
+}
+
+.pp-annotations li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.pp-annotations pre {
+  flex-basis: 100%;
+}
+
+.pp-card-title {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--subtle);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 13.5px;
+}
+
+.pp-row + .pp-row {
+  border-top: 1px solid var(--border);
+}
+
+.pp-reviewer {
+  flex: 1;
+  font-weight: 500;
+}
+
+.pp-facts dt {
+  width: 160px;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+
+.pp-facts dd {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pp-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }

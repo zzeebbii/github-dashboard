@@ -35,6 +35,13 @@ Re-measured 2026-10-16 with T20's final documents (`gh api graphql` wall clock, 
 - FR-5.2's re-review rule needs the head commit date, which is only cheap enough on the "reviewed by me" section's query: only that search adds `commits(last: 1) { committedDate }` and the latest `REVIEW_REQUESTED_EVENT` (measured above); rows of the same PR from the other searches are merged with it by node id.
 - Without `mergeStateStatus`, Home's "Ready to merge" (rule 5) reads `mergeable = MERGEABLE`, checks passed or absent, and no review still required (`domain/sections.ts`).
 
+## The PR panel
+
+- **Opening a PR** makes the detail request (PR, description, review threads, first 50 timeline items) and the checks request for its head SHA: 2 GraphQL requests, 1 point each, 0 REST (AC-3.1, AC-6.1). The detail is cached by `updatedAt` and head SHA from the list row, so an unchanged PR reopens with 0 requests. Completed checks of a SHA are never fetched again.
+- **A deep link with no list row** (a pasted URL, or a PR outside the loaded list) cannot check the cache without asking GitHub. It makes the same detail request and keys the result by the `updatedAt` and head SHA in the response. There is no separate "head" query, so it is still 2 requests. The lookup runs again each time the panel opens without a row. With a row (the repository list underneath has loaded, from cache or network), the row's key wins.
+- **Opened from Home**, the panel stays over Home (a route mask), so no repository list is fetched underneath.
+- **`mergeStateStatus` is only requested in the single-PR detail query**, for the Details tab's exact merge state ("Blocked by branch protection", "Behind the base branch"). Measured 2026-10-16, 3 open PRs × 3 runs each: median 0.78 s → 1.26 s on `vercel/next.js` and 0.72 s → 1.10 s on `vitejs/vite`, still 1 point. That is about 0.4 s for one PR, where a list of 50 times out.
+
 ## Budget
 
 | Operation             | Requests                                                         | Points        |
@@ -42,6 +49,8 @@ Re-measured 2026-10-16 with T20's final documents (`gh api graphql` wall clock, 
 | Home refresh          | Σ ⌈section size / 20⌉ (3 if all ≤ 20; ≤ 5 for 60) + 0–1 "+N new" | 1 per request |
 | Repository page       | ⌈open PRs / 20⌉, later pages on scroll                           | 1 per request |
 | Favourites refresh    | ⌈favourites / 25⌉                                                | 1 per request |
+| Open a PR (uncached)  | 2 (detail + checks), deep links included; 0 REST                 | 1 per request |
+| Reopen it unchanged   | 0 (opened from a row)                                            | 0             |
 | Per hour at 5 minutes | Home 36–60 + "+N new" ≤ 12 + favourites 36                       | ≈ 85–110      |
 
 About 2% of the 5,000-point hourly limit.

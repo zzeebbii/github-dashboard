@@ -8,15 +8,20 @@ import {
   notFound,
   redirect,
   useNavigate,
+  useParams,
 } from "@tanstack/react-router";
-import { parseOwner, parsePullNumber, parseRepoName } from "../domain/github-names.ts";
+import {
+  parseOwner,
+  parsePullNumber,
+  parsePullTarget,
+  parseRepoName,
+} from "../domain/github-names.ts";
 import { useT } from "../application/i18n.tsx";
 import { type PrFilters, parsePrFilters, toPrFilterSearch } from "../application/pr-filters.ts";
 import { type RepoTab, toRepoTab } from "../domain/repo-tabs.ts";
 import { GitHubAppCallback } from "../features/auth/GitHubAppCallback.tsx";
 import { SignInPage } from "../features/auth/SignInPage.tsx";
 import { HomePage } from "../features/home/HomePage.tsx";
-import { PrPanel } from "../features/pr/PrPanel.tsx";
 import { RepoPage } from "../features/repo/RepoPage.tsx";
 import { SettingsPage } from "../features/settings/SettingsPage.tsx";
 import { AppShell } from "../features/shell/AppShell.tsx";
@@ -82,7 +87,12 @@ const homeRoute = createRoute({
   path: "/",
   // The filter bar's state (FR-5.7); a bad param falls back to its default, never throws.
   // Only non-default fields come out, so a link to Home needs no `search`.
-  validateSearch: (search: Record<string, unknown>) => toPrFilterSearch(parsePrFilters(search)),
+  // `pull` (owner/name/number): the PR panel open over Home. The address bar shows the
+  // panel's own URL instead (a route mask, features/home/HomePage.tsx).
+  validateSearch: (search: Record<string, unknown>): Partial<PrFilters> & { pull?: string } => {
+    const pull = parsePullTarget(search["pull"]) === null ? {} : { pull: String(search["pull"]) };
+    return { ...toPrFilterSearch(parsePrFilters(search)), ...pull };
+  },
   component: HomePage,
 });
 
@@ -107,24 +117,28 @@ const repoRoute = createRoute({
   component: function RepoRoute() {
     const { owner, name } = repoRoute.useParams();
     const { tab } = repoRoute.useSearch();
+    // Set when the pull route below matched, so it is already validated.
+    const { number } = useParams({ strict: false });
     return (
-      <RepoPage owner={owner} name={name} tab={tab ?? "open"}>
-        <Outlet />
-      </RepoPage>
+      <RepoPage
+        owner={owner}
+        name={name}
+        tab={tab ?? "open"}
+        pull={number === undefined ? null : Number(number)}
+      />
     );
   },
 });
 
-/** The PR panel is a child of the repo route, so it renders over the repository page. */
+/**
+ * The PR panel is a child of the repo route: RepoPage renders it over the repository page,
+ * with the list row it needs for the cache key (features/pr/PrPanel.tsx). No component here.
+ */
 const pullRoute = createRoute({
   getParentRoute: () => repoRoute,
   path: "pull/$number",
   beforeLoad: ({ params }) => {
     if (!parsePullNumber(params.number).ok) throw notFound();
-  },
-  component: function PullRoute() {
-    const { owner, name, number } = pullRoute.useParams();
-    return <PrPanel owner={owner} name={name} number={number} />;
   },
 });
 

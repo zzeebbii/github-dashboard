@@ -27,6 +27,7 @@
           "headRefName": "fix/public-subdir-index-html",
           "baseRefName": "main",
           "mergeable": "MERGEABLE",
+          "mergeStateStatus": "BLOCKED",
           "author": {
             "__typename": "User",
             "login": "octo-author"

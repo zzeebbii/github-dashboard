@@ -140,6 +140,24 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
   (`domain/repo-search.ts`) filters the cached list and never makes a request; it refuses
   regexes that could backtrack catastrophically, since JavaScript has no regex timeout.
 
+### The PR panel
+
+`features/pr/PrPanel.tsx` is a modal side sheet (`ui/Dialog.tsx`, a native `<dialog>`)
+over the list it was opened from (FR-6.1–6.9).
+
+- **Routes:** opened from the repository page, it is `/repo/$owner/$name/pull/$number`, a
+  child of the repository route. Opened from Home, it stays over Home: Home's search gets
+  `pull=owner/name/number` and the address bar shows the panel's URL through a TanStack
+  route mask, so Home is not unmounted and no repository list is fetched. Closing goes
+  Back, which keeps the list's tab, filters and scroll position. A copied URL or a reload
+  is a deep link to the repository route.
+- **Data:** the list row gives the cache key's `updatedAt` and head SHA
+  (`application/pr/use-pr-detail.ts`). Without a row (a deep link), `usePrHead` fetches the
+  detail once and stores it under the key from the response. See
+  [github-query-costs.md](github-query-costs.md#the-pr-panel).
+- **Rules:** the conversation's filters and bot grouping, and the check groups, are in
+  `domain/pr-panel.ts`. All GitHub HTML renders through `ui/SafeHtml.tsx`.
+
 ### Startup and accounts
 
 `main.tsx` does this before the first render, in this order

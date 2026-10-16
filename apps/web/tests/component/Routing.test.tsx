@@ -21,31 +21,8 @@ test("loading /repo/a/b directly renders the repo route (AC-1.6)", async () => {
   await expect.element(screen.getByRole("heading", heading("a / b"))).toBeVisible();
 });
 
-test("the PR route opens a panel over the repo page and Back closes it (FR-1.6)", async () => {
-  const { screen, router } = await renderApp("/repo/a/b");
-  await expect.element(screen.getByRole("heading", heading("a / b"))).toBeVisible();
-
-  await router.navigate({
-    to: "/repo/$owner/$name/pull/$number",
-    params: { owner: "a", name: "b", number: "7" },
-  });
-  const panel = screen.getByRole("region", { name: "Pull request #7" });
-  await expect.element(panel).toBeVisible();
-  await expect.element(screen.getByRole("heading", heading("a / b"))).toBeInTheDocument();
-
-  router.history.back();
-  await expect.element(panel).not.toBeInTheDocument();
-  await expect.element(screen.getByRole("heading", heading("a / b"))).toBeVisible();
-});
-
-test("the panel's close link returns to the repository", async () => {
-  const { screen, router } = await renderApp("/repo/a/b/pull/7");
-
-  await screen.getByRole("region").getByRole("link", { name: "Close" }).click();
-
-  await expect.element(screen.getByRole("region")).not.toBeInTheDocument();
-  expect(router.state.location.pathname).toBe("/repo/a/b");
-});
+// The PR panel's routes (over the repository page, over Home, Back closes it) are in
+// PrPanel.test.tsx: the panel needs a signed-in account.
 
 // AC-3.10: invalid names and numbers never reach a GitHub request.
 for (const path of ["/repo/a/b/pull/abc", "/repo/a/b/pull/1x", "/repo/a%22%7D/b", "/repo/a/.."]) {

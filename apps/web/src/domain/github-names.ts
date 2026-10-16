@@ -32,3 +32,17 @@ export function parsePullNumber(value: string): Result<number, NameError> {
     ? { ok: true, value: number }
     : { ok: false, error: "invalid-number" };
 }
+
+/**
+ * `owner/name/number`, the form Home's `pull` search param carries the PR panel's target
+ * in; null unless all three parts are valid.
+ */
+export function parsePullTarget(
+  value: unknown,
+): { readonly owner: string; readonly name: string; readonly number: number } | null {
+  if (typeof value !== "string") return null;
+  const [owner = "", name = "", number = "", ...rest] = value.split("/");
+  const pull = parsePullNumber(number);
+  if (rest.length > 0 || !parseOwner(owner).ok || !parseRepoName(name).ok || !pull.ok) return null;
+  return { owner, name, number: pull.value };
+}
