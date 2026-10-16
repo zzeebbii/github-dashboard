@@ -7,8 +7,7 @@
     },
     "apps/web": {
       "entry": ["src/main.tsx", "tests/**/*.test.tsx"],
-      "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
-      "ignoreFiles": ["tests/determinism.ts"]
+      "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"]
     },
     "e2e": {
       "entry": ["tests/**/*.spec.ts"],

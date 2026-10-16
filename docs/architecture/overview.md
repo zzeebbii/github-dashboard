@@ -102,10 +102,27 @@ sequenceDiagram
 ```
 
 - List data comes from batched GraphQL queries, never one request per PR.
-- Refresh runs every 5 minutes while the tab is visible. Only one tab refreshes; the
-  others follow over a `BroadcastChannel`.
 - A quota guard slows down and then stops auto-refresh as the rate limit runs low.
   Budgets per operation are asserted by tests.
+
+### Refresh, quota and tabs
+
+`application/refresh-scheduler.ts` decides when to refresh (FR-3.7–3.9). It has no
+timers of its own: the clock, a timer, page visibility, online status, the rate limits
+and the cross-tab channel all come in as ports, wired in `main.tsx`.
+
+- **What a refresh does:** refetches the active account's mounted queries one after
+  another, matched by key (`[store, accountId, ...]`). A new list query needs no wiring.
+- **When:** every 5 minutes while visible and online; on focus when the last refresh is
+  over 60 s old; on reconnect; and on demand. `domain/quota.ts` doubles the interval
+  below 20% of the GraphQL pool and stops it below 5% until the reset. A secondary limit
+  makes the GitHub client refuse that account's requests until `retry-after`.
+- **Tabs:** the tab holding the `ghd-refresh` Web Lock refreshes on schedule
+  (`infrastructure/cross-tab/web-locks.ts`). After every refresh, in any tab, it posts
+  what changed and the quota on `BroadcastChannel('ghd')`; the other tabs put that data
+  into their query client. Without Web Locks every tab is its own leader.
+- **Header:** `features/shell/FreshnessContainer.tsx` shows "Updated N min ago", the
+  quota popover and the offline banner from the scheduler's state.
 
 ### Startup and accounts
 

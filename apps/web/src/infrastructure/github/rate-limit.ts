@@ -1,20 +1,17 @@
+import {
+  RATE_LIMIT_POOLS,
+  type RateLimitPool,
+  type RateLimitReader,
+  type RateLimitState,
+} from "../../application/rate-limits.ts";
 import type { AccountId } from "../../domain/account.ts";
 
 /**
  * Rate-limit state per account and pool (FR-3.4), fed from every response's
  * `x-ratelimit-*` headers and from the `rateLimit` field each GraphQL document selects.
- * T14's quota guard reads it through `get`.
+ * Also remembers a secondary limit's `retry-after` (FR-3.8). The refresh scheduler reads it
+ * through the `RateLimitReader` port.
  */
-
-type RateLimitPool = "core" | "graphql" | "search";
-
-interface RateLimitState {
-  readonly limit: number;
-  readonly remaining: number;
-  readonly resetAt: Date;
-  /** Points the last GraphQL query cost; REST requests do not report one. */
-  readonly lastCost: number | null;
-}
 
 /** The selection every GraphQL document makes: `rateLimit { cost limit remaining resetAt }`. */
 interface GraphQLRateLimit {
@@ -24,14 +21,13 @@ interface GraphQLRateLimit {
   readonly resetAt: string;
 }
 
-export interface RateLimitTracker {
+export interface RateLimitTracker extends RateLimitReader {
   fromHeaders(accountId: AccountId, headers: Headers): void;
   fromGraphQL(accountId: AccountId, rateLimit: GraphQLRateLimit): void;
-  /** undefined when nothing is known, or the window has reset since it was observed. */
-  get(accountId: AccountId, pool: RateLimitPool): RateLimitState | undefined;
+  secondaryLimit(accountId: AccountId, retryAt: Date): void;
 }
 
-const POOLS: readonly string[] = ["core", "graphql", "search"] satisfies RateLimitPool[];
+const POOLS: readonly string[] = RATE_LIMIT_POOLS;
 const isPool = (value: string | null): value is RateLimitPool =>
   value !== null && POOLS.includes(value);
 
@@ -45,6 +41,7 @@ const keyOf = (accountId: AccountId, pool: RateLimitPool) => `${accountId}:${poo
 
 export function createRateLimitTracker(clock: { now(): Date }): RateLimitTracker {
   const states = new Map<string, RateLimitState>();
+  const retryAt = new Map<AccountId, Date>();
 
   return {
     fromHeaders(accountId, headers) {
@@ -72,6 +69,15 @@ export function createRateLimitTracker(clock: { now(): Date }): RateLimitTracker
     get(accountId, pool) {
       const state = states.get(keyOf(accountId, pool));
       return state !== undefined && state.resetAt > clock.now() ? state : undefined;
+    },
+
+    secondaryLimit(accountId, at) {
+      retryAt.set(accountId, at);
+    },
+
+    pausedUntil(accountId) {
+      const at = retryAt.get(accountId);
+      return at !== undefined && at > clock.now() ? at : undefined;
     },
   };
 }

@@ -15,10 +15,22 @@ import { HtmlSanitizerContext } from "../src/application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "../src/application/i18n.tsx";
 import type { PreferencesStore } from "../src/application/preferences.ts";
 import { PreferencesProvider } from "../src/application/preferences-provider.tsx";
+import { RefreshProvider } from "../src/application/refresh-provider.tsx";
+import {
+  createQueryRefresher,
+  createRefreshScheduler,
+  type RefreshScheduler,
+} from "../src/application/refresh-scheduler.ts";
 import type { ColorSchemeQuery } from "../src/application/theme.ts";
 import { sanitizeHtml } from "../src/infrastructure/browser/trusted-types.ts";
 import { createAppRouter } from "../src/routes/router.tsx";
 import { createFakeColorSchemeQuery } from "./fakes/fake-color-scheme-query.ts";
+import {
+  fakeRateLimits,
+  fakeSignal,
+  inMemoryCrossTab,
+  manualTime,
+} from "./fakes/fake-refresh-ports.ts";
 import { createInMemoryAccountStore } from "./fakes/in-memory-account-store.ts";
 import { createInMemoryAuth } from "./fakes/in-memory-auth.ts";
 import { inMemoryCache } from "./fakes/in-memory-cache.ts";
@@ -36,6 +48,8 @@ interface ProviderOptions {
   preferencesStore?: PreferencesStore;
   prefersDark?: ColorSchemeQuery;
   github?: GitHubReadPort;
+  /** Defaults to one on fake time and signals, never started: it refreshes only on demand. */
+  scheduler?: RefreshScheduler;
 }
 
 export async function renderWithProviders(
@@ -45,6 +59,7 @@ export async function renderWithProviders(
     preferencesStore = createInMemoryPreferencesStore(),
     prefersDark = createFakeColorSchemeQuery(),
     github = createInMemoryGitHub(),
+    scheduler = testScheduler(queryClient),
   }: ProviderOptions = {},
 ) {
   // `render` is async in vitest-browser-react v2.
@@ -55,7 +70,9 @@ export async function renderWithProviders(
           <QueryClientProvider client={queryClient}>
             {/* The real sanitiser: it has no I/O, so there is nothing to fake. */}
             <HtmlSanitizerContext value={sanitizeHtml}>
-              <GitHubProvider github={github}>{ui}</GitHubProvider>
+              <GitHubProvider github={github}>
+                <RefreshProvider scheduler={scheduler}>{ui}</RefreshProvider>
+              </GitHubProvider>
             </HtmlSanitizerContext>
           </QueryClientProvider>
         </AnnouncerProvider>
@@ -121,6 +138,19 @@ export async function renderApp(path: string, options: AppOptions = {}) {
     { ...options, queryClient },
   );
   return { screen, router, accountStore, auth };
+}
+
+function testScheduler(queryClient: QueryClient): RefreshScheduler {
+  const time = manualTime();
+  return createRefreshScheduler({
+    clock: time.clock,
+    timer: time.timer,
+    visibility: fakeSignal(true),
+    online: fakeSignal(true),
+    crossTab: inMemoryCrossTab(),
+    rateLimits: fakeRateLimits(time.clock),
+    refresher: createQueryRefresher(queryClient),
+  });
 }
 
 /** The QueryClient renderWithProviders uses by default; build one to seed or inspect it. */

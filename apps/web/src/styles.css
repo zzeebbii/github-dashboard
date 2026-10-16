@@ -1003,3 +1003,256 @@ kbd {
     min-width: 0;
   }
 }
+
+/* T14: the header's quota button and popover, the refresh button and the offline banner. */
+.updated-button {
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Muted text on the accent hover fails 4.5:1 at 12 px in the light theme (4.4:1), so the
+   hover also lifts the text to the foreground colour. */
+.updated-button:hover,
+.quota-button:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.updated-button[data-refreshing="true"] svg {
+  animation: spin 0.8s linear infinite;
+}
+
+/* As in the design, the label shows from 1100 px. Below that it is only visually hidden,
+   so the button's name still says how old the data is. */
+@media (max-width: 1099.98px) {
+  .updated-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+.quota {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.quota-button {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.quota[data-level="low"] .quota-button {
+  --tone: var(--amber);
+}
+
+.quota[data-level="critical"] .quota-button {
+  --tone: var(--red);
+}
+
+/* The design colours the text with the tone too; amber and red on their own 13% tint fail
+   4.5:1 at 12 px, so the tone is on the icon, the border and the tint, and the text stays
+   in the foreground colour. */
+.quota:is([data-level="low"], [data-level="critical"]) .quota-button {
+  border-color: color-mix(in oklab, var(--tone) 40%, var(--border));
+  background: color-mix(in oklab, var(--tone) 13%, transparent);
+  color: var(--foreground);
+}
+
+.quota:is([data-level="low"], [data-level="critical"]) .quota-button > svg {
+  color: var(--tone);
+}
+
+.quota-bar {
+  width: 36px;
+  height: 4px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--muted);
+}
+
+.quota-bar > span {
+  border-radius: inherit;
+  background: var(--green);
+}
+
+.quota-bar[data-level="low"] > span {
+  background: var(--amber);
+}
+
+.quota-bar[data-level="critical"] > span {
+  background: var(--red);
+}
+
+.quota-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 60;
+  width: 320px;
+  overflow: hidden;
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  animation: popIn 0.12s ease-out;
+}
+
+.quota-popover[hidden] {
+  display: none;
+}
+
+.quota-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.quota-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.quota-login {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.quota-row {
+  margin: 0;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.quota-row + .quota-row {
+  border-top: 1px solid var(--border);
+}
+
+.quota-row .quota-bar {
+  width: auto;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.quota-row-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.quota-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+
+.quota-count {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.quota-count strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.quota-row[data-level="low"] .quota-count strong {
+  color: var(--amber);
+}
+
+.quota-row[data-level="critical"] .quota-count strong {
+  color: var(--red);
+}
+
+.quota-meta {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.quota-meta > span:first-child {
+  flex: 1;
+}
+
+.quota-note {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--subtle);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.offline-banner {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--subtle);
+  font-size: 13px;
+}
+
+.offline-banner svg {
+  flex-shrink: 0;
+  color: var(--amber);
+}
+
+/* Below 768 px the quota button shows its gauge and bar (the count stays in its name), and
+   the popover spans the screen. */
+@media (max-width: 767.98px) {
+  .quota-button > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .quota-popover {
+    position: fixed;
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+}
