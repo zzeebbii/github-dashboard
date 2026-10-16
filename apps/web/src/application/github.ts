@@ -69,6 +69,23 @@ export interface GitHubReadPort {
     accountId: AccountId,
     requests: readonly ActivitySinceRequest[],
   ): Promise<GitHubResult<readonly (readonly ActivityItem[] | null)[]>>;
+  /**
+   * The repository page (FR-4.6): the repository, and one page of 20 of its OPEN PRs, most
+   * recently updated first; `totalCount` is every open PR. A repository the token cannot
+   * see is `notFound`, or the access error GitHub gave. 1 GraphQL request.
+   */
+  listRepoPullRequests(
+    accountId: AccountId,
+    viewerLogin: string,
+    repository: { readonly owner: string; readonly name: string },
+    after: string | null,
+  ): Promise<GitHubResult<RepoPullRequestPage>>;
+}
+
+export interface RepoPullRequestPage {
+  /** The repository page's header: the list's fields plus its link on GitHub. */
+  readonly repository: Repository & { readonly url: string };
+  readonly page: PullRequestPage;
 }
 
 /** Home's three searches: review requested, authored, reviewed by me (re-review candidates). */

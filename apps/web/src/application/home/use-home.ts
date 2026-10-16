@@ -165,6 +165,33 @@ function mergeById(lists: readonly (readonly PullRequest[])[]): PullRequest[] {
   return [...byId.values()];
 }
 
+/**
+ * "+N new" for a list's rows (FR-5.3), and `markSeen` for opening one (FR-5.8). Home and the
+ * repository page share it. Exact counts are fetched only for PRs whose last comment or
+ * review is newer than their marker, ten per request (AC-3.1); none when nothing is newer.
+ */
+export function useNewCounts(account: Pick<Account, "id" | "login">, prs: readonly PullRequest[]) {
+  const github = useGitHub();
+  const { seen, markSeen } = useSeen(account.id);
+  const counted = useQueries({
+    queries: homeActivityQueryOptions(github, account.id, prs, seen),
+  });
+  const activity: Record<string, readonly ActivityItem[]> = {};
+  for (const batch of counted) Object.assign(activity, batch.data);
+
+  /** null hides it: no marker yet, or the exact count is still loading. */
+  function newCount(pr: PullRequest): number | null {
+    const marker = seen?.[pr.id] ?? null;
+    if (!hasActivitySince(pr, marker)) return newActivityCount(pr, account.login, marker);
+    const items = activity[pr.id];
+    return items === undefined
+      ? null
+      : newActivityCount({ ...pr, activity: items }, account.login, marker);
+  }
+
+  return { newCount, markSeen };
+}
+
 export interface HomeRow {
   readonly pr: PullRequest;
   readonly reason: Placement["reason"];
@@ -184,33 +211,14 @@ export function useHome(account: Account) {
   const searches = useQueries({
     queries: HOME_SEARCHES.map((search) => homeSearchQueryOptions(github, account, search)),
   });
-  const { seen, markSeen } = useSeen(account.id);
-
   const placed = mergeById(searches.map((s) => s.data?.pullRequests ?? [])).flatMap((pr) => {
     const placement = placePullRequest(pr, { login: account.login, teams: viewer.data ?? [] });
     return placement === null ? [] : [{ pr, placement }];
   });
-
-  const markerOf = (pr: PullRequest) => seen?.[pr.id] ?? null;
-  const counted = useQueries({
-    queries: homeActivityQueryOptions(
-      github,
-      account.id,
-      placed.map(({ pr }) => pr),
-      seen,
-    ),
-  });
-  const activity: Record<string, readonly ActivityItem[]> = {};
-  for (const batch of counted) Object.assign(activity, batch.data);
-
-  function newCount(pr: PullRequest): number | null {
-    const marker = markerOf(pr);
-    if (!hasActivitySince(pr, marker)) return newActivityCount(pr, account.login, marker);
-    const items = activity[pr.id];
-    return items === undefined
-      ? null
-      : newActivityCount({ ...pr, activity: items }, account.login, marker);
-  }
+  const { newCount, markSeen } = useNewCounts(
+    account,
+    placed.map(({ pr }) => pr),
+  );
 
   const sections: Record<Section, HomeRow[]> = {
     "needs-review": [],

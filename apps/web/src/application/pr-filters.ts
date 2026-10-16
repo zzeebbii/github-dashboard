@@ -116,12 +116,18 @@ export function applyPrFilters(
  * history entry, so typing in the filter box does not fill Back with keystrokes.
  */
 export function usePrFilters() {
-  const filters = parsePrFilters(useSearch({ strict: false }));
+  const search: Record<string, unknown> = useSearch({ strict: false });
+  const filters = parsePrFilters(search);
   const router = useRouter();
   const { pathname } = useLocation();
-  // By `href`: no route declares these params yet (T20/T21 will), so a typed `search` would not compile.
+  // By `href`, so it works on any route. Params that are not filters (the repository
+  // page's `tab`) are kept.
   const write = (next: PrFilters) => {
-    const href = pathname + router.options.stringifySearch(toPrFilterSearch(next));
+    const others = Object.fromEntries(
+      Object.entries(search).filter(([key]) => !Object.hasOwn(defaultPrFilters, key)),
+    );
+    const href =
+      pathname + router.options.stringifySearch({ ...others, ...toPrFilterSearch(next) });
     void router.navigate({ href, replace: true });
   };
   return {

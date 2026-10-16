@@ -259,4 +259,15 @@ export const fi: Record<MessageKey, string> = {
   hm_error: "GitHub ei palauttanut pull requestejasi. Yritä päivittää.",
   hm_truncated: "Haku löysi yli 1 000 pull requestia; vain ensimmäiset 1 000 näytetään.",
   pr_mergeChecking: "Tarkistetaan yhdistämiskonflikteja",
+  // T21 repo page
+  rp_public: "Julkinen",
+  rp_private: "Yksityinen",
+  rp_internal: "Sisäinen",
+  rp_noDescription: "Ei kuvausta.",
+  rp_staleHint: "Ei toimintaa yli 14 päivään",
+  rp_loadMore: "Lataa lisää",
+  rp_notFound: "Tätä repositoriota ei ole, tai tämä tili ei näe sitä.",
+  rp_noAccess:
+    "GitHub esti tämän tilin pääsyn repositorioon. Tarkista tunnuksen pääsy sen organisaatioon.",
+  rp_error: "GitHub ei palauttanut tämän repositorion pull requesteja. Yritä päivittää.",
 };

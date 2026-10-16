@@ -117,7 +117,9 @@ and the cross-tab channel all come in as ports, wired in `main.tsx`.
   refetch: the repository list (`application/repos/use-repos.ts`) stays fresh for 24 h
   that way and reloads from the sidebar's button (AC-4.1). Favourites
   (`use-favourites.ts`, one query per 25 node ids) refresh with every cycle, as do Home's
-  three searches (`application/home/use-home.ts`, one query per search, paged by 20). Home's
+  three searches (`application/home/use-home.ts`, one query per search, paged by 20) and an
+  open repository page (`application/repos/use-repo-page.ts`, one infinite query, every
+  loaded page of 20 refetched; fresh for one interval, so a revisit costs nothing). Home's
   viewer teams (a day) and lazy "+N new" counts (keyed by `updatedAt` and seen marker) opt
   out. Seen markers (`application/seen.ts`) live in the cache's `seen` store, per account
   and device; the list row is shared by every list query

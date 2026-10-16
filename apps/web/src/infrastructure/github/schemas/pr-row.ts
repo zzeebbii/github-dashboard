@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { RequestedReviewerSchema } from "./pr-detail.ts";
+import { RepositorySchema } from "./repos.ts";
 
 /**
  * The `PrRow` fragment (queries/pr-row.fragment.ts), plus the optional re-review fields,
@@ -82,6 +83,20 @@ export const PrSearchDataSchema = z.object({
   }),
 });
 export type PrSearchData = z.infer<typeof PrSearchDataSchema>;
+
+/** The repository page's document: its header and one page of its open PRs. */
+export const RepoPullRequestsDataSchema = z.object({
+  // null, beside a NOT_FOUND or FORBIDDEN error, when the token cannot see the repository.
+  repository: RepositorySchema.extend({
+    url: z.string(),
+    pullRequests: z.object({
+      totalCount: z.number().int().nonnegative(),
+      pageInfo: PageInfoSchema,
+      nodes: z.array(PrRowSchema.nullable()),
+    }),
+  }).nullable(),
+});
+export type RepoPullRequestsData = z.infer<typeof RepoPullRequestsDataSchema>;
 
 /** One aliased block of the activity-since document. */
 export const ActivitySinceBlockSchema = z
