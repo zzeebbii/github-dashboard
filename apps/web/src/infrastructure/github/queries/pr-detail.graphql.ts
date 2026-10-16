@@ -37,6 +37,11 @@ const TIMELINE = `timelineItems(first: 50, after: $after, itemTypes: [ISSUE_COMM
  * (2026-10-16, vitejs/vite#22559); by GitHub's formula this document alone needs
  * 56 connection requests (4 lists + 1 thread list + 50 comment lists + 1 timeline) → 1.
  *
+ * `mergeStateStatus` is asked for here and never in a list query. For one PR it added about
+ * 0.4 s and no points: median 0.78 → 1.26 s on vercel/next.js and 0.72 → 1.10 s on
+ * vitejs/vite (3 PRs × 3 runs each, 2026-10-16). In a list of 50 it times out
+ * (docs/architecture/github-query-costs.md).
+ *
  * ponytail: 20 labels/assignees/reviewers, 50 review threads with 20 comments each, no
  * pagination of those; page them when a real PR hits a limit.
  */
@@ -56,6 +61,7 @@ const DETAIL_QUERY = `query PullRequestDetail($owner: String!, $name: String!, $
       headRefName
       baseRefName
       mergeable
+      mergeStateStatus
       author { __typename login }
       labels(first: 20) { nodes { name color } }
       assignees(first: 20) { nodes { login } }

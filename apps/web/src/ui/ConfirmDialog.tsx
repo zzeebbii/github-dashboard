@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef } from "react";
+import { useId } from "react";
+import { Dialog } from "./Dialog.tsx";
 
 interface ConfirmDialogProps {
   readonly title: string;
@@ -11,9 +12,9 @@ interface ConfirmDialogProps {
 }
 
 /**
- * A confirmation for a destructive action. Rendered only while it is asked; a native modal
- * `<dialog>`, so the browser traps focus, closes it on Esc and returns focus to whatever
- * had it before. Cancel gets the initial focus: the safe choice is the default.
+ * A confirmation for a destructive action. Rendered only while it is asked; a modal
+ * ui/Dialog.tsx, so focus stays inside, Esc cancels and focus returns to whatever had it
+ * before. Cancel gets the initial focus: the safe choice is the default.
  */
 export function ConfirmDialog({
   title,
@@ -24,23 +25,12 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const id = useId();
-  const dialog = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const element = dialog.current;
-    if (element !== null && !element.open) element.showModal();
-  }, []);
-
   return (
-    <dialog
-      ref={dialog}
+    <Dialog
       className="confirm-dialog"
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-body`}
       onClose={onCancel}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onCancel();
-      }}
     >
       <h2 id={`${id}-title`}>{title}</h2>
       <p id={`${id}-body`}>{body}</p>
@@ -53,6 +43,6 @@ export function ConfirmDialog({
           {confirmLabel}
         </button>
       </div>
-    </dialog>
+    </Dialog>
   );
 }

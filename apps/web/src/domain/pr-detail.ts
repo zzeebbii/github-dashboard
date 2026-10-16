@@ -27,6 +27,8 @@ export interface PullRequestDetail {
   readonly headRef: string;
   readonly baseRef: string;
   readonly mergeable: Mergeable;
+  /** GitHub's exact merge state. Only this single-PR query asks for it (github-query-costs.md). */
+  readonly mergeStateStatus: MergeStateStatus;
   readonly author: Actor | null;
   readonly labels: readonly { readonly name: string; readonly color: string }[];
   readonly assignees: readonly string[];
@@ -37,7 +39,17 @@ export interface PullRequestDetail {
   readonly reviewThreads: readonly ReviewThread[];
 }
 
-interface ReviewThread {
+export type MergeStateStatus =
+  | "BEHIND"
+  | "BLOCKED"
+  | "CLEAN"
+  | "DIRTY"
+  | "DRAFT"
+  | "HAS_HOOKS"
+  | "UNKNOWN"
+  | "UNSTABLE";
+
+export interface ReviewThread {
   readonly id: string;
   readonly isResolved: boolean;
   readonly isOutdated: boolean;

@@ -1,5 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { parseOwner, parsePullNumber, parseRepoName } from "./github-names.ts";
+import { parseOwner, parsePullNumber, parsePullTarget, parseRepoName } from "./github-names.ts";
+
+describe("parsePullTarget", () => {
+  it("reads owner/name/number", () => {
+    expect(parsePullTarget("acme/app.js/12")).toEqual({
+      owner: "acme",
+      name: "app.js",
+      number: 12,
+    });
+  });
+
+  it.each([undefined, 12, "", "acme/app", "acme/app/1x", "acme/../1", "a/b/1/2", 'a"}/b/1'])(
+    "rejects %j",
+    (value) => {
+      expect(parsePullTarget(value)).toBeNull();
+    },
+  );
+});
 
 describe("GitHub name validators (FR-3.14)", () => {
   it("rejects the AC-3.10 inputs", () => {

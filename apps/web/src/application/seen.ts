@@ -1,5 +1,5 @@
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, useContext } from "react";
+import { createContext, useCallback, useContext } from "react";
 import type { AccountId } from "../domain/account.ts";
 import type { CachePort } from "./cache.ts";
 import { OWN_REFRESH_ONLY } from "./refresh-scheduler.ts";
@@ -53,13 +53,18 @@ export function useSeen(accountId: AccountId) {
     meta: OWN_REFRESH_ONLY,
   });
   const query = useQuery(options);
+  /** Opening a PR (panel or "Open in GitHub") resets its "+N new" to 0 (AC-5.3). */
+  // Stable, so the panel can mark seen from an effect without re-running it every render.
+  const markSeen = useCallback(
+    async (prId: string): Promise<void> => {
+      await markers.markSeen(accountId, prId);
+      await client.invalidateQueries({ queryKey: ["seen", accountId] });
+    },
+    [markers, accountId, client],
+  );
   return {
     /** null until loaded, so "+N new" stays hidden rather than guessed. */
     seen: query.data ?? null,
-    /** Opening a PR (panel or "Open in GitHub") resets its "+N new" to 0 (AC-5.3). */
-    markSeen: async (prId: string): Promise<void> => {
-      await markers.markSeen(accountId, prId);
-      await client.invalidateQueries({ queryKey: options.queryKey });
-    },
+    markSeen,
   };
 }

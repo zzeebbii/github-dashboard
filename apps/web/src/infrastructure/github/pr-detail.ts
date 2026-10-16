@@ -141,6 +141,7 @@ export function createPullRequestDetailRead(
         headRef: pr.headRefName,
         baseRef: pr.baseRefName,
         mergeable: pr.mergeable,
+        mergeStateStatus: pr.mergeStateStatus,
         author: actor(pr.author),
         labels: present(pr.labels?.nodes ?? []),
         assignees: present(pr.assignees.nodes).map((a) => a.login),

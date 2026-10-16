@@ -274,6 +274,8 @@ describe("PR detail data (FR-6.2)", () => {
       number: 22559,
       headSha: HEAD_SHA,
       baseRef: "main",
+      mergeable: "MERGEABLE",
+      mergeStateStatus: "BLOCKED",
       author: { login: "octo-author", typename: "User" },
       labels: [
         { name: "feat: html", color: "094d72" },

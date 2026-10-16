@@ -31,6 +31,9 @@ export function translate(
 
 const HOUR = 3_600_000;
 
+const unitOf = (language: Language, value: number, unit: "minute" | "second") =>
+  new Intl.NumberFormat(language, { style: "unit", unit, unitDisplay: "narrow" }).format(value);
+
 /** `Intl` formatters for one language. Time is always passed in, never read from a clock. */
 export function createFormat(language: Language) {
   return {
@@ -51,6 +54,14 @@ export function createFormat(language: Language) {
     },
     date(value: Date, options: Intl.DateTimeFormatOptions = { dateStyle: "medium" }): string {
       return new Intl.DateTimeFormat(language, options).format(value);
+    },
+    /** A short duration such as "2m 5s" (a check run). Intl.DurationFormat is not in ES2023. */
+    duration(ms: number): string {
+      const seconds = Math.round(ms / 1000);
+      const minutes = Math.floor(seconds / 60);
+      return minutes === 0
+        ? unitOf(language, seconds, "second")
+        : `${unitOf(language, minutes, "minute")} ${unitOf(language, seconds % 60, "second")}`;
     },
   };
 }

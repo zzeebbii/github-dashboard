@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAccounts } from "../../application/auth-provider.tsx";
 import { type HomeRow, useHome } from "../../application/home/use-home.ts";
@@ -7,12 +7,14 @@ import { applyPrFilters, usePrFilters } from "../../application/pr-filters.ts";
 import { usePreferences } from "../../application/preferences-provider.tsx";
 import { useRefreshState } from "../../application/refresh-provider.tsx";
 import type { Account } from "../../domain/account.ts";
+import { parsePullTarget } from "../../domain/github-names.ts";
 import type { Section as SectionId } from "../../domain/sections.ts";
 import type { MessageKey } from "../../i18n/en.ts";
 import { Section, TruncationNotice } from "../../ui/home/Section.tsx";
 import { FilterBar } from "../../ui/pr/FilterBar.tsx";
 import { PrList } from "../../ui/pr/PrList.tsx";
 import type { PrRowData } from "../../ui/pr/PrRow.tsx";
+import { PrPanel } from "../pr/PrPanel.tsx";
 
 /** The design's `SECTIONS`, minus "Watching". */
 const SECTIONS: readonly { id: SectionId; title: MessageKey; hint: MessageKey }[] = [
@@ -48,8 +50,18 @@ function Home({ account }: { account: Account }) {
   const navigate = useNavigate();
   const home = useHome(account);
   const [collapsed, setCollapsed] = useState<ReadonlySet<SectionId>>(new Set());
+  const { pull } = useSearch({ strict: false });
+  const target = parsePullTarget(pull);
 
   const all = SECTIONS.flatMap(({ id }) => home.sections[id]);
+  const openRow =
+    target === null
+      ? null
+      : (all.find(
+          ({ pr }) =>
+            pr.number === target.number &&
+            pr.repository.toLowerCase() === `${target.owner}/${target.name}`.toLowerCase(),
+        )?.pr ?? null);
   const attention = [...home.sections["needs-review"], ...home.sections["needs-action"]];
   const labelCounts = new Map<string, number>();
   for (const label of all.flatMap((row) => row.pr.labels)) {
@@ -64,9 +76,16 @@ function Home({ account }: { account: Account }) {
       reason,
       newCount,
       href: `/repo/${owner}/${name}/pull/${pr.number}`,
+      // Over Home, not the repository page: Home stays mounted underneath with its filters
+      // and scroll position, and no repository list is fetched. The address bar shows the
+      // panel's own URL (a route mask), so a copied link or a reload is a deep link (FR-1.6).
+      // The panel sets the seen marker when it opens (FR-6.8).
       onOpen: () => {
-        void home.markSeen(pr.id);
-        void navigate({ to: "/repo/$owner/$name/pull/$number", params });
+        void navigate({
+          to: "/",
+          search: (prev) => ({ ...prev, pull: `${owner}/${name}/${pr.number}` }),
+          mask: { to: "/repo/$owner/$name/pull/$number", params },
+        });
       },
       onOpenGitHub: () => void home.markSeen(pr.id),
     };
@@ -143,6 +162,23 @@ function Home({ account }: { account: Account }) {
             );
           })}
         </div>
+      )}
+      {target !== null && (
+        <PrPanel
+          account={account}
+          pull={target}
+          row={openRow}
+          exit={() =>
+            void navigate({
+              to: "/",
+              search: (prev) => {
+                const next = { ...prev };
+                delete next.pull;
+                return next;
+              },
+            })
+          }
+        />
       )}
     </>
   );

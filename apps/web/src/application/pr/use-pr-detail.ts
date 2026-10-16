@@ -3,7 +3,9 @@ import {
   queryOptions,
   useInfiniteQuery,
   useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
+import { OWN_REFRESH_ONLY } from "../refresh-scheduler.ts";
 import {
   CHECK_POLL_MS,
   hasPendingChecks,
@@ -118,11 +120,55 @@ export function checkRunsQueryOptions(github: GitHubReadPort, input: PrDetailInp
   });
 }
 
-/** The detail panel's data: the PR, its conversation with "Load more", and its checks. */
-export function usePrDetail(input: PrDetailInput) {
+/** What the detail cache key needs from a list row (FR-6.5). */
+export type PrHead = Pick<PrDetailInput, "updatedAt" | "headSha">;
+
+/**
+ * The cache key's `updatedAt` and head SHA for a panel opened without a list row (a deep
+ * link, or a PR outside the loaded list). The row's values win whenever there is one.
+ *
+ * Without a row there is nothing to check the cache against, so this asks GitHub for the
+ * detail itself (1 GraphQL request), keys it by the response and stores it as that key's
+ * first page: the detail query then finds it cached. With the checks request, an uncached
+ * deep link stays at 2 GraphQL requests, 0 REST (AC-3.1, AC-6.1). No extra "head" query.
+ */
+export function usePrHead(
+  accountId: AccountId,
+  ref: PullRequestRef,
+  row: PrHead | null,
+): { readonly head: PrHead | null; readonly error: GitHubQueryError | null } {
   const github = useGitHub();
-  const detail = useInfiniteQuery(prDetailQueryOptions(github, input));
-  const checks = useQuery(checkRunsQueryOptions(github, input));
+  const client = useQueryClient();
+  const resolved = useQuery<PrHead, GitHubQueryError>({
+    queryKey: ["prHead", accountId, repoOf(ref), ref.number],
+    enabled: row === null,
+    // The panel follows the list rows; this lookup is only remade when the panel reopens.
+    meta: OWN_REFRESH_ONLY,
+    queryFn: async () => {
+      const { data, partialErrors } = await unwrap(github.getPullRequest(accountId, ref));
+      const { pullRequest, timeline } = data;
+      const head = { updatedAt: pullRequest.updatedAt, headSha: pullRequest.headSha };
+      // A real fetch (not setQueryData), so query-hydration.ts persists it. Already cached
+      // under that key (with any loaded "more" pages): left as it is.
+      await client.prefetchInfiniteQuery({
+        ...prDetailQueryOptions(github, { accountId, ref, ...head }),
+        queryFn: () => ({ pullRequest, timeline, partialErrors }),
+      });
+      return head;
+    },
+  });
+  return { head: row ?? resolved.data ?? null, error: row === null ? resolved.error : null };
+}
+
+/**
+ * The detail panel's data: the PR, its conversation with "Load more", and its checks.
+ * `enabled: false` while the key is not known yet (usePrHead), so the panel can call it
+ * from the start and keep one component tree (its focused heading) while it loads.
+ */
+export function usePrDetail(input: PrDetailInput, { enabled = true } = {}) {
+  const github = useGitHub();
+  const detail = useInfiniteQuery({ ...prDetailQueryOptions(github, input), enabled });
+  const checks = useQuery({ ...checkRunsQueryOptions(github, input), enabled });
   const pages = detail.data?.pages ?? [];
   return {
     detail,

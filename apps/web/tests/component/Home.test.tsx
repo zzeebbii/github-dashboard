@@ -255,7 +255,9 @@ test('opening a PR resets its "+N new" to 0 and opens the panel route (AC-5.3, F
   clock.advance(6 * 24 * 60 * 60 * 1000);
   await screen.getByRole("link", { name: /Busy change/ }).click();
 
-  await expect.poll(() => router.state.location.pathname).toBe("/repo/acme/app/pull/12");
+  // Over Home (a route mask): the address bar shows the panel's own URL.
+  await expect.poll(() => router.history.location.pathname).toBe("/repo/acme/app/pull/12");
+  expect(router.state.location.pathname).toBe("/");
   router.history.back();
   await expect.element(screen.getByRole("link", { name: /Busy change/ })).toBeVisible();
   expect(screen.getByText(/new$/).elements()).toHaveLength(0);

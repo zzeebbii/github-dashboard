@@ -1,5 +1,4 @@
 import { useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 import { useAccounts } from "../../application/auth-provider.tsx";
 import type { GitHubError } from "../../application/github.ts";
 import { useNewCounts } from "../../application/home/use-home.ts";
@@ -18,34 +17,28 @@ import { FilterBar } from "../../ui/pr/FilterBar.tsx";
 import { PrList } from "../../ui/pr/PrList.tsx";
 import type { PrRowData } from "../../ui/pr/PrRow.tsx";
 import { RepoHeader } from "../../ui/repo/RepoHeader.tsx";
-import { RepoTabs } from "../../ui/repo/RepoTabs.tsx";
+import { Tabs } from "../../ui/Tabs.tsx";
+import { PrPanel } from "../pr/PrPanel.tsx";
 
 interface RepoPageProps {
   readonly owner: string;
   readonly name: string;
   readonly tab: RepoTab;
-  /** Where the PR panel route renders, over this page. */
-  readonly children?: ReactNode;
+  /** The PR whose panel is open over this page (`/repo/$owner/$name/pull/$number`). */
+  readonly pull: number | null;
 }
 
 /** `/repo/$owner/$name`. The app route requires an account; without one, just the title. */
-export function RepoPage({ owner, name, tab, children }: RepoPageProps) {
+export function RepoPage({ owner, name, tab, pull }: RepoPageProps) {
   const { activeAccount } = useAccounts();
   if (activeAccount === null) {
     return (
-      <>
-        <h1>
-          {owner} / {name}
-        </h1>
-        {children}
-      </>
+      <h1>
+        {owner} / {name}
+      </h1>
     );
   }
-  return (
-    <Repo account={activeAccount} owner={owner} name={name} tab={tab}>
-      {children}
-    </Repo>
-  );
+  return <Repo account={activeAccount} owner={owner} name={name} tab={tab} pull={pull} />;
 }
 
 function errorKey(error: GitHubError): MessageKey {
@@ -72,7 +65,7 @@ function withTab<T extends { tab?: RepoTab }>(search: T, tab: RepoTab): T {
  * repository is a favourite. That batch's rows carry no reviews or CI
  * (docs/architecture/github-query-costs.md), so the rows always wait for the page's query.
  */
-function Repo({ account, owner, name, tab, children }: RepoPageProps & { account: Account }) {
+function Repo({ account, owner, name, tab, pull }: RepoPageProps & { account: Account }) {
   const { t, format } = useI18n();
   const { density } = usePreferences().preferences;
   const { now } = useRefreshState();
@@ -100,6 +93,7 @@ function Repo({ account, owner, name, tab, children }: RepoPageProps & { account
   const count = (n: number) => `${format.number(n)}${repo.hasMore ? "+" : ""}`;
   const tabs = REPO_TABS.map((id) => ({
     id,
+    label: t(`rt_${id}`),
     count:
       id === "open"
         ? format.number(openCount ?? prs.length)
@@ -125,8 +119,8 @@ function Repo({ account, owner, name, tab, children }: RepoPageProps & { account
       reason: null,
       newCount: newCount(pr),
       href: `/repo/${owner}/${name}/pull/${pr.number}`,
+      // The panel sets the seen marker when it opens (FR-6.8).
       onOpen: () => {
-        void markSeen(pr.id);
         void navigate({ to: "/repo/$owner/$name/pull/$number", params, search: (prev) => prev });
       },
       onOpenGitHub: () => void markSeen(pr.id),
@@ -169,8 +163,7 @@ function Repo({ account, owner, name, tab, children }: RepoPageProps & { account
           {t("hm_loading")}
         </p>
       ) : (
-        <RepoTabs
-          t={t}
+        <Tabs
           label={t("pullRequests")}
           tabs={tabs}
           selected={tab}
@@ -202,9 +195,18 @@ function Repo({ account, owner, name, tab, children }: RepoPageProps & { account
               {t("rp_loadMore")}
             </button>
           )}
-        </RepoTabs>
+        </Tabs>
       )}
-      {children}
+      {pull !== null && (
+        <PrPanel
+          account={account}
+          pull={{ owner, name, number: pull }}
+          row={prs.find((pr) => pr.number === pull) ?? null}
+          exit={() =>
+            void navigate({ to: "/repo/$owner/$name", params: { owner, name }, search: (p) => p })
+          }
+        />
+      )}
     </>
   );
 }
