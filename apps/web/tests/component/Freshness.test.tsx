@@ -96,7 +96,8 @@ async function setup({ width = 1280 } = {}) {
   return { screen, time, online, rateLimits, scheduler, refreshes: () => refreshes };
 }
 
-const refreshButton = () => page.getByRole("button", { name: /^Refresh/ });
+// The header's button ("Refresh, Updated …"), not the sidebar's "Refresh repositories".
+const refreshButton = () => page.getByRole("button", { name: /^Refresh,/ });
 
 test("shows how old the data is, live, and refreshes on demand with an announcement", async () => {
   const { time, refreshes } = await setup();
