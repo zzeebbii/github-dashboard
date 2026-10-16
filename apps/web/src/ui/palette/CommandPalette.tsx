@@ -1,5 +1,6 @@
 import { type LucideIcon, Search } from "lucide-react";
-import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useId, useState } from "react";
+import { Dialog } from "../Dialog.tsx";
 import { Icon } from "../Icon.tsx";
 
 export interface PaletteOption {
@@ -36,9 +37,9 @@ interface CommandPaletteProps {
  * The command palette (FR-7.1, FR-7.2): an ARIA combobox whose listbox of grouped options
  * is always shown. Arrow keys, Home and End move the active option, Enter runs it.
  *
- * Rendered only while open, in a native modal `<dialog>` like ConfirmDialog: the browser
- * traps focus and closes it on Esc. Focus goes back to the element that had it before.
- * ponytail: its own dialog until T24's shared `ui/Dialog.tsx` lands; then swap onto it.
+ * Rendered only while open, in the shared modal ui/Dialog.tsx: focus stays inside (the
+ * search input gets it first), Esc and a backdrop click close it, and focus goes back to
+ * the element that had it before.
  */
 export function CommandPalette({
   label,
@@ -51,17 +52,7 @@ export function CommandPalette({
   onClose,
 }: CommandPaletteProps) {
   const id = useId();
-  const dialog = useRef<HTMLDialogElement>(null);
   const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    const opener = document.activeElement;
-    const element = dialog.current;
-    if (element !== null && !element.open) element.showModal();
-    return () => {
-      if (opener instanceof HTMLElement) opener.focus();
-    };
-  }, []);
 
   const shown = groups.filter((group) => group.options.length > 0);
   const options = shown.flatMap((group) => group.options);
@@ -100,15 +91,7 @@ export function CommandPalette({
 
   let index = 0;
   return (
-    <dialog
-      ref={dialog}
-      className="palette"
-      aria-label={label}
-      onClose={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
+    <Dialog className="palette" aria-label={label} onClose={onClose}>
       <div className="palette-search">
         <Icon icon={Search} />
         <input
@@ -167,6 +150,6 @@ export function CommandPalette({
       <div role="status" className="sr-only">
         {options.length === 0 ? noResultsLabel : resultsLabel}
       </div>
-    </dialog>
+    </Dialog>
   );
 }
