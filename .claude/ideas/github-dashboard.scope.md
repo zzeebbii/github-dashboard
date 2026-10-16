@@ -137,7 +137,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 
 ### Acceptance Criteria
 
-- **AC-3.1** **Quota budget tests** (fixture-driven, assert counted requests and summed GraphQL `cost`): a Home refresh makes ≤ 3 GraphQL search requests totalling ≤ 50 points; a refresh of 60 favourites makes exactly 3 GraphQL requests; opening an uncached PR makes ≤ 2 GraphQL + 1 REST request; opening a cached, unchanged PR makes 0 requests.
+- **AC-3.1** **Quota budget tests** (fixture-driven, assert counted requests and summed GraphQL `cost`): a Home refresh makes ≤ 3 GraphQL search requests totalling ≤ 50 points; a refresh of 60 favourites makes exactly 3 GraphQL requests; opening an uncached PR makes ≤ 2 GraphQL requests (0 REST); opening a cached, unchanged PR makes 0 requests.
 - **AC-3.2** Simulated steady state of 1 hour at the 5-minute interval with 25 favourites spends < 1,000 GraphQL points.
 - **AC-3.3** With GraphQL remaining at 15%, the next scheduled refresh is 10 minutes away; at 4%, no automatic request is made until `resetAt`.
 - **AC-3.4** A REST call returning 304 serves the cached body and does not change the rendered data.
@@ -205,7 +205,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 
 - **FR-6.1** Opening a PR (row click, Enter, or deep link) opens a modal side panel with header (title, number, repo, author, base ← head, "Open in GitHub") and tabs Conversation, Checks, Details.
 - **FR-6.2** Conversation: description (rendered GitHub `bodyHTML`, sanitised — see FR-6.6), comments, reviews and review threads with file path, line, diff-hunk snippet and resolved state; filters All / Unresolved / Humans; bot activity collapsed by default; 50 timeline items per page with "Load more".
-- **FR-6.3** Checks: one REST `GET /repos/{o}/{r}/commits/{sha}/check-runs` (ETag) listing name, app, status/conclusion, duration, required flag (from branch protection where readable), output title/summary and annotations (path, line, level, message). No raw logs.
+- **FR-6.3** Checks: one GraphQL query per head SHA (`commit.checkSuites → checkRuns`) listing name, app, status/conclusion, duration, required flag (`CheckRun.isRequired(pullRequestNumber:)`, omitted when not readable), output title/summary and annotations (path, line, level, message) for failing runs only. No raw logs. _Amended 2026-10-16: GraphQL replaces the planned REST call — REST has no required flag and needs one extra call per failing run for annotations._
 - **FR-6.4** Details: reviewers with state, labels, assignees, milestone, created/updated times, mergeable state.
 - **FR-6.5** Detail cache key = PR `updatedAt` + head SHA. Check runs are refetched at most every 60 s while any is queued/in progress, and never again once all are completed for that SHA.
 - **FR-6.6** GitHub-rendered HTML (`bodyHTML`, comment `bodyHTML`) is sanitised with an allow-list (DOMPurify or equivalent) before rendering; links get `rel="noopener noreferrer" target="_blank"`; images from non-GitHub origins are not loaded (CSP `img-src`). Images in PR content (GitHub user-attachments, camo) are not loaded either; they render as a labelled "Image — open in GitHub" link, so `img-src` stays limited to avatars. The sanitiser output passes through the single Trusted Types policy.
@@ -215,7 +215,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 
 ### Acceptance Criteria
 
-- **AC-6.1** Opening an uncached PR issues ≤ 2 GraphQL + 1 REST request; reopening it unchanged issues 0.
+- **AC-6.1** Opening an uncached PR issues ≤ 2 GraphQL requests (0 REST); reopening it unchanged issues 0.
 - **AC-6.2** A PR with a running check refetches check runs at ≤ 60 s intervals while open and stops once all complete.
 - **AC-6.3** A description containing `<script>`, `onerror=` attributes or `javascript:` links renders without executing script (test asserts sanitised DOM).
 - **AC-6.4** Keyboard-only: open with Enter, Tab cycles inside the panel, Esc closes and focus returns to the same row; axe passes with the panel open.
