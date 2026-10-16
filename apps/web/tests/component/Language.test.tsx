@@ -18,7 +18,7 @@ function Probe() {
 }
 
 // The test owns the language state, standing in for the preferences store. Persistence across
-// reload is covered once T8 wires the provider to PreferencesStore.
+// reload, through PreferencesStore, is covered in Settings.test.tsx.
 function Harness() {
   const [language, setLanguage] = useState<Language>("en");
   return (

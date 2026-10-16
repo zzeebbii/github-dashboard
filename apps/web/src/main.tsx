@@ -5,8 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { AnnouncerProvider } from "./application/announcer.tsx";
 import { AuthProvider } from "./application/auth-provider.tsx";
 import { HtmlSanitizerContext } from "./application/html-sanitizer.ts";
+import { PreferredI18nProvider } from "./application/i18n.tsx";
 import { PreferencesProvider } from "./application/preferences-provider.tsx";
 import { hydrateQueries, persistQueries } from "./application/query-hydration.ts";
 // Importing the adapter creates the single Trusted Types policy, before anything renders.
@@ -61,16 +63,20 @@ createRoot(rootElement).render(
       store={createLocalPreferencesStore()}
       prefersDark={matchMedia("(prefers-color-scheme: dark)")}
     >
-      <QueryClientProvider client={queryClient}>
-        <HtmlSanitizerContext value={sanitizeHtml}>
-          <AuthProvider auth={auth} accountStore={accountStore}>
-            <RouterProvider
-              router={router}
-              context={{ hasAccount: () => accountStore.activeId() !== null }}
-            />
-          </AuthProvider>
-        </HtmlSanitizerContext>
-      </QueryClientProvider>
+      <PreferredI18nProvider>
+        <AnnouncerProvider>
+          <QueryClientProvider client={queryClient}>
+            <HtmlSanitizerContext value={sanitizeHtml}>
+              <AuthProvider auth={auth} accountStore={accountStore}>
+                <RouterProvider
+                  router={router}
+                  context={{ hasAccount: () => accountStore.activeId() !== null }}
+                />
+              </AuthProvider>
+            </HtmlSanitizerContext>
+          </QueryClientProvider>
+        </AnnouncerProvider>
+      </PreferredI18nProvider>
     </PreferencesProvider>
   </StrictMode>,
 );

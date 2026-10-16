@@ -8,8 +8,8 @@ interface SafeHtmlProps {
    * ui/ depends on domain/ only.
    */
   readonly sanitize: (dirty: string, imageLabel: string) => TrustedHTML | string;
-  /** Text of the link that replaces each image. */
-  readonly imageLabel?: string;
+  /** Text of the link that replaces each image: `t("imageLabel")`. */
+  readonly imageLabel: string;
 }
 
 /**
@@ -18,7 +18,7 @@ interface SafeHtmlProps {
  *
  * First caller is the PR detail panel (T24).
  */
-export function SafeHtml({ html, sanitize, imageLabel = "Image — open in GitHub" }: SafeHtmlProps) {
+export function SafeHtml({ html, sanitize, imageLabel }: SafeHtmlProps) {
   // Memoised: React re-assigns innerHTML whenever the __html value changes identity, and each
   // sanitise call returns a new TrustedHTML object.
   const clean = useMemo(() => sanitize(html, imageLabel), [sanitize, html, imageLabel]);

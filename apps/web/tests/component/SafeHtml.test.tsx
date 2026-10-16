@@ -2,6 +2,7 @@ import type { WindowLike } from "dompurify";
 import { describe, expect, test } from "vitest";
 import { renderHook } from "vitest-browser-react";
 import { useSanitizeHtml } from "../../src/application/html-sanitizer.ts";
+import { useT } from "../../src/application/i18n.tsx";
 import { createSanitizeHtml } from "../../src/infrastructure/browser/trusted-types.ts";
 import { SafeHtml } from "../../src/ui/SafeHtml.tsx";
 import { expectNoAxeViolations } from "../axe.ts";
@@ -14,7 +15,14 @@ interface BodyProps {
 }
 
 function Body(props: BodyProps) {
-  return <SafeHtml {...props} sanitize={useSanitizeHtml()} />;
+  const t = useT();
+  return (
+    <SafeHtml
+      html={props.html}
+      imageLabel={props.imageLabel ?? t("imageLabel")}
+      sanitize={useSanitizeHtml()}
+    />
+  );
 }
 
 async function renderBody(props: BodyProps): Promise<HTMLElement> {

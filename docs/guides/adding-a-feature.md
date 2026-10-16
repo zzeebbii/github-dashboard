@@ -66,15 +66,24 @@ A TanStack Query hook that calls the port, not `fetch`.
 `apps/web/src/ui/`
 
 Props in, JSX out. No data fetching. Every visible string comes from the message
-catalogue (en, fi, sv). Status is icon plus text, never colour alone. Real `<button>`
-and `<a href>` elements ([ADR-0021](../adr/0021-i18n-themes-and-accessibility.md)).
+catalogue (en, fi, sv): `ui/` does not call `useT()` itself, so fixed copy arrives as
+props, or as a `t` prop (the `Translate` type) when there is a lot of it. Status is icon
+plus text, never colour alone. Real `<button>` and `<a href>` elements
+([ADR-0021](../adr/0021-i18n-themes-and-accessibility.md)).
 
 ## 6. Feature — composition
 
 `apps/web/src/features/<name>/`
 
 Calls the hooks and passes data to `ui/` components. Add a route in `routes/` if it is
-a new screen.
+a new screen, as a child of `appRoute`: it then renders inside the shell and needs a
+signed-in account. The shell owns the landmarks, so a screen renders from its `<h1>` down
+and never adds its own `<main>`. Announce status changes with `useAnnounce()`
+(`application/announcer.tsx`) rather than adding another live region. Shell slots (account
+menu, quota, last updated, repositories) are filled in `features/shell/AppShell.tsx`.
+
+Component tests render a screen through its route with `renderApp(path)` from
+`tests/render.tsx`, or a single component with `renderWithProviders`.
 
 ## 7. Tests — one per layer that changed
 

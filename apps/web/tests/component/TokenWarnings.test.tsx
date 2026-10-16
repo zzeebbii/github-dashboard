@@ -1,11 +1,18 @@
 import { expect, test } from "vitest";
+import type { ComponentProps } from "react";
+import { useT } from "../../src/application/i18n.tsx";
 import { TokenWarnings } from "../../src/ui/auth/TokenWarnings.tsx";
 import { expectNoAxeViolations } from "../axe.ts";
 import { renderWithProviders } from "../render.tsx";
 
+/** The component with the active language's `t`, as its callers pass it. */
+function Warnings(props: Omit<ComponentProps<typeof TokenWarnings>, "t">) {
+  return <TokenWarnings t={useT()} {...props} />;
+}
+
 test("renders nothing when there is nothing to warn about", async () => {
   const screen = await renderWithProviders(
-    <TokenWarnings
+    <Warnings
       warnings={[]}
       tokenType="fine-grained"
       missingPermissions={[]}
@@ -19,13 +26,13 @@ test("renders nothing when there is nothing to warn about", async () => {
 test("explains write access, a failed probe, SAML SSO and classic scopes to add", async () => {
   const screen = await renderWithProviders(
     <>
-      <TokenWarnings
+      <Warnings
         warnings={[{ kind: "write-access" }]}
         tokenType="classic"
         missingPermissions={null}
         ssoAuthorizationNeeded
       />
-      <TokenWarnings
+      <Warnings
         warnings={[]}
         tokenType="classic"
         missingPermissions={["pull-requests", "org-membership"]}
@@ -46,7 +53,7 @@ test("explains write access, a failed probe, SAML SSO and classic scopes to add"
 
 test("the warnings have no axe violations in either theme", async () => {
   const screen = await renderWithProviders(
-    <TokenWarnings
+    <Warnings
       warnings={[{ kind: "write-access" }]}
       tokenType="classic"
       missingPermissions={["pull-requests"]}

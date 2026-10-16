@@ -70,7 +70,7 @@ apps/web/src/
 - oxlint: `fetch`, `XMLHttpRequest`, `localStorage`, `sessionStorage`, `indexedDB`, `BroadcastChannel` and `navigator.locks` are banned outside `apps/web/src/infrastructure/**`.
 - oxlint: `dangerouslySetInnerHTML`, `innerHTML`, `eval` and `new Function` are banned everywhere except `apps/web/src/ui/SafeHtml.tsx` (the one sanitising component).
 
-Today `src/` has `domain/`, `application/`, `infrastructure/`, `ui/`, `features/`, `i18n/`, `routes/` and `config/`.
+Today `src/` has `domain/`, `application/`, `infrastructure/`, `ui/`, `features/`, `i18n/`, `routes/` and `config/`. Every signed-in screen renders inside `features/shell/AppShell.tsx` (sidebar, header, `main`); `/sign-in` stands outside it.
 
 Full rationale: [docs/conventions/dependency-rules.md](docs/conventions/dependency-rules.md).
 

@@ -11,6 +11,14 @@ import { expect } from "vitest";
 export async function expectNoAxeViolations(container: Element): Promise<void> {
   const root = document.documentElement;
   const wasDark = root.classList.contains("dark");
+  // A fade-in still running would be measured half-transparent, so let entrance animations
+  // finish first. Endless ones (a spinner) never do and do not affect contrast.
+  await Promise.all(
+    document
+      .getAnimations()
+      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+      .map((animation) => animation.finished),
+  );
   try {
     // Sequential on purpose: both runs read the same document, one theme at a time.
     await expectNoViolationsIn(container, false);

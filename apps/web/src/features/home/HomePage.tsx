@@ -1,8 +1,7 @@
-/** Placeholder home page. The real Home sections arrive with the dashboard features. */
+import { useT } from "../../application/i18n.tsx";
+
+/** Placeholder home page, rendered inside the shell's `main`. The real Home sections arrive with T20. */
 export function HomePage() {
-  return (
-    <main>
-      <h1>GitHub Dashboard</h1>
-    </main>
-  );
+  const t = useT();
+  return <h1>{t("appTitle")}</h1>;
 }
