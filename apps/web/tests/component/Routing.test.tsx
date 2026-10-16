@@ -47,11 +47,14 @@ test("the panel's close link returns to the repository", async () => {
   expect(router.state.location.pathname).toBe("/repo/a/b");
 });
 
-test("a PR number that is not a positive integer is not found", async () => {
-  const { screen } = await renderApp("/repo/a/b/pull/abc");
+// AC-3.10: invalid names and numbers never reach a GitHub request.
+for (const path of ["/repo/a/b/pull/abc", "/repo/a/b/pull/1x", "/repo/a%22%7D/b", "/repo/a/.."]) {
+  test(`${path} is not found`, async () => {
+    const { screen } = await renderApp(path);
 
-  await expect.element(screen.getByText("Page not found.")).toBeVisible();
-});
+    await expect.element(screen.getByText("Page not found.")).toBeVisible();
+  });
+}
 
 test("without an account every app route redirects to sign-in", async () => {
   const { screen, router } = await renderApp("/repo/a/b", { hasAccount: false });
