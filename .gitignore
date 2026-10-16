@@ -30,3 +30,6 @@ artifacts/dependency-graph.dot
 !.vscode/extensions.json
 !.vscode/settings.json
 dist-types/
+
+# Agent worktrees: other branches checked out inside the repo; never part of this one.
+.claude/worktrees/
