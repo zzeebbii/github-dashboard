@@ -257,7 +257,11 @@
         "typescript/no-unsafe-type-assertion": "off",
         "vitest/no-focused-tests": "error",
         "vitest/no-disabled-tests": "warn",
-        "vitest/expect-expect": "error"
+        // expectNoAxeViolations (tests/axe.ts) asserts through expect, so it counts as an assertion.
+        "vitest/expect-expect": [
+          "error",
+          { "assertFunctionNames": ["expect", "expectNoAxeViolations"] }
+        ]
       }
     }
   ],

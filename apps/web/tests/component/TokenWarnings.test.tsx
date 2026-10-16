@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { TokenWarnings } from "../../src/ui/auth/TokenWarnings.tsx";
+import { expectNoAxeViolations } from "../axe.ts";
 import { renderWithProviders } from "../render.tsx";
 
 test("renders nothing when there is nothing to warn about", async () => {
@@ -41,4 +42,17 @@ test("explains write access, a failed probe, SAML SSO and classic scopes to add"
   await expect
     .element(second!)
     .toMatchTextContent("Organisation membership: add the “read:org” scope");
+});
+
+test("the warnings have no axe violations in either theme", async () => {
+  const screen = await renderWithProviders(
+    <TokenWarnings
+      warnings={[{ kind: "write-access" }]}
+      tokenType="classic"
+      missingPermissions={["pull-requests"]}
+      ssoAuthorizationNeeded
+    />,
+  );
+
+  await expectNoAxeViolations(screen.container);
 });
