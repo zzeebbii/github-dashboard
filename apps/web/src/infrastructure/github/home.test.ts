@@ -147,7 +147,7 @@ async function setup(clock: { now(): Date } = { now: () => new Date() }) {
     [TOKEN]: { account: ACCOUNT, missingPermissions: [], ssoAuthorizationNeeded: false },
   });
   await auth.signIn({ token: TOKEN, rememberMe: false });
-  const tracker = createRateLimitTracker(clock);
+  const tracker = createRateLimitTracker(clock, null);
   const client = createGitHubClient({
     auth,
     tracker,
@@ -454,7 +454,7 @@ describe("steady state (AC-3.2)", () => {
       await time.advance(refresh === 0 ? 0 : 5 * 60 * 1000);
       // oxlint-disable-next-line no-await-in-loop -- reason: each refresh finishes before the next interval
       await vi.waitFor(() => {
-        expect(crossTab.published).toHaveLength(refresh + 1);
+        expect(crossTab.published.filter((m) => m.type === "refreshed")).toHaveLength(refresh + 1);
       });
     }
 

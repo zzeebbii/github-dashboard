@@ -12,6 +12,8 @@ export type RateLimitPool = (typeof RATE_LIMIT_POOLS)[number];
 export interface RateLimitState extends PoolQuota {
   /** Points the last GraphQL query cost; REST requests do not report one. */
   readonly lastCost: number | null;
+  /** When the response that said so arrived: in this tab, another one, or before a reload. */
+  readonly observedAt: Date;
 }
 
 /** What is known per pool for one account. A pool not used yet is absent. */
@@ -22,4 +24,19 @@ export interface RateLimitReader {
   get(accountId: AccountId, pool: RateLimitPool): RateLimitState | undefined;
   /** Until when a secondary limit pauses every request of this account; undefined if not. */
   pausedUntil(accountId: AccountId): Date | undefined;
+  /** Called after every response that carried an account's quota. Returns an unsubscribe. */
+  subscribe(listener: (accountId: AccountId) => void): () => void;
+}
+
+/** Per pool, the more recently observed of the two. */
+export function latestQuota(known: QuotaSnapshot, incoming: QuotaSnapshot): QuotaSnapshot {
+  const merged: Partial<Record<RateLimitPool, RateLimitState>> = { ...known };
+  for (const pool of RATE_LIMIT_POOLS) {
+    const next = incoming[pool];
+    const current = merged[pool];
+    if (next !== undefined && (current === undefined || next.observedAt >= current.observedAt)) {
+      merged[pool] = next;
+    }
+  }
+  return merged;
 }

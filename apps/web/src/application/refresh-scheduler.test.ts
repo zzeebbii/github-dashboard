@@ -205,6 +205,63 @@ describe("quota guard in the scheduler (FR-3.8, AC-3.3)", () => {
   });
 });
 
+/** A pool's state as a response at `observedAt` (default now) said it, resetting in 30 min. */
+const pool = (time: ReturnType<typeof manualTime>, remaining: number, observedAt?: Date) => ({
+  limit: 5000,
+  remaining,
+  resetAt: new Date(time.clock.now().getTime() + 30 * MINUTE),
+  lastCost: 1,
+  observedAt: observedAt ?? time.clock.now(),
+});
+
+describe("the latest known quota (FR-3.12)", () => {
+  it("a response between refreshes shows at once and is told to the other tabs", () => {
+    const { time, rateLimits, crossTab, query, scheduler } = setup();
+
+    const graphql = rateLimits.set("graphql", pool(time, 4321));
+
+    expect(query.fetches()).toBe(0);
+    expect(scheduler.getState().quota).toEqual({ graphql });
+    expect(crossTab.published).toEqual([{ type: "quota", accountId: A, quota: { graphql } }]);
+  });
+
+  it("and the guard reads it: 4% left between refreshes holds the next one until the reset", async () => {
+    const { time, rateLimits, query, scheduler } = setup();
+    await scheduler.refreshNow();
+    expect(query.fetches()).toBe(1);
+
+    const resetAt = new Date(time.clock.now().getTime() + 30 * MINUTE);
+    rateLimits.set("graphql", { limit: 5000, remaining: 200, resetAt, lastCost: 1 });
+
+    await time.advance(30 * MINUTE - 1);
+    expect(query.fetches()).toBe(1);
+    await time.advance(1);
+    expect(query.fetches()).toBe(2);
+  });
+
+  it("a follower shows another tab's quota, keeping the newer of two observations", () => {
+    const { time, crossTab, scheduler } = setup({ leader: false });
+    const newer = pool(time, 4000);
+    const older = pool(time, 4500, new Date(time.clock.now().getTime() - MINUTE));
+
+    crossTab.deliver({ type: "quota", accountId: A, quota: { graphql: newer } });
+    crossTab.deliver({ type: "quota", accountId: A, quota: { graphql: older, core: older } });
+
+    expect(scheduler.getState().quota).toEqual({ graphql: newer, core: older });
+  });
+
+  it("keeps each account's quota apart, and shows it on switching", () => {
+    const { time, crossTab, scheduler } = setup({ leader: false });
+    const theirs = pool(time, 10);
+
+    crossTab.deliver({ type: "quota", accountId: B, quota: { graphql: theirs } });
+    expect(scheduler.getState().quota).toEqual({});
+
+    scheduler.setAccount(B);
+    expect(scheduler.getState().quota).toEqual({ graphql: theirs });
+  });
+});
+
 describe("offline (FR-3.11, AC-3.9)", () => {
   it("stops while offline and refreshes as soon as it is back", async () => {
     const { time, online, query, scheduler } = setup();
@@ -299,17 +356,16 @@ describe("cross-tab (FR-3.9)", () => {
 
   it("the leader publishes each refresh with what changed and the quota", async () => {
     const { time, crossTab, rateLimits, scheduler } = setup();
-    const graphql = {
+    const graphql = rateLimits.set("graphql", {
       limit: 5000,
       remaining: 4000,
       resetAt: new Date(time.clock.now().getTime() + MINUTE),
       lastCost: 2,
-    };
-    rateLimits.set("graphql", graphql);
+    });
 
     await scheduler.refreshNow();
 
-    expect(crossTab.published).toEqual([
+    expect(crossTab.published.filter((message) => message.type === "refreshed")).toEqual([
       {
         type: "refreshed",
         accountId: A,

@@ -108,7 +108,7 @@ async function setup() {
   await auth.signIn({ token: TOKEN, rememberMe: false });
   const client = createGitHubClient({
     auth,
-    tracker: createRateLimitTracker(clock),
+    tracker: createRateLimitTracker(clock, null),
     cache: inMemoryCache(clock),
     clock,
     onUnauthorized: () => undefined,

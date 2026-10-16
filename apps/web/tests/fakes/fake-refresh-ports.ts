@@ -1,10 +1,11 @@
-import type { CrossTabPort, RefreshedMessage } from "../../src/application/cross-tab.ts";
+import type { CrossTabPort, CrossTabMessage } from "../../src/application/cross-tab.ts";
 import type {
   RateLimitPool,
   RateLimitReader,
   RateLimitState,
 } from "../../src/application/rate-limits.ts";
 import type { PageSignal, ScheduleTimer } from "../../src/application/refresh-scheduler.ts";
+import { type AccountId, toAccountId } from "../../src/domain/account.ts";
 import { advanceableClock } from "../determinism.ts";
 
 /** Lets queued promise work (TanStack Query batches on a 0 ms timeout) run to the end. */
@@ -71,11 +72,11 @@ export function fakeSignal(initial = true): PageSignal & { set(value: boolean): 
 
 /** One tab on its own: the leader at once (as without Web Locks); records what it publishes. */
 export function inMemoryCrossTab({ leader = true } = {}): CrossTabPort & {
-  readonly published: RefreshedMessage[];
-  deliver(message: RefreshedMessage): void;
+  readonly published: CrossTabMessage[];
+  deliver(message: CrossTabMessage): void;
 } {
-  const listeners = new Set<(message: RefreshedMessage) => void>();
-  const published: RefreshedMessage[] = [];
+  const listeners = new Set<(message: CrossTabMessage) => void>();
+  const published: CrossTabMessage[] = [];
   return {
     published,
     runAsLeader(onLeader) {
@@ -94,12 +95,22 @@ export function inMemoryCrossTab({ leader = true } = {}): CrossTabPort & {
   };
 }
 
-/** Rate-limit state a test sets directly. Like the real tracker, it forgets at the reset. */
-export function fakeRateLimits(clock: { now(): Date }): RateLimitReader & {
-  set(pool: RateLimitPool, state: RateLimitState): void;
+/**
+ * Rate-limit state a test sets directly, as if a response of `accountId` said so (observed
+ * now unless given). Like the real tracker, it forgets at the reset and tells subscribers.
+ */
+export function fakeRateLimits(
+  clock: { now(): Date },
+  accountId: AccountId = toAccountId(1)!,
+): RateLimitReader & {
+  set(
+    pool: RateLimitPool,
+    state: Omit<RateLimitState, "observedAt"> & { observedAt?: Date },
+  ): RateLimitState;
   pause(until: Date): void;
 } {
   const pools = new Map<RateLimitPool, RateLimitState>();
+  const listeners = new Set<(accountId: AccountId) => void>();
   let paused: Date | undefined;
   const live = (at: Date | undefined) => (at !== undefined && at > clock.now() ? at : undefined);
   return {
@@ -108,8 +119,17 @@ export function fakeRateLimits(clock: { now(): Date }): RateLimitReader & {
       return live(state?.resetAt) === undefined ? undefined : state;
     },
     pausedUntil: () => live(paused),
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     set(pool, state) {
-      pools.set(pool, state);
+      const observed = { ...state, observedAt: state.observedAt ?? clock.now() };
+      pools.set(pool, observed);
+      for (const listener of listeners) listener(accountId);
+      return observed;
     },
     pause(until) {
       paused = until;

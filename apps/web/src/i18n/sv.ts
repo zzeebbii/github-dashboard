@@ -345,4 +345,6 @@ export const sv: Catalogue = {
   fr_refreshedNew: "Data uppdaterad, nya: {n}",
   // session sharing
   am_sessionTabs: "Inloggad tills du stänger den sista fliken",
+  // Quota indicator fix
+  fr_quotaChecked: "kontrollerad {ago}",
 };
