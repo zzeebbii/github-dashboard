@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useRef } from "react";
 import { useAccounts } from "../../application/auth-provider.tsx";
 import type { GitHubError } from "../../application/github.ts";
 import { useNewCounts } from "../../application/home/use-home.ts";
@@ -7,6 +8,7 @@ import { applyPrFilters, usePrFilters } from "../../application/pr-filters.ts";
 import { usePreferences } from "../../application/preferences-provider.tsx";
 import { useRefreshState } from "../../application/refresh-provider.tsx";
 import { useFavourites } from "../../application/repos/use-favourites.ts";
+import { modKeyLabel, useListShortcuts } from "../../application/shortcuts.ts";
 import { useRepoPage } from "../../application/repos/use-repo-page.ts";
 import type { Account } from "../../domain/account.ts";
 import { isStale } from "../../domain/activity.ts";
@@ -17,6 +19,7 @@ import { FilterBar } from "../../ui/pr/FilterBar.tsx";
 import { PrList } from "../../ui/pr/PrList.tsx";
 import type { PrRowData } from "../../ui/pr/PrRow.tsx";
 import { RepoHeader } from "../../ui/repo/RepoHeader.tsx";
+import { KeyboardHints } from "../../ui/shell/KeyboardHints.tsx";
 import { Tabs } from "../../ui/Tabs.tsx";
 import { PrPanel } from "../pr/PrPanel.tsx";
 
@@ -67,11 +70,12 @@ function withTab<T extends { tab?: RepoTab }>(search: T, tab: RepoTab): T {
  */
 function Repo({ account, owner, name, tab, pull }: RepoPageProps & { account: Account }) {
   const { t, format } = useI18n();
-  const { density } = usePreferences().preferences;
+  const { density, listShortcutsEnabled } = usePreferences().preferences;
   const { now } = useRefreshState();
   const { filters, update, reset } = usePrFilters();
   const navigate = useNavigate();
   const repo = useRepoPage(account, { owner, name });
+  const filterInput = useRef<HTMLInputElement>(null);
   const favourites = useFavourites(account.id);
   const { newCount, markSeen } = useNewCounts(account, repo.pullRequests);
 
@@ -131,7 +135,13 @@ function Repo({ account, owner, name, tab, pull }: RepoPageProps & { account: Ac
     prs.filter((pr) => inRepoTab(pr, tab)),
     filters,
     { viewerLogin: account.login, now },
-  );
+  ).map(toRowData);
+  const { selection, select } = useListShortcuts({
+    ids: loaded ? visible.map(({ pr }) => pr.id) : [],
+    open: (id) => visible.find(({ pr }) => pr.id === id)?.onOpen?.(),
+    enabled: listShortcutsEnabled,
+    filter: filterInput,
+  });
 
   return (
     <>
@@ -175,6 +185,7 @@ function Repo({ account, owner, name, tab, pull }: RepoPageProps & { account: Ac
             labels={[...labelCounts].map(([label, n]) => ({ name: label, count: n }))}
             onChange={update}
             onReset={reset}
+            inputRef={filterInput}
           />
           <PrList
             t={t}
@@ -183,7 +194,9 @@ function Repo({ account, owner, name, tab, pull }: RepoPageProps & { account: Ac
             density={density}
             showRepository={false}
             label={t(`rt_${tab}`)}
-            rows={visible.map(toRowData)}
+            rows={visible}
+            selection={selection}
+            onSelect={select}
           />
           {repo.hasMore && (
             <button
@@ -195,6 +208,7 @@ function Repo({ account, owner, name, tab, pull }: RepoPageProps & { account: Ac
               {t("rp_loadMore")}
             </button>
           )}
+          <KeyboardHints t={t} listShortcuts={listShortcutsEnabled} searchKey={modKeyLabel("K")} />
         </Tabs>
       )}
       {pull !== null && (

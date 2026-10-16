@@ -13,6 +13,7 @@ import type { GitHubReadPort } from "../src/application/github.ts";
 import { GitHubProvider } from "../src/application/github-provider.tsx";
 import { HtmlSanitizerContext } from "../src/application/html-sanitizer.ts";
 import { PreferredI18nProvider } from "../src/application/i18n.tsx";
+import { cachedListPullRequests } from "../src/application/palette.ts";
 import type { PreferencesStore } from "../src/application/preferences.ts";
 import { PreferencesProvider } from "../src/application/preferences-provider.tsx";
 import { RefreshProvider } from "../src/application/refresh-provider.tsx";
@@ -155,7 +156,7 @@ function testScheduler(queryClient: QueryClient): RefreshScheduler {
     online: fakeSignal(true),
     crossTab: inMemoryCrossTab(),
     rateLimits: fakeRateLimits(time.clock),
-    refresher: createQueryRefresher(queryClient),
+    refresher: createQueryRefresher(queryClient, cachedListPullRequests),
   });
 }
 

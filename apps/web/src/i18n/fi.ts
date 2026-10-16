@@ -344,4 +344,8 @@ export const fi: Catalogue = {
   pa_title: "Komentopaletti",
   pa_results: { one: "{n} tulos", other: "{n} tulosta" },
   pa_language: "Kieli: {name}",
+  // T26 shortcuts
+  st_shortcuts: "Pikanäppäimet",
+  st_listShortcuts: "Liiku listoissa J- ja K-näppäimillä",
+  fr_refreshedNew: "Tiedot päivitetty, uusia: {n}",
 };

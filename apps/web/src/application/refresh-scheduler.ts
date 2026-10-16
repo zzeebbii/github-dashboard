@@ -1,5 +1,6 @@
 import type { Query, QueryClient } from "@tanstack/react-query";
 import type { AccountId } from "../domain/account.ts";
+import type { PullRequest } from "../domain/pull-request.ts";
 import { FOCUS_REFRESH_AFTER_MS, nextRefreshDelay, REFRESH_INTERVAL_MS } from "../domain/quota.ts";
 import type { CrossTabPort, QueryUpdate, RefreshedMessage } from "./cross-tab.ts";
 import {
@@ -41,7 +42,12 @@ interface QueryRefresher {
   apply(updates: readonly QueryUpdate[]): void;
   /** When the account's newest query data was fetched, e.g. restored from the cache. */
   lastUpdated(accountId: AccountId): Date | null;
+  /** The account's PRs in every cached list, for what a refresh brought (FR-7.4). */
+  pullRequests(accountId: AccountId): readonly PullRequest[];
 }
+
+/** Reads the PR lists out of the query cache: Home's searches, the repository pages. */
+type ListedPullRequests = (client: QueryClient, accountId: AccountId) => readonly PullRequest[];
 
 const ofAccount = (accountId: AccountId) => (query: Query) => query.queryKey[1] === accountId;
 
@@ -55,8 +61,17 @@ export const OWN_REFRESH_ONLY = { refresh: "own" } as const;
 const scheduledOf = (accountId: AccountId) => (query: Query) =>
   query.queryKey[1] === accountId && query.meta?.["refresh"] !== OWN_REFRESH_ONLY.refresh;
 
-export function createQueryRefresher(client: QueryClient): QueryRefresher {
+/**
+ * `listed` is passed in by the composition root: the list hooks import this module, so
+ * importing them here would be a cycle. Without it no PR is ever new.
+ */
+export function createQueryRefresher(
+  client: QueryClient,
+  listed: ListedPullRequests = () => [],
+): QueryRefresher {
   return {
+    pullRequests: (accountId) => listed(client, accountId),
+
     async refresh(accountId) {
       const predicate = scheduledOf(accountId);
       // Unmounted queries refetch when next shown, not now.
@@ -114,6 +129,9 @@ export interface RefreshState {
 interface RefreshOutcome {
   readonly manual: boolean;
   readonly changed: boolean;
+  /** The account's listed PRs before and after it, to tell what is new (FR-7.4). */
+  readonly before: readonly PullRequest[];
+  readonly after: readonly PullRequest[];
 }
 
 export interface RefreshScheduler {
@@ -125,7 +143,11 @@ export interface RefreshScheduler {
   // Properties, not methods: useSyncExternalStore takes them unbound.
   readonly getState: () => RefreshState;
   readonly subscribe: (listener: () => void) => () => void;
-  /** After every refresh, in this tab or another one. */
+  /**
+   * Once after each refresh, in this tab or another one; an automatic one only while this
+   * tab is visible. A hidden tab has no one to tell, and the visible tab tells its own
+   * reader, so a refresh is reported once across tabs (FR-7.4).
+   */
   onRefreshed(listener: (outcome: RefreshOutcome) => void): () => void;
 }
 
@@ -210,6 +232,7 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
   }
 
   function notify(outcome: RefreshOutcome) {
+    if (!outcome.manual && !visibility.current()) return;
     for (const listener of outcomeListeners) listener(outcome);
   }
 
@@ -221,6 +244,7 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
     // One refresh at a time; a second request joins the running one.
     running ??= (async () => {
       update({ refreshing: true });
+      const before = refresher.pullRequests(accountId);
       let updates: readonly QueryUpdate[] = [];
       try {
         updates = await refresher.refresh(accountId);
@@ -237,7 +261,12 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
             : { refreshing: false },
         );
         crossTab.publish({ type: "refreshed", accountId, at, quota, updates });
-        notify({ manual: wasManual, changed: updates.length > 0 });
+        notify({
+          manual: wasManual,
+          changed: updates.length > 0,
+          before,
+          after: refresher.pullRequests(accountId),
+        });
         schedule();
       }
     })();
@@ -247,9 +276,15 @@ export function createRefreshScheduler(deps: RefreshSchedulerDeps): RefreshSched
   function onMessage(message: RefreshedMessage) {
     lastRefresh.set(message.accountId, message.at);
     if (message.accountId !== state.accountId) return;
+    const before = refresher.pullRequests(message.accountId);
     refresher.apply(message.updates);
     update({ lastRefreshAt: message.at, quota: message.quota });
-    notify({ manual: false, changed: message.updates.length > 0 });
+    notify({
+      manual: false,
+      changed: message.updates.length > 0,
+      before,
+      after: refresher.pullRequests(message.accountId),
+    });
     // Another tab's refresh resets this tab's interval too.
     schedule();
   }

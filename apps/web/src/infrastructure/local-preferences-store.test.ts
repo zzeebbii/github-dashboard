@@ -14,7 +14,12 @@ test("nothing stored loads the defaults", () => {
 
 test("saved preferences load back", () => {
   const store = createLocalPreferencesStore();
-  const preferences = { theme: "dark", density: "compact", language: "fi" } as const;
+  const preferences = {
+    theme: "dark",
+    density: "compact",
+    language: "fi",
+    listShortcutsEnabled: false,
+  } as const;
 
   store.save(preferences);
 
@@ -39,6 +44,18 @@ test("an invalid field falls back alone, keeping the valid ones", () => {
     theme: "system",
     density: "compact",
     language: "en",
+    listShortcutsEnabled: true,
+  });
+});
+
+test("preferences saved before the J/K toggle existed load, with the toggle on", () => {
+  localStorage.setItem(KEY, JSON.stringify({ theme: "dark", density: "compact", language: "sv" }));
+
+  expect(createLocalPreferencesStore().load()).toEqual({
+    theme: "dark",
+    density: "compact",
+    language: "sv",
+    listShortcutsEnabled: true,
   });
 });
 

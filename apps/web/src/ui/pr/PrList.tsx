@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { createFormat, Translate } from "../../application/i18n.tsx";
 import type { Density } from "../../application/preferences.ts";
+import type { ListSelection } from "../../application/shortcuts.ts";
 import { PrRow, type PrRowData } from "./PrRow.tsx";
 
 interface PrListProps {
@@ -12,6 +13,10 @@ interface PrListProps {
   /** The list's accessible name, e.g. the section title. */
   readonly label: string;
   readonly rows: readonly PrRowData[];
+  /** The selected row (FR-7.3), which may be in another list on the page. */
+  readonly selection?: ListSelection | null;
+  /** A row got focus (Tab, a click, J/K), so it becomes the selection. */
+  readonly onSelect?: (id: string) => void;
 }
 
 /** Rows rendered beyond the viewport on each side. */
@@ -32,13 +37,40 @@ const ESTIMATED_HEIGHT: Record<Density, number> = { comfortable: 64, compact: 48
  * row. A focused row scrolled far away with the mouse is unmounted and focus falls back to
  * the page, as with any virtualised list. Find-in-page only sees rendered rows; the filter
  * box is the way to search.
+ *
+ * Selection (FR-7.3) is DOM focus on the row's title link, not `aria-activedescendant`: a
+ * list is not a composite widget that may own an active descendant, and a row holds two
+ * links, which a listbox option may not. A J/K move to a row outside the window (scrolled
+ * away with the mouse) renders the window around it first, then scrolls it into view and
+ * focuses it.
  */
-export function PrList({ t, format, now, density, showRepository, label, rows }: PrListProps) {
+export function PrList({
+  t,
+  format,
+  now,
+  density,
+  showRepository,
+  label,
+  rows,
+  selection = null,
+  onSelect,
+}: PrListProps) {
   const list = useRef<HTMLUListElement>(null);
   const [view, setView] = useState({
     start: 0,
     end: 2 * OVERSCAN,
     height: ESTIMATED_HEIGHT[density],
+  });
+
+  // A J/K move to a row of this list, not yet focused: the row's index. Each move is a new
+  // selection object, so a move to the row already selected focuses it again.
+  const pin = useRef<number | null>(null);
+  const requested = useRef<ListSelection | null>(null);
+  useLayoutEffect(() => {
+    if (selection?.focus !== true || requested.current === selection) return;
+    requested.current = selection;
+    const index = rows.findIndex(({ pr }) => pr.id === selection.id);
+    if (index !== -1) pin.current = index;
   });
 
   // Re-measured after every render, so a density, viewport or length change is picked up.
@@ -50,8 +82,13 @@ export function PrList({ t, format, now, density, showRepository, label, rows }:
       if (element === null) return;
       const height = element.querySelector("li")?.offsetHeight || ESTIMATED_HEIGHT[density];
       const top = element.getBoundingClientRect().top;
-      const start = Math.max(0, Math.floor(-top / height) - OVERSCAN);
-      const end = Math.max(start, Math.ceil((window.innerHeight - top) / height) + OVERSCAN);
+      let start = Math.max(0, Math.floor(-top / height) - OVERSCAN);
+      let end = Math.max(start, Math.ceil((window.innerHeight - top) / height) + OVERSCAN);
+      const pinned = pin.current;
+      if (pinned !== null && (pinned < start || pinned >= end)) {
+        start = Math.max(0, pinned - OVERSCAN);
+        end = pinned + OVERSCAN + 1;
+      }
       setView((prev) =>
         prev.start === start && prev.end === end && prev.height === height
           ? prev
@@ -59,6 +96,18 @@ export function PrList({ t, format, now, density, showRepository, label, rows }:
       );
     };
     update.current();
+  });
+
+  // Once the pinned row is rendered: scroll it into view and focus it. The scroll event
+  // then moves the window to where the row now is.
+  useLayoutEffect(() => {
+    const index = pin.current;
+    if (index === null) return;
+    const item = list.current?.querySelector(`li[aria-posinset="${String(index + 1)}"]`);
+    if (item === null || item === undefined) return;
+    pin.current = null;
+    item.scrollIntoView({ block: "nearest" });
+    item.querySelector<HTMLElement>("a.pr-title")?.focus({ preventScroll: true });
   });
 
   useEffect(() => {
@@ -84,7 +133,13 @@ export function PrList({ t, format, now, density, showRepository, label, rows }:
       style={{ paddingTop: start * height, paddingBottom: (rows.length - end) * height }}
     >
       {rows.slice(start, end).map((row, offset) => (
-        <li key={row.pr.id} aria-setsize={rows.length} aria-posinset={start + offset + 1}>
+        <li
+          key={row.pr.id}
+          aria-setsize={rows.length}
+          aria-posinset={start + offset + 1}
+          data-selected={selection?.id === row.pr.id ? "" : undefined}
+          onFocus={onSelect === undefined ? undefined : () => onSelect(row.pr.id)}
+        >
           <PrRow
             {...row}
             t={t}

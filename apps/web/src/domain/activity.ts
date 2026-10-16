@@ -24,6 +24,30 @@ export function newActivityCount(
 }
 
 /**
+ * What a refresh brought, for "Updated, 3 new" (FR-7.4): the PRs in `after` that were in
+ * no list before it, plus those with a comment or review by another human since the
+ * version `before` held (the "+N new" rule, counted from that version's `updatedAt`).
+ * A PR moving between lists or sections is not new. With nothing before to compare
+ * against (a first load), nothing is new.
+ */
+export function newSinceRefresh(
+  before: readonly PullRequest[],
+  after: readonly PullRequest[],
+  viewerLogin: string,
+): number {
+  if (before.length === 0) return 0;
+  const previous = new Map(before.map((pr) => [pr.id, pr]));
+  const fresh = new Set<string>();
+  for (const pr of after) {
+    const old = previous.get(pr.id);
+    if (old === undefined || (newActivityCount(pr, viewerLogin, old.updatedAt) ?? 0) > 0) {
+      fresh.add(pr.id);
+    }
+  }
+  return fresh.size;
+}
+
+/**
  * Whether "+N new" needs the exact count: a marker exists and the PR's known activity has
  * something newer than it. A list row knows only its last comment or review, so false here
  * means the count is 0 without asking GitHub (docs/architecture/github-query-costs.md).

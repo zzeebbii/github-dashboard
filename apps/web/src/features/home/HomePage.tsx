@@ -1,11 +1,12 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAccounts } from "../../application/auth-provider.tsx";
 import { type HomeRow, useHome } from "../../application/home/use-home.ts";
 import { useI18n, useT } from "../../application/i18n.tsx";
 import { applyPrFilters, usePrFilters } from "../../application/pr-filters.ts";
 import { usePreferences } from "../../application/preferences-provider.tsx";
 import { useRefreshState } from "../../application/refresh-provider.tsx";
+import { modKeyLabel, useListShortcuts } from "../../application/shortcuts.ts";
 import type { Account } from "../../domain/account.ts";
 import { parsePullTarget } from "../../domain/github-names.ts";
 import type { Section as SectionId } from "../../domain/sections.ts";
@@ -14,6 +15,7 @@ import { Section, TruncationNotice } from "../../ui/home/Section.tsx";
 import { FilterBar } from "../../ui/pr/FilterBar.tsx";
 import { PrList } from "../../ui/pr/PrList.tsx";
 import type { PrRowData } from "../../ui/pr/PrRow.tsx";
+import { KeyboardHints } from "../../ui/shell/KeyboardHints.tsx";
 import { PrPanel } from "../pr/PrPanel.tsx";
 
 /** The design's `SECTIONS`, minus "Watching". */
@@ -44,11 +46,12 @@ export function HomePage() {
  */
 function Home({ account }: { account: Account }) {
   const { t, format } = useI18n();
-  const { density } = usePreferences().preferences;
+  const { density, listShortcutsEnabled } = usePreferences().preferences;
   const { now } = useRefreshState();
   const { filters, update, reset } = usePrFilters();
   const navigate = useNavigate();
   const home = useHome(account);
+  const filterInput = useRef<HTMLInputElement>(null);
   const [collapsed, setCollapsed] = useState<ReadonlySet<SectionId>>(new Set());
   const { pull } = useSearch({ strict: false });
   const target = parsePullTarget(pull);
@@ -100,6 +103,21 @@ function Home({ account }: { account: Account }) {
     ).flatMap((pr) => byId.get(pr.id) ?? []);
   }
 
+  const shown = SECTIONS.map(({ id, title, hint }) => ({
+    id,
+    title,
+    hint,
+    rows: visible(home.sections[id]).map(toRowData),
+  }));
+  // J/K run through the expanded sections as one list (FR-7.3).
+  const ordered = shown.filter(({ id }) => !collapsed.has(id)).flatMap(({ rows }) => rows);
+  const { selection, select } = useListShortcuts({
+    ids: ordered.map(({ pr }) => pr.id),
+    open: (id) => ordered.find(({ pr }) => pr.id === id)?.onOpen?.(),
+    enabled: listShortcutsEnabled,
+    filter: filterInput,
+  });
+
   return (
     <>
       <header className="home-header">
@@ -121,6 +139,7 @@ function Home({ account }: { account: Account }) {
         labels={[...labelCounts].map(([name, count]) => ({ name, count }))}
         onChange={update}
         onReset={reset}
+        inputRef={filterInput}
       />
       {home.truncated && <TruncationNotice text={t("hm_truncated")} />}
       {home.error !== null && all.length === 0 ? (
@@ -133,8 +152,7 @@ function Home({ account }: { account: Account }) {
         </p>
       ) : (
         <div className="home-sections">
-          {SECTIONS.map(({ id, title, hint }) => {
-            const rows = visible(home.sections[id]);
+          {shown.map(({ id, title, hint, rows }) => {
             return (
               <Section
                 key={id}
@@ -158,11 +176,14 @@ function Home({ account }: { account: Account }) {
                   density={density}
                   showRepository
                   label={t(title)}
-                  rows={rows.map(toRowData)}
+                  rows={rows}
+                  selection={selection}
+                  onSelect={select}
                 />
               </Section>
             );
           })}
+          <KeyboardHints t={t} listShortcuts={listShortcutsEnabled} searchKey={modKeyLabel("K")} />
         </div>
       )}
       {target !== null && (

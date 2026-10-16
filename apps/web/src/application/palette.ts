@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { AccountId } from "../domain/account.ts";
 import type { Repository } from "../domain/favourites.ts";
@@ -16,6 +16,12 @@ interface CachedSearchData {
   readonly pullRequests: readonly PalettePullRequest[];
 }
 
+/** Every full PR in the cached lists (Home, repository pages), duplicates included; never a request. */
+export const cachedListPullRequests = (client: QueryClient, accountId: AccountId) => [
+  ...cachedHomePullRequests(client, accountId),
+  ...cachedRepoPullRequests(client, accountId),
+];
+
 /**
  * The account's repositories and PRs as the query cache holds them when the palette opens
  * (FR-7.1). Only reads the cache: never a query, so never a request (AC-7.1). PRs found in
@@ -27,8 +33,7 @@ export function useCachedSearchData(accountId: AccountId): CachedSearchData {
   const [data] = useState((): CachedSearchData => {
     const byId = new Map<string, PalettePullRequest>();
     for (const pr of [
-      ...cachedHomePullRequests(client, accountId),
-      ...cachedRepoPullRequests(client, accountId),
+      ...cachedListPullRequests(client, accountId),
       ...cachedFavouritePullRequests(client, accountId),
     ]) {
       if (!byId.has(pr.id)) byId.set(pr.id, pr);

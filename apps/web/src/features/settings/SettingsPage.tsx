@@ -3,8 +3,8 @@ import { usePreferences } from "../../application/preferences-provider.tsx";
 import { RadioGroup } from "../../ui/RadioGroup.tsx";
 
 /**
- * `/settings`: theme, language and density, saved through PreferencesStore (FR-1.3, FR-1.8).
- * Only settings that exist today; T26 adds the J/K shortcut toggle.
+ * `/settings`: theme, language, density and the J/K list shortcuts, saved through
+ * PreferencesStore (FR-1.3, FR-1.8, FR-7.3).
  */
 export function SettingsPage() {
   const { t, language, setLanguage } = useI18n();
@@ -45,6 +45,19 @@ export function SettingsPage() {
           updatePreferences({ density });
         }}
       />
+      <fieldset className="radio-group">
+        <legend>{t("st_shortcuts")}</legend>
+        <label>
+          <input
+            type="checkbox"
+            checked={preferences.listShortcutsEnabled}
+            onChange={(event) => {
+              updatePreferences({ listShortcutsEnabled: event.target.checked });
+            }}
+          />
+          {t("st_listShortcuts")}
+        </label>
+      </fieldset>
     </>
   );
 }

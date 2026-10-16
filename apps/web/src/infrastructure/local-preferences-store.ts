@@ -28,6 +28,8 @@ const PreferencesSchema = z.object({
   language: z
     .enum(["en", "fi", "sv"] as const satisfies readonly Language[])
     .catch(defaultPreferences.language),
+  // Absent in preferences saved before T26: the catch gives them the default too.
+  listShortcutsEnabled: z.boolean().catch(defaultPreferences.listShortcutsEnabled),
 });
 
 function readStored(storage: Storage): unknown {

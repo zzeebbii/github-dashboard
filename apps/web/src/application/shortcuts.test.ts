@@ -42,3 +42,39 @@ describe("findShortcut", () => {
     expect(findShortcut(press("k", { metaKey: true, isComposing: true }), shortcuts)).toBeNull();
   });
 });
+
+describe("findShortcut: list shortcuts (FR-7.3)", () => {
+  test("a symbol typed with Shift still matches: '/' is Shift+7 on Finnish and Swedish keyboards", () => {
+    const slash: Shortcut = { key: "/", run: () => undefined };
+    const enter: Shortcut = { key: "enter", run: () => undefined };
+    expect(findShortcut(press("/", { shiftKey: true }), [slash])).toBe(slash);
+    expect(findShortcut(press("J", { shiftKey: true }), [next])).toBeNull();
+    expect(findShortcut(press("Enter", { shiftKey: true }), [enter])).toBeNull();
+  });
+
+  test("a plain key is inert while a modal dialog is open; ⌘K is not", () => {
+    const dialog = document.createElement("dialog");
+    dialog.setAttribute("open", "");
+    document.body.append(dialog);
+    try {
+      expect(findShortcut(press("j"), shortcuts)).toBeNull();
+      expect(findShortcut(press("k", { metaKey: true }), shortcuts)).toBe(palette);
+    } finally {
+      dialog.remove();
+    }
+    expect(findShortcut(press("j"), shortcuts)).toBe(next);
+  });
+
+  test("`when` limits a shortcut to where focus is", () => {
+    const inMain: Shortcut = {
+      key: "j",
+      when: (target) => target instanceof Element && target.closest("main") !== null,
+      run: () => undefined,
+    };
+    const main = document.createElement("main");
+    const button = document.createElement("button");
+    main.append(button);
+    expect(findShortcut(press("j", {}, button), [inMain])).toBe(inMain);
+    expect(findShortcut(press("j"), [inMain])).toBeNull();
+  });
+});
