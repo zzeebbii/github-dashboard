@@ -1,18 +1,32 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
-import { en, type MessageKey } from "../i18n/en.ts";
+import { type Catalogue, en, type MessageKey, type Plural } from "../i18n/en.ts";
 import { fi } from "../i18n/fi.ts";
 import { sv } from "../i18n/sv.ts";
 import type { Language } from "./preferences.ts";
 import { usePreferences } from "./preferences-provider.tsx";
 
-type Messages = Partial<Record<MessageKey, string>>;
+type Messages = Partial<Catalogue>;
 type Params = Readonly<Record<string, string | number>>;
 
 const catalogues: Record<Language, Messages> = { en, fi, sv };
 
+const pluralRules = new Map<Language, Intl.PluralRules>();
+
+/** The form of `message` for `n`, by the language's CLDR plural rules; `other` without `n`. */
+function pluralForm(language: Language, message: string | Plural, n: unknown): string {
+  if (typeof message === "string") return message;
+  if (typeof n !== "number") return message.other;
+  let rules = pluralRules.get(language);
+  if (rules === undefined) {
+    rules = new Intl.PluralRules(language);
+    pluralRules.set(language, rules);
+  }
+  return message[rules.select(n)] ?? message.other;
+}
+
 /**
  * Looks `key` up in `messages`, falling back to English, and fills `{name}` placeholders.
- * Numbers are formatted for `language`.
+ * A plural entry picks its form from the `n` param. Numbers are formatted for `language`.
  */
 export function translate(
   language: Language,
@@ -20,7 +34,7 @@ export function translate(
   key: MessageKey,
   params: Params = {},
 ): string {
-  const template = messages[key] ?? en[key];
+  const template = pluralForm(language, messages[key] ?? en[key], params["n"]);
   const number = new Intl.NumberFormat(language);
   return template.replace(/\{(\w+)\}/gu, (placeholder, name: string) => {
     const value = params[name];

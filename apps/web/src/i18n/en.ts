@@ -2,6 +2,11 @@
  * English: the source catalogue and the fallback for every other language.
  * Keys and wording come from the design's `L` table (docs/pr-dashboard-designs).
  * `{name}` placeholders are filled by `t(key, { name })`.
+ *
+ * A count string is a plural object, `{ one: "{n} match", other: "{n} matches" }`: the
+ * form is picked by `Intl.PluralRules` from the `n` param (`other` when `n` is absent).
+ * The keys are CLDR plural categories; `other` is required. A key plural here must be
+ * plural in fi.ts and sv.ts too (the `Catalogue` type enforces it).
  */
 export const en = {
   accounts: "GitHub accounts",
@@ -13,7 +18,7 @@ export const en = {
   findRepo: "Find a repository…",
   regexHint: "Regular expressions supported, e.g. ^auth|service$",
   invalidRegex: "Invalid regular expression, matching as plain text",
-  matches: "{n} matches · regex",
+  matches: { one: "{n} match · regex", other: "{n} matches · regex" },
   noRepos: "No repositories match.",
   settings: "Settings",
   language: "Language",
@@ -26,7 +31,11 @@ export const en = {
   darkTheme: "Switch to dark theme",
   switchTo: "Switch account to",
   pullRequests: "Pull requests",
-  homeSub: "{n} need your action across {r} repositories",
+  homeSub: {
+    one: "{n} needs your action across {repos}",
+    other: "{n} need your action across {repos}",
+  },
+  homeRepos: { one: "{n} repository", other: "{n} repositories" },
   filterPh: "Filter by title, author, #number…",
   drafts: "Drafts",
   reset: "Reset",
@@ -102,7 +111,7 @@ export const en = {
   cUnres: "Unresolved threads",
   cRes: "Resolved threads",
   cPeople: "People",
-  showing: "Showing {a} of {b} comments",
+  showing: { one: "Showing {a} of {n} comment", other: "Showing {a} of {n} comments" },
   description: "Description",
   noMatch: "Nothing matches these filters.",
   commented: "commented",
@@ -112,8 +121,7 @@ export const en = {
   resolve: "Resolve",
   unresolve: "Unresolve",
   resolved: "Resolved",
-  comment1: "comment",
-  commentN: "comments",
+  commentCount: { one: "{n} comment", other: "{n} comments" },
   required: "Required",
   logs: "Logs",
   reviewers: "Reviewers",
@@ -226,10 +234,13 @@ export const en = {
   pr_ciFailing: "Checks failing",
   pr_ciRunning: "Checks running",
   pr_reviewChanges: "Changes",
-  pr_reviewApproved: "{a} of {n} reviewers approved",
+  pr_reviewApproved: {
+    one: "{a} of {n} reviewer approved",
+    other: "{a} of {n} reviewers approved",
+  },
   pr_noReviewers: "No reviewers",
   pr_comments: "Comments",
-  pr_new: "+{n} new",
+  pr_new: { one: "+{n} new", other: "+{n} new" },
   pr_linesChanged: "Lines changed",
   pr_updated: "Updated",
   // T14 freshness
@@ -270,13 +281,13 @@ export const en = {
   rp_error: "GitHub did not return this repository's pull requests. Try Refresh.",
   // T17 sidebar
   sb_search: "Search repositories",
-  sb_matches: "{n} matches",
+  sb_matches: { one: "{n} match", other: "{n} matches" },
   sb_tooComplex: "Pattern too complex to run safely, matching as plain text",
   sb_refresh: "Refresh repositories",
   sb_loading: "Loading repositories…",
   sb_loadFailed: "Could not load repositories.",
-  sb_repoCount: "{n} repositories",
-  sb_openPrs: "{n} open pull requests",
+  sb_repoCount: { one: "{n} repository", other: "{n} repositories" },
+  sb_openPrs: { one: "{n} open pull request", other: "{n} open pull requests" },
   sb_favourite: "Favorite {repo}",
   sb_noFavourites: "Star a repository to add it here.",
   sb_unavailable: "Unavailable",
@@ -337,8 +348,16 @@ export const en = {
   pp_created: "Opened",
   // T25 palette
   pa_title: "Command palette",
-  pa_results: "{n} results",
+  pa_results: { one: "{n} result", other: "{n} results" },
   pa_language: "Language: {name}",
-} as const;
+} as const satisfies Readonly<Record<string, string | Plural>>;
 
 export type MessageKey = keyof typeof en;
+
+/** Plural forms keyed by CLDR category, chosen by the `n` param. */
+export type Plural = Readonly<Partial<Record<Intl.LDMLPluralRule, string>> & { other: string }>;
+
+/** A translation: the same keys as English, each a string or a plural where English has one. */
+export type Catalogue = {
+  readonly [K in MessageKey]: (typeof en)[K] extends string ? string : Plural;
+};

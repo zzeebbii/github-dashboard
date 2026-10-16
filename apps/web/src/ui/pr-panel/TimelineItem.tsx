@@ -79,9 +79,7 @@ export function BotGroup({
       <summary>
         <Icon icon={Bot} size={15} />
         <strong>{author.login}</strong>
-        <span className="pp-muted">
-          {items.length} {t(items.length === 1 ? "comment1" : "commentN")}
-        </span>
+        <span className="pp-muted">{t("commentCount", { n: items.length })}</span>
       </summary>
       {items.map((item) => (
         <TimelineItem key={item.id} ctx={ctx} item={item} />

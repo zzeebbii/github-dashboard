@@ -49,8 +49,10 @@ like any other bug.
 ## Accessibility and i18n
 
 - axe runs in every component test and every E2E step, in light and dark themes.
-- `pnpm i18n:check` (arrives with the message catalogues) fails when Finnish or Swedish
-  lacks a key English has.
+- `pnpm i18n:check` fails when Finnish or Swedish lacks a key English has, when a plural
+  entry has no `other` form, or when a form drops a `{placeholder}` English uses.
+- Count strings are plural objects (`{ one: "{n} match", other: "{n} matches" }`), picked
+  by `Intl.PluralRules` from the `n` param; never build a plural with a ternary.
 
 ## Determinism
 

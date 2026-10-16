@@ -1,7 +1,7 @@
-import type { MessageKey } from "./en.ts";
+import type { Catalogue } from "./en.ts";
 
 /** Finnish. Every key in en.ts must be here too: `pnpm i18n:check` enforces it. */
-export const fi: Record<MessageKey, string> = {
+export const fi: Catalogue = {
   accounts: "GitHub-tilit",
   addAccount: "Lisää GitHub-tili",
   home: "Etusivu",
@@ -11,7 +11,7 @@ export const fi: Record<MessageKey, string> = {
   findRepo: "Etsi repositoriota…",
   regexHint: "Säännölliset lausekkeet tuettu, esim. ^auth|service$",
   invalidRegex: "Virheellinen lauseke, haetaan tekstinä",
-  matches: "{n} osumaa · regex",
+  matches: { one: "{n} osuma · regex", other: "{n} osumaa · regex" },
   noRepos: "Ei osuvia repositorioita.",
   settings: "Asetukset",
   language: "Kieli",
@@ -24,7 +24,8 @@ export const fi: Record<MessageKey, string> = {
   darkTheme: "Vaihda tummaan teemaan",
   switchTo: "Vaihda tiliin",
   pullRequests: "Pull requestit",
-  homeSub: "{n} vaatii toimiasi {r} repositoriossa",
+  homeSub: { one: "{n} vaatii toimiasi {repos}", other: "{n} vaatii toimiasi {repos}" },
+  homeRepos: { one: "{n} repositoriossa", other: "{n} repositoriossa" },
   filterPh: "Suodata otsikon, tekijän tai #numeron mukaan…",
   drafts: "Luonnokset",
   reset: "Nollaa",
@@ -100,7 +101,7 @@ export const fi: Record<MessageKey, string> = {
   cUnres: "Ratkaisemattomat ketjut",
   cRes: "Ratkaistut ketjut",
   cPeople: "Henkilöt",
-  showing: "Näytetään {a}/{b} kommenttia",
+  showing: { one: "Näytetään {a}/{n} kommentti", other: "Näytetään {a}/{n} kommenttia" },
   description: "Kuvaus",
   noMatch: "Mikään ei vastaa suodattimia.",
   commented: "kommentoi",
@@ -110,8 +111,7 @@ export const fi: Record<MessageKey, string> = {
   resolve: "Ratkaise",
   unresolve: "Avaa uudelleen",
   resolved: "Ratkaistu",
-  comment1: "kommentti",
-  commentN: "kommenttia",
+  commentCount: { one: "{n} kommentti", other: "{n} kommenttia" },
   required: "Pakollinen",
   logs: "Lokit",
   reviewers: "Katselmoijat",
@@ -228,10 +228,13 @@ export const fi: Record<MessageKey, string> = {
   pr_ciFailing: "Tarkistukset epäonnistuvat",
   pr_ciRunning: "Tarkistukset käynnissä",
   pr_reviewChanges: "Muutoksia",
-  pr_reviewApproved: "{a}/{n} katselmoijaa hyväksyi",
+  pr_reviewApproved: {
+    one: "{a}/{n} katselmoija hyväksyi",
+    other: "{a}/{n} katselmoijaa hyväksyi",
+  },
   pr_noReviewers: "Ei katselmoijia",
   pr_comments: "Kommentit",
-  pr_new: "+{n} uutta",
+  pr_new: { one: "+{n} uusi", other: "+{n} uutta" },
   pr_linesChanged: "Muutetut rivit",
   pr_updated: "Päivitetty",
   // T14 freshness
@@ -272,13 +275,13 @@ export const fi: Record<MessageKey, string> = {
   rp_error: "GitHub ei palauttanut tämän repositorion pull requesteja. Yritä päivittää.",
   // T17 sidebar
   sb_search: "Hae repositorioita",
-  sb_matches: "{n} osumaa",
+  sb_matches: { one: "{n} osuma", other: "{n} osumaa" },
   sb_tooComplex: "Lauseke on liian monimutkainen, haetaan tekstinä",
   sb_refresh: "Päivitä repositoriot",
   sb_loading: "Ladataan repositorioita…",
   sb_loadFailed: "Repositorioiden lataus epäonnistui.",
-  sb_repoCount: "{n} repositoriota",
-  sb_openPrs: "{n} avointa pull requestia",
+  sb_repoCount: { one: "{n} repositorio", other: "{n} repositoriota" },
+  sb_openPrs: { one: "{n} avoin pull request", other: "{n} avointa pull requestia" },
   sb_favourite: "Suosikki: {repo}",
   sb_noFavourites: "Lisää repositorio tähän tähdellä.",
   sb_unavailable: "Ei saatavilla",
@@ -339,6 +342,6 @@ export const fi: Record<MessageKey, string> = {
   pp_created: "Avattu",
   // T25 palette
   pa_title: "Komentopaletti",
-  pa_results: "{n} tulosta",
+  pa_results: { one: "{n} tulos", other: "{n} tulosta" },
   pa_language: "Kieli: {name}",
 };

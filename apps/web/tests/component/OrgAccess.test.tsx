@@ -49,9 +49,9 @@ test("the whole section, with notices, favourites and a closed group, passes axe
   await expectNoAxeViolations(sidebar.element());
 
   await sidebar.getByRole("searchbox").fill("");
-  await sidebar.getByRole("button", { name: "octo 1 repositories" }).click();
+  await sidebar.getByRole("button", { name: "octo 1 repository" }).click();
   await expect
-    .element(sidebar.getByRole("button", { name: "octo 1 repositories" }))
+    .element(sidebar.getByRole("button", { name: "octo 1 repository" }))
     .toHaveAttribute("aria-expanded", "false");
   await expectNoAxeViolations(sidebar.element());
 });
@@ -70,12 +70,12 @@ test("below 768 px the section works in the drawer, and following a repository c
   await expectNoAxeViolations(drawer.element());
 
   await drawer.getByRole("searchbox", { name: "Search repositories" }).fill("tool");
-  await expect.element(drawer.getByText("1 matches")).toBeVisible();
+  await expect.element(drawer.getByText("1 match")).toBeVisible();
   await expect.element(drawer.getByRole("link", { name: "billing" })).not.toBeInTheDocument();
   // Collapsing a group is a button, not a link: the drawer stays open.
-  await drawer.getByRole("button", { name: "octo 1 repositories" }).click();
+  await drawer.getByRole("button", { name: "octo 1 repository" }).click();
   await expect.element(drawer).toBeVisible();
-  await drawer.getByRole("button", { name: "octo 1 repositories" }).click();
+  await drawer.getByRole("button", { name: "octo 1 repository" }).click();
 
   await drawer.getByRole("link", { name: "tools" }).click();
 

@@ -213,7 +213,7 @@ test("results are grouped Favourites, Repositories, Pull requests, Actions", asy
     // oxlint-disable-next-line no-await-in-loop -- reason: as above
     await expect.poll(app.optionNames).toEqual(["Fix login redirectweb#12"]);
   }
-  await expect.element(app.dialog.getByRole("status")).toHaveTextContent("1 results");
+  await expect.element(app.dialog.getByRole("status")).toHaveTextContent("1 result");
 
   await app.combobox.fill("theme");
   await expect.poll(app.optionNames).toEqual(["Switch to dark theme"]);

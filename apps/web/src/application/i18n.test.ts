@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { en } from "../i18n/en.ts";
 import { fi } from "../i18n/fi.ts";
+import { sv } from "../i18n/sv.ts";
 import { createFormat, translate } from "./i18n.tsx";
 
 describe("translate", () => {
@@ -14,7 +16,52 @@ describe("translate", () => {
 
   test("fills placeholders, formatting numbers for the language", () => {
     expect(translate("fi", fi, "qLeft", { n: 4180 })).toBe("4 180 jäljellä");
-    expect(translate("en", {}, "homeSub", { n: 3, r: 2 })).toBe(
+  });
+});
+
+const repos = (n: number) => translate("en", en, "homeRepos", { n });
+
+describe("plurals follow Intl.PluralRules on the n param", () => {
+  test.each([
+    ["en", en, 0, "0 results"],
+    ["en", en, 1, "1 result"],
+    ["en", en, 2, "2 results"],
+    ["en", en, 1000, "1,000 results"],
+    ["fi", fi, 0, "0 tulosta"],
+    ["fi", fi, 1, "1 tulos"],
+    ["fi", fi, 2, "2 tulosta"],
+    ["fi", fi, 1000, "1 000 tulosta"],
+    ["sv", sv, 0, "0 träffar"],
+    ["sv", sv, 1, "1 träff"],
+    ["sv", sv, 2, "2 träffar"],
+    ["sv", sv, 1000, "1 000 träffar"],
+  ] as const)("%s n=%i", (language, messages, n, expected) => {
+    const key = language === "sv" ? "sb_matches" : "pa_results";
+    // Intl formats fi/sv thousands with a no-break space.
+    expect(translate(language, messages, key, { n }).replace(/ /gu, " ")).toBe(expected);
+  });
+
+  test("formats the number for the language", () => {
+    expect(translate("fi", fi, "sb_repoCount", { n: 1234 }).replace(/ /gu, " ")).toBe(
+      "1 234 repositoriota",
+    );
+  });
+
+  test("falls back to the English plural when a Finnish one is missing", () => {
+    const { pa_results: _missing, ...partial } = fi;
+    expect(translate("fi", partial, "pa_results", { n: 1 })).toBe("1 result");
+    expect(translate("fi", partial, "pa_results", { n: 3 })).toBe("3 results");
+  });
+
+  test("uses other when n is not passed", () => {
+    expect(translate("en", en, "pa_results")).toBe("{n} results");
+  });
+
+  test("a plural message can nest another", () => {
+    expect(translate("en", en, "homeSub", { n: 1, repos: repos(1) })).toBe(
+      "1 needs your action across 1 repository",
+    );
+    expect(translate("en", en, "homeSub", { n: 3, repos: repos(2) })).toBe(
       "3 need your action across 2 repositories",
     );
   });
