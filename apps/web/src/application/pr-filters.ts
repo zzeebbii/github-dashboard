@@ -13,8 +13,8 @@ export const updatedWindows = ["any", "24h", "7d", "30d", "stale"] as const;
 type UpdatedWindow = (typeof updatedWindows)[number];
 
 export const sortKeys = [
-  "waiting",
   "updated",
+  "waiting",
   "newest",
   "smallest",
 ] as const satisfies readonly SortKey[];
@@ -35,7 +35,8 @@ export const defaultPrFilters: PrFilters = Object.freeze({
   label: [],
   updated: "any",
   drafts: true,
-  sort: "waiting",
+  // Newest activity on top: the owner's choice (2026-10-16); the other sorts stay in the menu.
+  sort: "updated",
 });
 
 // The router JSON-parses each param, so a hand-typed `?q=123` arrives as a number and

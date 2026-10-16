@@ -86,10 +86,10 @@ test("filters and sort survive a reload via the URL; Reset restores the defaults
   const { screen } = first;
 
   // Sort by keyboard: the menu button pattern.
-  const sort = screen.getByRole("button", { name: "Sort by Waiting longest" });
+  const sort = screen.getByRole("button", { name: "Sort by Recently updated" });
   await sort.click();
   await expect
-    .element(screen.getByRole("menuitemradio", { name: "Waiting longest" }))
+    .element(screen.getByRole("menuitemradio", { name: "Recently updated" }))
     .toHaveFocus();
   await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{Enter}");
   await expect
@@ -128,7 +128,7 @@ test("filters and sort survive a reload via the URL; Reset restores the defaults
   await expect.element(again.getByRole("searchbox")).toHaveValue("");
   await expect.element(again.getByRole("switch", { name: "Drafts" })).toBeChecked();
   await expect
-    .element(again.getByRole("button", { name: "Sort by Waiting longest" }))
+    .element(again.getByRole("button", { name: "Sort by Recently updated" }))
     .toBeVisible();
   await expect.element(again.getByRole("button", { name: "Reset" })).not.toBeInTheDocument();
   expect(titles(again)).toHaveLength(3);
@@ -145,12 +145,22 @@ test("the updated menu offers stale and filters by it", async () => {
   await expect.element(screen.getByRole("button", { name: "Stale (14d+ inactive)" })).toHaveFocus();
 });
 
+test("Recently updated is the default sort, so choosing it keeps the URL clean", async () => {
+  const { screen, router } = await renderAt('/?sort="waiting"');
+
+  await screen.getByRole("button", { name: "Sort by Waiting longest" }).click();
+  await screen.getByRole("menuitemradio", { name: "Recently updated" }).click();
+
+  await expect.poll(() => router.state.location.search).toEqual({});
+  await expect.element(screen.getByRole("button", { name: "Reset" })).not.toBeInTheDocument();
+});
+
 test("a bad URL falls back to the defaults field by field", async () => {
   const { screen } = await renderAt('/?q=date&sort="bogus"&updated=7&drafts="maybe"');
 
   await expect.element(screen.getByRole("searchbox")).toHaveValue("date");
   await expect
-    .element(screen.getByRole("button", { name: "Sort by Waiting longest" }))
+    .element(screen.getByRole("button", { name: "Sort by Recently updated" }))
     .toBeVisible();
   await expect.element(screen.getByRole("button", { name: "Updated: any time" })).toBeVisible();
   await expect.element(screen.getByRole("switch", { name: "Drafts" })).toBeChecked();

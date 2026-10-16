@@ -14,7 +14,7 @@ async function setup() {
   const { screen } = app;
   const sidebar = screen.getByRole("complementary");
   const input = sidebar.getByRole("searchbox", { name: "Search repositories" });
-  await expect.element(sidebar.getByRole("link", { name: "billing" })).toBeInTheDocument();
+  await expect.element(sidebar.getByRole("link", { name: "acme/billing" })).toBeInTheDocument();
   const visible = () =>
     sidebar
       .getByRole("link")
@@ -30,8 +30,8 @@ test("^auth|service$ lists only repositories whose owner/name matches (AC-4.2)",
   await input.fill("^auth|service$");
 
   await expect.element(sidebar.getByText("2 matches · regex")).toBeInTheDocument();
-  // `^` anchors at the owner: octo/auth-api does not match.
-  expect(visible()).toEqual(["/repo/auth-team/login", "/repo/acme/user-service"]);
+  // `^` anchors at the owner: octo/auth-api does not match. The list stays A–Z.
+  expect(visible()).toEqual(["/repo/acme/user-service", "/repo/auth-team/login"]);
   // Typing filters the cached list: GitHub was asked once, on load.
   expect(calls.listRepos).toBe(1);
 });

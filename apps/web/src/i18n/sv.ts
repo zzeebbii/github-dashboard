@@ -276,7 +276,6 @@ export const sv: Catalogue = {
   sb_refresh: "Uppdatera repon",
   sb_loading: "Läser in repon…",
   sb_loadFailed: "Det gick inte att läsa in repon.",
-  sb_repoCount: { one: "{n} repo", other: "{n} repon" },
   sb_openPrs: { one: "{n} öppen pull request", other: "{n} öppna pull requests" },
   sb_favourite: "Favorit: {repo}",
   sb_noFavourites: "Stjärnmärk ett repo för att lägga till det här.",

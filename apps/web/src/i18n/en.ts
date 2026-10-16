@@ -285,7 +285,6 @@ export const en = {
   sb_refresh: "Refresh repositories",
   sb_loading: "Loading repositories…",
   sb_loadFailed: "Could not load repositories.",
-  sb_repoCount: { one: "{n} repository", other: "{n} repositories" },
   sb_openPrs: { one: "{n} open pull request", other: "{n} open pull requests" },
   sb_favourite: "Favorite {repo}",
   sb_noFavourites: "Star a repository to add it here.",

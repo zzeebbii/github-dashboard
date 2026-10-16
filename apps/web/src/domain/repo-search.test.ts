@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Repository } from "./favourites.ts";
-import { MAX_SEARCH_LENGTH, groupByOwner, parseRepoSearch } from "./repo-search.ts";
+import { MAX_SEARCH_LENGTH, parseRepoSearch, sortByName } from "./repo-search.ts";
 
 const NAMES = [
   "acme/auth-api",
@@ -106,12 +106,9 @@ describe("catastrophic backtracking guard", () => {
   });
 });
 
-describe("groupByOwner (FR-4.2)", () => {
-  it("groups by owner in first-seen order, keeping the list order inside a group", () => {
-    const groups = groupByOwner(["octo/b", "acme/x", "octo/a"].map(repo));
-    expect(groups.map((g) => [g.owner, g.repositories.map((r) => r.nameWithOwner)])).toEqual([
-      ["octo", ["octo/b", "octo/a"]],
-      ["acme", ["acme/x"]],
-    ]);
+describe("sortByName (FR-4.2)", () => {
+  it("lists every repository once, A–Z by owner/name, ignoring case", () => {
+    const sorted = sortByName(["octo/b", "Acme/x", "octo/A"].map(repo));
+    expect(sorted.map((r) => r.nameWithOwner)).toEqual(["Acme/x", "octo/A", "octo/b"]);
   });
 });

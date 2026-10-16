@@ -279,7 +279,6 @@ export const fi: Catalogue = {
   sb_refresh: "Päivitä repositoriot",
   sb_loading: "Ladataan repositorioita…",
   sb_loadFailed: "Repositorioiden lataus epäonnistui.",
-  sb_repoCount: { one: "{n} repositorio", other: "{n} repositoriota" },
   sb_openPrs: { one: "{n} avoin pull request", other: "{n} avointa pull requestia" },
   sb_favourite: "Suosikki: {repo}",
   sb_noFavourites: "Lisää repositorio tähän tähdellä.",

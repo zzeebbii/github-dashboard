@@ -175,6 +175,34 @@ test("a review request on a repository that is not a favourite is in Needs your 
   await expectNoAxeViolations(screen.container);
 });
 
+/** A review request on the viewer, updated at `updatedAt`. */
+const requested = (id: string, title: string, updatedAt: string) =>
+  aPullRequest({
+    id,
+    title,
+    updatedAt,
+    author: bob,
+    reviewRequests: [{ kind: "user", login: "octo-me" }],
+  });
+
+test("rows in a section come out most recently updated first by default", async () => {
+  // Waiting longest would give Oldest, Middle, Newest: the order proves the default.
+  const { screen } = await renderHome({
+    searches: {
+      "review-requested": [
+        requested("PR_old", "Oldest", "2026-09-20T00:00:00Z"),
+        requested("PR_new", "Newest", "2026-09-28T00:00:00Z"),
+        requested("PR_mid", "Middle", "2026-09-24T00:00:00Z"),
+      ],
+    },
+  });
+  const review = section(screen, "Needs your review");
+  await expect.element(review.getByRole("link", { name: /Oldest/ })).toBeVisible();
+
+  const titles = [...review.element().querySelectorAll("a.pr-title")].map((a) => a.textContent);
+  expect(titles).toEqual(["Newest", "Middle", "Oldest"]);
+});
+
 test("1,000+ results show the truncation notice (AC-5.7)", async () => {
   let calls = 0;
   const { screen } = await renderHome({

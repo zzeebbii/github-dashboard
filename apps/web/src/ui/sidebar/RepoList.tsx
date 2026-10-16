@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, RefreshCw, Star } from "lucide-react";
-import { type ReactNode, useId, useState } from "react";
+import { RefreshCw, Star } from "lucide-react";
+import { type ReactNode, useId } from "react";
 import type { Translate } from "../../application/i18n.tsx";
 import type { Repository } from "../../domain/favourites.ts";
-import type { OwnerGroup } from "../../domain/repo-search.ts";
 import { Icon } from "../Icon.tsx";
 
 /** A favourite as the sidebar shows it (FR-4.2, FR-4.7). */
@@ -61,18 +60,16 @@ function StarButton({
 /** A link to `/repo/$owner/$name`: SPA navigation, and it closes the drawer (Drawer.tsx). */
 function RepoLink({
   nameWithOwner,
-  showOwner,
   children,
 }: {
   readonly nameWithOwner: string;
-  readonly showOwner: boolean;
   readonly children?: ReactNode;
 }) {
   const { owner, name } = splitName(nameWithOwner);
   return (
     <Link to="/repo/$owner/$name" params={{ owner, name }} className="repo-link">
       <span className="repo-name">
-        {showOwner && <span className="repo-owner">{owner}/</span>}
+        <span className="repo-owner">{owner}/</span>
         {name}
       </span>
       {children}
@@ -129,7 +126,7 @@ export function FavouritesSection({
                 </>
               ) : (
                 <>
-                  <RepoLink nameWithOwner={favourite.nameWithOwner} showOwner>
+                  <RepoLink nameWithOwner={favourite.nameWithOwner}>
                     {favourite.openCount !== null && (
                       <Count
                         value={favourite.openCount}
@@ -156,7 +153,8 @@ export function FavouritesSection({
 interface RepositoriesSectionProps {
   readonly t: Translate;
   readonly status: "loading" | "error" | "ready";
-  readonly groups: readonly OwnerGroup[];
+  /** Already filtered and sorted; each shown as `owner/name`. */
+  readonly repositories: readonly Repository[];
   readonly isFavourite: (nodeId: string) => boolean;
   readonly onToggleFavourite: (repository: RepoRef) => void;
   readonly onRefresh: () => void;
@@ -167,11 +165,11 @@ interface RepositoriesSectionProps {
   readonly orgNotice: ReactNode;
 }
 
-/** All repositories, grouped by owner, each group collapsible (FR-4.2). */
+/** All repositories as one flat list, each named `owner/name` (FR-4.2). */
 export function RepositoriesSection({
   t,
   status,
-  groups,
+  repositories,
   isFavourite,
   onToggleFavourite,
   onRefresh,
@@ -180,15 +178,6 @@ export function RepositoriesSection({
   orgNotice,
 }: RepositoriesSectionProps) {
   const headingId = useId();
-  const listId = useId();
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
-  const toggle = (owner: string) => {
-    setCollapsed((current) => {
-      const next = new Set(current);
-      if (!next.delete(owner)) next.add(owner);
-      return next;
-    });
-  };
 
   return (
     <section className="repo-section" aria-labelledby={headingId}>
@@ -212,48 +201,21 @@ export function RepositoriesSection({
       {orgNotice}
       {status === "loading" && <p className="repo-note">{t("sb_loading")}</p>}
       {status === "error" && <p className="repo-note">{t("sb_loadFailed")}</p>}
-      {status === "ready" && groups.length === 0 && <p className="repo-note">{t("noRepos")}</p>}
-      <ul className="repo-groups">
-        {groups.map((group, index) => {
-          const open = !collapsed.has(group.owner);
-          const groupListId = `${listId}-${index}`;
-          return (
-            <li key={group.owner}>
-              <h3 className="repo-group-head">
-                <button
-                  type="button"
-                  className="repo-group-toggle"
-                  aria-expanded={open}
-                  aria-controls={groupListId}
-                  onClick={() => {
-                    toggle(group.owner);
-                  }}
-                >
-                  <Icon icon={ChevronRight} size={14} />
-                  <span className="repo-name">{group.owner}</span>
-                  <Count
-                    value={group.repositories.length}
-                    label={t("sb_repoCount", { n: group.repositories.length })}
-                  />
-                </button>
-              </h3>
-              <ul id={groupListId} className="repo-rows" hidden={!open}>
-                {open &&
-                  group.repositories.map((repository) => (
-                    <li key={repository.id} className="repo-row">
-                      <RepoLink nameWithOwner={repository.nameWithOwner} showOwner={false} />
-                      <StarButton
-                        t={t}
-                        repository={repository}
-                        pressed={isFavourite(repository.id)}
-                        onToggle={onToggleFavourite}
-                      />
-                    </li>
-                  ))}
-              </ul>
-            </li>
-          );
-        })}
+      {status === "ready" && repositories.length === 0 && (
+        <p className="repo-note">{t("noRepos")}</p>
+      )}
+      <ul className="repo-rows">
+        {repositories.map((repository) => (
+          <li key={repository.id} className="repo-row">
+            <RepoLink nameWithOwner={repository.nameWithOwner} />
+            <StarButton
+              t={t}
+              repository={repository}
+              pressed={isFavourite(repository.id)}
+              onToggle={onToggleFavourite}
+            />
+          </li>
+        ))}
       </ul>
     </section>
   );

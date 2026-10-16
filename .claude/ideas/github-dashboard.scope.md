@@ -155,7 +155,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 ### Functional Requirements
 
 - **FR-4.1** The repo list for the active account (viewer repos + every org the viewer belongs to, via `viewer.repositories` and `organization.repositories`, paginated 100 per page) is loaded once, cached 24 h, and refreshable manually from the sidebar.
-- **FR-4.2** Sidebar: Favourites section (with live open-PR counts) above a Repositories section grouped by owner with a per-owner collapse.
+- **FR-4.2** Sidebar: Favourites section (with live open-PR counts) above a Repositories section listing every repository as one flat `owner/name` list, A–Z. _Amended 2026-10-16 at the owner's request: was grouped by owner with a per-owner collapse._
 - **FR-4.3** Repo search filters by `owner/name` substring, or as a JavaScript regex when the input contains regex metacharacters; an invalid regex shows an inline error and no results change. Regex evaluation is guarded against catastrophic backtracking (input length cap, evaluation over names only).
 - **FR-4.4** Favourite toggle on sidebar rows and the repo page; favourites stored per account with `owner/name` and node id.
 - **FR-4.5** Favourites refresh in batches of 25 per GraphQL query (open PRs with BR-11 fields), on the Scope 3 schedule.
@@ -183,7 +183,7 @@ Layout, theming, i18n, routing and accessibility baseline per the Claude Design 
 - **FR-5.4** Home queries: up to 3 GraphQL `search(type: ISSUE)` queries — `is:pr is:open review-requested:@me`, `is:pr is:open author:@me`, `is:pr is:open reviewed-by:@me -author:@me` (re-review candidates) — each `first: 20` with cursor pagination to the 1,000-result cap; results merged and de-duplicated by node id. No list query selects `mergeStateStatus`; conflicts come from `mergeable`, CI from `PullRequest.statusCheckRollup`. _Amended 2026-10-16 after measurement: rows of 100 exceed GitHub's 10 s limit — see `docs/architecture/github-query-costs.md`._
 - **FR-5.5** Home view: three sections with counts and hints per the design; each section collapsible; empty-section text; a "results truncated" notice when any search hit the cap.
 - **FR-5.6** PR row component (`ui/`) showing every BR-11 field, status as icon + text, the reason chip, "+N new", and a link to GitHub; comfortable and compact densities.
-- **FR-5.7** Filters: text (title, repo, author, number), label, updated (any / 24 h / 7 d / 30 d / stale), drafts on/off; sorts: waiting longest, recently updated, newest, smallest. Filter state in the URL search params; "Reset" clears it.
+- **FR-5.7** Filters: text (title, repo, author, number), label, updated (any / 24 h / 7 d / 30 d / stale), drafts on/off; sorts: recently updated (the default, newest first), waiting longest, newest, smallest. Filter state in the URL search params; "Reset" clears it. _Amended 2026-10-16 at the owner's request: the default sort was waiting longest._
 - **FR-5.8** Seen markers stored per account per device in `CachePort`; set when the PR panel opens or "Open in GitHub" is clicked.
 - **FR-5.9** Long lists are virtualised or paginated so 500 rows keep scrolling smooth.
 

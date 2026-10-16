@@ -125,19 +125,9 @@ function isBoundedPattern(pattern: string): boolean {
   return true;
 }
 
-export interface OwnerGroup {
-  readonly owner: string;
-  readonly repositories: readonly Repository[];
-}
-
-/** Repositories grouped by owner, owners in the order they first appear (FR-4.2). */
-export function groupByOwner(repositories: readonly Repository[]): readonly OwnerGroup[] {
-  const groups = new Map<string, Repository[]>();
-  for (const repository of repositories) {
-    const owner = repository.nameWithOwner.split("/")[0] ?? "";
-    const group = groups.get(owner);
-    if (group === undefined) groups.set(owner, [repository]);
-    else group.push(repository);
-  }
-  return [...groups].map(([owner, list]) => ({ owner, repositories: list }));
+/** Repositories as one flat list, A–Z by `owner/name` (FR-4.2), case-insensitive. */
+export function sortByName(repositories: readonly Repository[]): readonly Repository[] {
+  return repositories.toSorted((a, b) =>
+    a.nameWithOwner.localeCompare(b.nameWithOwner, undefined, { sensitivity: "base" }),
+  );
 }
