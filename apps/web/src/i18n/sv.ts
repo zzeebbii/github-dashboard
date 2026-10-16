@@ -206,7 +206,8 @@ export const sv: Catalogue = {
     "Alla konton, tokens, inställningar och cachade data raderas från den här webbläsaren.",
   am_cancel: "Avbryt",
   si_rememberMe: "Kom ihåg mig på den här enheten",
-  si_rememberMeHint: "Av: token glöms när du stänger webbläsaren.",
+  si_rememberMeHint:
+    "Av: token sparas tills du stänger den sista fliken. På: den lagras på den här enheten.",
   si_reauth: "GitHub godtar inte längre token för {login}. Ange en ny token för att logga in igen.",
   // T19 pr list
   pr_filterLabel: "Filtrera pull requests",
@@ -347,4 +348,20 @@ export const sv: Catalogue = {
   am_sessionTabs: "Inloggad tills du stänger den sista fliken",
   // Quota indicator fix
   fr_quotaChecked: "kontrollerad {ago}",
+  // sign-in redesign
+  si_tagline: "Dina pull requests och granskningsförfrågningar i en lugn lista.",
+  si_showToken: "Visa token",
+  si_tokenFormats: "Godkända format:",
+  si_or: "eller",
+  si_needToken: "Behöver du en token?",
+  si_createFineGrained: "Skapa en finkornig token på GitHub",
+  si_recommended: "Rekommenderas",
+  si_opensInNewTab: "(öppnas i en ny flik)",
+  si_prefilled: "Öppnas med de här läsbehörigheterna förvalda",
+  si_fgContents: "Repository permissions → Contents: Read-only",
+  si_fgMetadata: "Repository permissions → Metadata: Read-only (läggs till automatiskt)",
+  si_orgOwnerNote: "Members gäller bara när en organisation är resursägare.",
+  si_createClassic: "Skapa en klassisk token i stället (repo, read:org)",
+  si_classicWarning:
+    "En klassisk token kan inte läsa privata repon utan ”repo”, som även ger skrivåtkomst, så översikten varnar dig.",
 };

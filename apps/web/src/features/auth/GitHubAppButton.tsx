@@ -1,6 +1,8 @@
+import { AppWindow } from "lucide-react";
 import { useId, useState } from "react";
 import { useGitHubAppSignIn } from "../../application/auth-provider.tsx";
 import { useT } from "../../application/i18n.tsx";
+import { Icon } from "../../ui/Icon.tsx";
 
 /**
  * "Sign in with GitHub App" (FR-2.5, AC-2.3). Always shown; disabled, with the reason as
@@ -25,17 +27,27 @@ export function GitHubAppButton({ rememberMe }: { readonly rememberMe: boolean }
   }
 
   return (
-    <p>
+    <div className="signin-app">
       <button
         type="button"
+        className="signin-secondary"
         onClick={start}
         disabled={githubApp === null || pending}
         aria-describedby={githubApp === null ? hintId : undefined}
       >
+        <Icon icon={AppWindow} />
         {t("ga_button")}
       </button>
-      {githubApp === null && <span id={hintId}> {t("ga_disabled")}</span>}
-      {failed && <span role="alert"> {t("si_errUnexpected")}</span>}
-    </p>
+      {githubApp === null && (
+        <p id={hintId} className="hint">
+          {t("ga_disabled")}
+        </p>
+      )}
+      {failed && (
+        <p role="alert" className="signin-error">
+          {t("si_errUnexpected")}
+        </p>
+      )}
+    </div>
   );
 }

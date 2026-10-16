@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { House, Settings } from "lucide-react";
-import { type ReactNode, useId } from "react";
-import { languageNames, languages, type Translate } from "../../application/i18n.tsx";
+import type { ReactNode } from "react";
+import type { Translate } from "../../application/i18n.tsx";
 import type { Language } from "../../application/preferences.ts";
 import { Icon } from "../Icon.tsx";
+import { LanguageSelect } from "../LanguageSelect.tsx";
 
 interface SidebarProps {
   readonly t: Translate;
@@ -17,7 +18,6 @@ interface SidebarProps {
 
 /** The design's 264 px sidebar: account, Home, repositories, then Settings and language. */
 export function Sidebar({ t, language, onLanguageChange, account, repositories }: SidebarProps) {
-  const languageId = useId();
   return (
     <div className="sidebar">
       {account}
@@ -33,24 +33,7 @@ export function Sidebar({ t, language, onLanguageChange, account, repositories }
           <Icon icon={Settings} />
           {t("settings")}
         </Link>
-        <label htmlFor={languageId} className="sr-only">
-          {t("language")}
-        </label>
-        <select
-          id={languageId}
-          className="language-select"
-          value={language}
-          onChange={(event) => {
-            const next = languages.find((code) => code === event.target.value);
-            if (next !== undefined) onLanguageChange(next);
-          }}
-        >
-          {languages.map((code) => (
-            <option key={code} value={code} lang={code}>
-              {languageNames[code]}
-            </option>
-          ))}
-        </select>
+        <LanguageSelect label={t("language")} language={language} onChange={onLanguageChange} />
       </div>
     </div>
   );
