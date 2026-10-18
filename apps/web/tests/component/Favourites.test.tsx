@@ -75,7 +75,11 @@ test("repositories are one flat list of owner/name links, A–Z ignoring case (F
   await expect.element(repositories.getByRole("link", { name: "octo/tools" })).toBeVisible();
 
   const links = repositories.getByRole("link").elements();
-  expect(links.map((link) => link.textContent)).toEqual(["acme/billing", "Beta/app", "octo/tools"]);
+  expect(links.map((link) => link.getAttribute("title"))).toEqual([
+    "acme/billing",
+    "Beta/app",
+    "octo/tools",
+  ]);
   expect(links.map((link) => link.getAttribute("href"))).toEqual([
     "/repo/acme/billing",
     "/repo/Beta/app",

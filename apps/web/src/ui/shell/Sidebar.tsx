@@ -16,7 +16,7 @@ interface SidebarProps {
   readonly repositories?: ReactNode;
 }
 
-/** The design's 264 px sidebar: account, Home, repositories, then Settings and language. */
+/** The sidebar (264 px by default, resizable in AppShell): account, Home, repositories, then Settings and language. */
 export function Sidebar({ t, language, onLanguageChange, account, repositories }: SidebarProps) {
   return (
     <div className="sidebar">

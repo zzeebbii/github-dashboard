@@ -367,4 +367,8 @@ export const fi: Catalogue = {
   si_createClassic: "Luo sen sijaan klassinen tunnus (repo, read:org)",
   si_classicWarning:
     "Klassinen tunnus ei voi lukea yksityisiä repositorioita ilman ”repo”-oikeutta, joka antaa myös kirjoitusoikeuden, joten koontinäkymä varoittaa siitä.",
+  // layout
+  ly_resizeSidebar: "Muuta sivupalkin leveyttä",
+  ly_resizePanel: "Muuta pull request -paneelin leveyttä",
+  ly_reviewerList: "Katselmoijat: {names}",
 };

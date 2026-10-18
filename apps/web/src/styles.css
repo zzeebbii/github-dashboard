@@ -144,7 +144,9 @@ kbd {
 }
 
 .shell-sidebar {
-  width: 264px;
+  position: relative;
+  /* The dragged width (layout block), clamped like AppShell.tsx's splitter bounds. */
+  width: clamp(220px, var(--sidebar-width, 264px), min(480px, 40vw));
   flex-shrink: 0;
   display: flex;
   background: var(--sidebar);
@@ -306,9 +308,8 @@ kbd {
 }
 
 .main-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 24px 24px 64px;
+  /* No max-width: wide screens give the space to the rows. */
+  padding: 24px 16px 64px 24px;
 }
 
 .main-inner h1 {
@@ -1807,7 +1808,8 @@ a.repo-link:hover,
 
 .pr-sheet {
   margin: 0 0 0 auto;
-  width: min(1040px, 72vw);
+  /* The dragged width (layout block), clamped like PrPanel.tsx's splitter bounds. */
+  width: clamp(480px, var(--pr-panel-width, min(1040px, 72vw)), calc(100vw - 64px));
   max-width: 100vw;
   height: 100%;
   max-height: none;
@@ -1943,10 +1945,6 @@ a.repo-link:hover,
   overflow: auto;
   padding: 16px 24px 56px;
   background: var(--subtle);
-}
-
-.pp-content > [role="tabpanel"] {
-  max-width: 880px;
 }
 
 .pp-notice {
@@ -2886,4 +2884,229 @@ html:not(.dark) .pr-row:hover {
   .signin-card {
     padding: 20px 16px 16px;
   }
+}
+
+/* layout */
+/* Window splitters (ui/Splitter.tsx) on the sidebar's right edge and the PR panel's left
+   edge: a wide, invisible hit area with a 2 px line on hover and focus. No transition, so
+   there is nothing for reduced motion to switch off. */
+.splitter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.splitter[data-edge="right"] {
+  right: -4px;
+}
+
+.splitter[data-edge="left"] {
+  left: 0;
+}
+
+.splitter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+}
+
+.splitter:hover::after,
+.splitter:focus-visible::after {
+  background: var(--border-strong);
+}
+
+.splitter:focus-visible {
+  outline-offset: -2px;
+}
+
+@media (max-width: 767.98px) {
+  .pr-sheet > .splitter {
+    display: none;
+  }
+}
+
+/* Sidebar names: the owner gives way first, then the name; the link's title has it all.
+   Keyboard focus wraps the whole name in place. */
+.repo-name {
+  display: flex;
+}
+
+.repo-owner {
+  flex: 0 4 auto;
+  min-width: 4ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repo-short {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repo-link {
+  height: auto;
+  min-height: 30px;
+}
+
+.repo-link:focus-visible .repo-name {
+  display: block;
+  padding: 6px 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* PR rows keep a fixed height, so long values truncate, but only once a line runs out of
+   room; each one has its full text as a tooltip. The title wins over the labels, the
+   repository over the author; `#number` and the reason chip never shrink. */
+
+/* The stats sized to their content: a small ch minimum per stat keeps the columns aligned
+   from row to row (every row is its own grid, as the windowed list needs). */
+.pr-stats {
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.pr-review {
+  min-width: 6ch;
+}
+
+.pr-comments {
+  min-width: 5ch;
+}
+
+.pr-lines {
+  min-width: 9ch;
+}
+
+.pr-updated {
+  min-width: 9ch;
+}
+
+/* The labels' box shrinks (to nothing if need be) before the title gives up a pixel. */
+.pr-labels {
+  flex: 0 1000 auto;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.pr-label {
+  flex: 0 1 auto;
+  min-width: 3ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* No box of its own: the repository and the number are items of the meta line, so the
+   repository can shrink to nothing while the number keeps its width. The tooltip is the
+   wrapper's title, which hovering either part shows. */
+.pr-ref {
+  display: contents;
+}
+
+.pr-number {
+  flex-shrink: 0;
+  /* Cancels the line's gap: "owner/name#12" reads as one reference. */
+  margin-left: -6px;
+}
+
+.pr-ref > :only-child {
+  margin-left: 0;
+}
+
+.pr-repo,
+.pr-author,
+.reason-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Flex shrinks in proportion to size × factor. The author's huge factor makes it take all
+   the shrinking first: even a fraction of a pixel taken from a short repository would clip
+   it with an ellipsis. Once the author is down to its few characters, the repository takes
+   the rest. (Factors below 1 would not work: the spec then shrinks by only that fraction.) */
+.pr-author {
+  flex-shrink: 100000;
+  min-width: 4ch;
+}
+
+/* Below 768 px the stats line is narrow: each stat keeps its size, so none overlaps the
+   next, and the updated time truncates last before the GitHub link. */
+@media (max-width: 767.98px) {
+  .pr-stats {
+    gap: 10px;
+  }
+
+  .pr-stat {
+    flex-shrink: 0;
+  }
+
+  .pr-review,
+  .pr-comments,
+  .pr-lines {
+    min-width: 0;
+  }
+
+  /* The meta line cannot hold everything: the age goes first, then the chip truncates;
+     the repository and author keep a few characters (the tooltips have them whole). */
+  .pr-repo {
+    min-width: 6ch;
+  }
+
+  .pr-meta > .pr-opened {
+    flex: 0 100 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reason-chip {
+    flex-shrink: 1;
+    min-width: 6ch;
+  }
+
+  .pr-stat.pr-updated {
+    display: block;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.pr-meta > [aria-hidden="true"],
+.pr-meta > svg,
+.pr-opened {
+  flex-shrink: 0;
+}
+
+/* The reason matters more than the author: it keeps its width; only a long team name
+   truncates. */
+.reason-chip {
+  flex: 0 0 auto;
+  max-width: 28ch;
+}
+
+/* The PR panel's tabs use its full width; prose keeps a reading measure. Code blocks and
+   diff hunks scroll inside themselves. */
+.pp-body > div {
+  max-width: 80ch;
+}
+
+.pp-reviewer {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

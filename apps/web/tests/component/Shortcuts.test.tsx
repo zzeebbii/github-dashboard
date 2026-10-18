@@ -183,6 +183,21 @@ test("typing j in the filter types j and moves nothing (AC-7.2); / focuses the f
   expect(selectedTitle()).toBeNull();
 });
 
+test("J, K, / and arrows are inert while the sidebar's splitter has focus", async () => {
+  await renderShortcuts();
+  await expect.element(browser.getByText("First review")).toBeVisible();
+  const splitter = browser.getByRole("separator", { name: "Resize sidebar" });
+  splitter.element().focus();
+
+  await press("jk/{ArrowRight}");
+
+  await expect.element(splitter).toHaveFocus();
+  expect(selectedTitle()).toBeNull();
+  await expect.element(filterBox()).not.toHaveFocus();
+  // The arrow was the splitter's: 264 + 16.
+  await expect.element(splitter).toHaveAttribute("aria-valuenow", "280");
+});
+
 test("with J/K turned off in Settings, J does nothing (AC-7.3)", async () => {
   const { router, preferencesStore } = await renderShortcuts({ path: "/settings" });
 

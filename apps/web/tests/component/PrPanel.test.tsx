@@ -1,11 +1,12 @@
 import { afterEach, beforeAll, expect, test } from "vitest";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 import type {
   GitHubError,
   GitHubReadPort,
   GitHubResult,
   RepoPullRequestPage,
 } from "../../src/application/github.ts";
+import type { PreferencesStore } from "../../src/application/preferences.ts";
 import { createSeenMarkers } from "../../src/application/seen.ts";
 import { type Account, toAccountId } from "../../src/domain/account.ts";
 import type {
@@ -20,6 +21,7 @@ import { expectNoAxeViolations } from "../axe.ts";
 import { createInMemoryAccountStore } from "../fakes/in-memory-account-store.ts";
 import { createInMemoryAuth } from "../fakes/in-memory-auth.ts";
 import { inMemoryCache } from "../fakes/in-memory-cache.ts";
+import { createInMemoryPreferencesStore } from "../fakes/in-memory-preferences-store.ts";
 import { createInMemoryGitHub } from "../fakes/in-memory-github.ts";
 import { aPullRequest } from "../fakes/pull-request.ts";
 import { renderApp } from "../render.tsx";
@@ -180,6 +182,7 @@ interface Setup {
   readonly rows?: readonly PullRequest[];
   readonly listRepoPullRequests?: GitHubReadPort["listRepoPullRequests"];
   readonly detailError?: GitHubError;
+  readonly preferencesStore?: PreferencesStore;
 }
 
 async function renderPanel(options: Setup = {}) {
@@ -224,6 +227,9 @@ async function renderPanel(options: Setup = {}) {
     hasToken: auth.hasToken,
     github,
     seen,
+    ...(options.preferencesStore === undefined
+      ? {}
+      : { preferencesStore: options.preferencesStore }),
   });
   return { ...app, calls, seen };
 }
@@ -489,4 +495,82 @@ test("no access names the organisation and links to the fix", async () => {
     .element(panel.getByRole("link", { name: "Fix access to acme (opens in a new tab)" }))
     .toHaveAttribute("href", "https://github.com/orgs/acme/sso");
   await expectNoAxeViolations(screen.container);
+});
+
+// layout: the panel's width and its reading measure.
+const panelWidth = (screen: Screen) =>
+  Math.round(dialog(screen).element().getBoundingClientRect().width);
+
+test("the panel opens at min(1040px, 72vw) and its left edge resizes it, saved for next time", async () => {
+  await page.viewport(1280, 800);
+  const store = createInMemoryPreferencesStore();
+  const { screen } = await renderPanel({ path: PATH, preferencesStore: store });
+  const panel = dialog(screen);
+  await expect.element(panel).toBeVisible();
+  // 72% of 1280 px.
+  expect(panelWidth(screen)).toBe(922);
+  const splitter = panel.getByRole("separator", { name: "Resize pull request panel" });
+  await expect.element(splitter).toHaveAttribute("aria-valuenow", "922");
+  await expect.element(splitter).toHaveAttribute("aria-valuemin", "480");
+  await expect.element(splitter).toHaveAttribute("aria-valuemax", "1216");
+
+  splitter.element().focus();
+  // On the left edge, ArrowLeft widens.
+  await userEvent.keyboard("{Shift>}{ArrowLeft}{/Shift}");
+
+  await expect.element(splitter).toHaveAttribute("aria-valuenow", "986");
+  expect(panelWidth(screen)).toBe(986);
+  expect(store.load().prPanelWidth).toBe(986);
+  await expectNoAxeViolations(screen.container);
+
+  await userEvent.keyboard("{End}");
+  await expect.element(splitter).toHaveAttribute("aria-valuenow", "1216");
+  await screen.unmount();
+
+  const again = await renderPanel({ path: PATH, preferencesStore: store });
+  await expect.element(dialog(again.screen)).toBeVisible();
+  expect(panelWidth(again.screen)).toBe(1216);
+});
+
+test("J, K and arrows on the panel's splitter keep focus there and leave the page alone", async () => {
+  await page.viewport(1280, 800);
+  const { screen, router } = await renderPanel({ path: PATH });
+  const splitter = dialog(screen).getByRole("separator", { name: "Resize pull request panel" });
+  splitter.element().focus();
+
+  await userEvent.keyboard("jk{ArrowDown}{ArrowUp}");
+
+  await expect.element(splitter).toHaveFocus();
+  expect(router.state.location.pathname).toBe(PATH);
+});
+
+test("comment bodies keep a reading measure in a wide panel", async () => {
+  await page.viewport(1920, 1000);
+  const { screen } = await renderPanel({ path: PATH });
+  const panel = dialog(screen);
+  await expect.element(panel.getByText("Looks good")).toBeVisible();
+  const body = panel.getByText("Looks good").element().closest(".pp-body > div");
+  const card = body?.closest(".pp-card");
+  expect(body).toBeInstanceOf(HTMLElement);
+  expect(card).toBeInstanceOf(HTMLElement);
+  const bodyWidth = body?.getBoundingClientRect().width ?? 0;
+  const measure = Number.parseFloat(getComputedStyle(body ?? document.body).maxWidth);
+  // 80ch, not the whole card.
+  expect(bodyWidth).toBeCloseTo(measure, 0);
+  expect(bodyWidth).toBeLessThan((card?.getBoundingClientRect().width ?? 0) - 100);
+  // The panel itself uses the room, and nothing scrolls sideways.
+  const content = panel.element().querySelector(".pp-content");
+  expect(content?.scrollWidth).toBe(content?.clientWidth);
+});
+
+test("below 768 px the panel is full width, with no splitter", async () => {
+  await page.viewport(375, 800);
+  const { screen } = await renderPanel({ path: PATH });
+  await expect.element(dialog(screen)).toBeVisible();
+
+  expect(panelWidth(screen)).toBe(375);
+  await expect
+    .element(dialog(screen).getByRole("separator", { includeHidden: true }))
+    .not.toBeVisible();
+  await page.viewport(1280, 800);
 });

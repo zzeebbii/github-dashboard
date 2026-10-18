@@ -2,6 +2,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useEffect, useId, useRef, useState } from "react";
 import type { GitHubError } from "../../application/github.ts";
 import { useSanitizeHtml } from "../../application/html-sanitizer.ts";
+import { applyPaneWidth, usePreferences } from "../../application/preferences-provider.tsx";
 import { type Translate, useI18n } from "../../application/i18n.tsx";
 import { usePrDetail, usePrHead } from "../../application/pr/use-pr-detail.ts";
 import { useRefreshState } from "../../application/refresh-provider.tsx";
@@ -18,6 +19,7 @@ import { DetailsTab } from "../../ui/pr-panel/DetailsTab.tsx";
 import { PanelHeader, type PanelHeaderData } from "../../ui/pr-panel/PanelHeader.tsx";
 import type { PanelContext } from "../../ui/pr-panel/TimelineItem.tsx";
 import { OrgAccessNotice } from "../../ui/sidebar/OrgAccessNotice.tsx";
+import { Splitter } from "../../ui/Splitter.tsx";
 import { Tabs } from "../../ui/Tabs.tsx";
 
 interface PrPanelProps {
@@ -36,6 +38,10 @@ const TAB_KEYS = { conversation: "tabConv", checks: "tabChecks", details: "tabDe
 /** The app path of a PR's panel, which is also its list row's link (ui/pr/PrRow.tsx). */
 const panelPath = (pull: PullRequestRef) => `/repo/${pull.owner}/${pull.name}/pull/${pull.number}`;
 
+/** The panel's drag bounds; styles.css clamps `--pr-panel-width` to the same. */
+const PANEL_MIN = 480;
+const panelMax = (viewport: number) => viewport - 64;
+
 /**
  * The PR detail panel (FR-6.1–6.9), a modal side sheet over the list it was opened from.
  *
@@ -46,10 +52,13 @@ const panelPath = (pull: PullRequestRef) => `/repo/${pull.owner}/${pull.name}/pu
  *   browser Back closes the panel too (FR-1.6). With no history to go back to, `exit`.
  * - Opening sets the seen marker (FR-6.8), deep links included; so does "Open in GitHub".
  * - Read-only (FR-6.9): no approve, comment, merge or re-run controls.
+ * - Its left edge is a splitter (from 768 px); the width is a preference.
  */
 export function PrPanel({ account, pull, row, exit }: PrPanelProps) {
   const router = useRouter();
   const headingId = useId();
+  const sheetId = useId();
+  const { updatePreferences } = usePreferences();
   const heading = useRef<HTMLHeadingElement>(null);
   const path = panelPath(pull);
   const close = () => {
@@ -87,12 +96,26 @@ export function PrPanel({ account, pull, row, exit }: PrPanelProps) {
 
   return (
     <Dialog
+      id={sheetId}
       className="pr-sheet"
       aria-labelledby={headingId}
       onClose={close}
       initialFocus={heading}
       returnFocus={returnFocus}
     >
+      <Splitter
+        label={t("ly_resizePanel")}
+        controls={sheetId}
+        min={PANEL_MIN}
+        max={panelMax}
+        edge="left"
+        onResize={(width) => {
+          applyPaneWidth("prPanel", width);
+        }}
+        onCommit={(width) => {
+          updatePreferences({ prPanelWidth: width });
+        }}
+      />
       <PanelHeader
         t={t}
         headingId={headingId}

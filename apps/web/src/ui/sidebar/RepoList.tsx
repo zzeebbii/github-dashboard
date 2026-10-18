@@ -67,10 +67,19 @@ function RepoLink({
 }) {
   const { owner, name } = splitName(nameWithOwner);
   return (
-    <Link to="/repo/$owner/$name" params={{ owner, name }} className="repo-link">
-      <span className="repo-name">
+    // Owner and name truncate separately, so the visible parts are flex items, which an
+    // accessible name would join with a space: the screen reader reads the whole name
+    // from a hidden copy instead, and the title shows it on hover.
+    <Link
+      to="/repo/$owner/$name"
+      params={{ owner, name }}
+      className="repo-link"
+      title={nameWithOwner}
+    >
+      <span className="sr-only">{nameWithOwner}</span>
+      <span className="repo-name" aria-hidden="true">
         <span className="repo-owner">{owner}/</span>
-        {name}
+        <span className="repo-short">{name}</span>
       </span>
       {children}
     </Link>
@@ -109,7 +118,7 @@ export function FavouritesSection({
             <li key={favourite.nodeId} className="repo-row">
               {favourite.state === "unavailable" ? (
                 <>
-                  <span className="repo-link" data-unavailable="">
+                  <span className="repo-link" data-unavailable="" title={favourite.nameWithOwner}>
                     <span className="repo-name">{favourite.nameWithOwner}</span>
                     <span className="repo-badge">{t("sb_unavailable")}</span>
                   </span>

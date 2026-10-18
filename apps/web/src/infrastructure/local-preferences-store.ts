@@ -11,8 +11,8 @@ import {
 /**
  * Preferences persisted in localStorage as JSON under one key.
  *
- * public/theme-init.js reads this key and its `theme` field before first paint, so a change to
- * either must be made there too.
+ * public/theme-init.js reads this key and its `theme` and `sidebarWidth` fields before first
+ * paint, so a change to any of them must be made there too.
  */
 const STORAGE_KEY = "ghd:preferences";
 
@@ -30,6 +30,10 @@ const PreferencesSchema = z.object({
     .catch(defaultPreferences.language),
   // Absent in preferences saved before T26: the catch gives them the default too.
   listShortcutsEnabled: z.boolean().catch(defaultPreferences.listShortcutsEnabled),
+  // Absent before the resizable layout: null, the default width. The CSS clamps any number
+  // to the viewport, so only its type is checked here.
+  sidebarWidth: z.number().positive().nullable().catch(defaultPreferences.sidebarWidth),
+  prPanelWidth: z.number().positive().nullable().catch(defaultPreferences.prPanelWidth),
 });
 
 function readStored(storage: Storage): unknown {
