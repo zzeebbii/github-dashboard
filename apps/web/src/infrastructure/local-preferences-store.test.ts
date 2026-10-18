@@ -19,13 +19,18 @@ test("saved preferences load back", () => {
     density: "compact",
     language: "fi",
     listShortcutsEnabled: false,
+    sidebarWidth: 320,
+    prPanelWidth: 900,
   } as const;
 
   store.save(preferences);
 
   expect(createLocalPreferencesStore().load()).toEqual(preferences);
   // public/theme-init.js depends on this key and shape.
-  expect(JSON.parse(localStorage.getItem(KEY) ?? "")).toMatchObject({ theme: "dark" });
+  expect(JSON.parse(localStorage.getItem(KEY) ?? "")).toMatchObject({
+    theme: "dark",
+    sidebarWidth: 320,
+  });
 });
 
 test.each(["{not json", "null", "42", '"dark"', "[]"])(
@@ -45,6 +50,8 @@ test("an invalid field falls back alone, keeping the valid ones", () => {
     density: "compact",
     language: "en",
     listShortcutsEnabled: true,
+    sidebarWidth: null,
+    prPanelWidth: null,
   });
 });
 
@@ -56,8 +63,37 @@ test("preferences saved before the J/K toggle existed load, with the toggle on",
     density: "compact",
     language: "sv",
     listShortcutsEnabled: true,
+    sidebarWidth: null,
+    prPanelWidth: null,
   });
 });
+
+test("preferences saved before the resizable layout load, with the default widths", () => {
+  const old = { theme: "light", density: "compact", language: "fi", listShortcutsEnabled: false };
+  localStorage.setItem(KEY, JSON.stringify(old));
+
+  expect(createLocalPreferencesStore().load()).toEqual({
+    ...old,
+    sidebarWidth: null,
+    prPanelWidth: null,
+  });
+});
+
+test.each([-5, 0, "320", Number.NaN, true])(
+  "a stored width of %s falls back to the default",
+  (bad) => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ theme: "dark", sidebarWidth: bad, prPanelWidth: bad }),
+    );
+
+    expect(createLocalPreferencesStore().load()).toMatchObject({
+      theme: "dark",
+      sidebarWidth: null,
+      prPanelWidth: null,
+    });
+  },
+);
 
 test("storage that throws neither breaks load nor save", () => {
   const broken = {

@@ -373,6 +373,10 @@ export const en = {
   si_createClassic: "Create a classic token instead (repo, read:org)",
   si_classicWarning:
     "Classic tokens cannot read private repositories without “repo”, which also grants write access, so the dashboard will warn you.",
+  // layout
+  ly_resizeSidebar: "Resize sidebar",
+  ly_resizePanel: "Resize pull request panel",
+  ly_reviewerList: "Reviewers: {names}",
 } as const satisfies Readonly<Record<string, string | Plural>>;
 
 export type MessageKey = keyof typeof en;

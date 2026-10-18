@@ -364,4 +364,8 @@ export const sv: Catalogue = {
   si_createClassic: "Skapa en klassisk token i stället (repo, read:org)",
   si_classicWarning:
     "En klassisk token kan inte läsa privata repon utan ”repo”, som även ger skrivåtkomst, så översikten varnar dig.",
+  // layout
+  ly_resizeSidebar: "Ändra bredden på sidofältet",
+  ly_resizePanel: "Ändra bredden på pull request-panelen",
+  ly_reviewerList: "Granskare: {names}",
 };

@@ -1,6 +1,7 @@
 import { beforeAll } from "vitest";
 import { page } from "vitest/browser";
 import type { GitHubError, OrgAccessIssue } from "../src/application/github.ts";
+import type { PreferencesStore } from "../src/application/preferences.ts";
 import { type Account, toAccountId } from "../src/domain/account.ts";
 import type { Favourite, FavouriteLookup, Repository } from "../src/domain/favourites.ts";
 import styles from "../src/styles.css?inline";
@@ -51,6 +52,7 @@ interface SidebarOptions {
   readonly openCounts?: Readonly<Record<string, number>>;
   readonly orgIssues?: readonly OrgAccessIssue[];
   readonly width?: number;
+  readonly preferencesStore?: PreferencesStore;
 }
 
 /**
@@ -63,6 +65,7 @@ export async function renderSidebar({
   openCounts = {},
   orgIssues = [],
   width = 1280,
+  preferencesStore,
 }: SidebarOptions = {}) {
   await page.viewport(width, 800);
   const accountStore = createInMemoryAccountStore([ACCOUNT]);
@@ -89,6 +92,11 @@ export async function renderSidebar({
       return Promise.resolve({ ok: true, value: { data, partialErrors: [] } });
     },
   });
-  const app = await renderApp("/", { accountStore, hasAccount: true, github });
+  const app = await renderApp("/", {
+    accountStore,
+    hasAccount: true,
+    github,
+    ...(preferencesStore === undefined ? {} : { preferencesStore }),
+  });
   return { ...app, calls, accountStore, accountId: ACCOUNT.id };
 }

@@ -14,6 +14,10 @@ export interface Preferences {
   readonly language: Language;
   /** J/K/Enter move through and open list rows (FR-7.3). */
   readonly listShortcutsEnabled: boolean;
+  /** The sidebar's dragged width in px; null is the 264 px default. */
+  readonly sidebarWidth: number | null;
+  /** The PR panel's dragged width in px; null is the default, `min(1040px, 72vw)`. */
+  readonly prPanelWidth: number | null;
 }
 
 export interface PreferencesStore {
@@ -26,4 +30,6 @@ export const defaultPreferences: Preferences = Object.freeze({
   density: "comfortable",
   language: "en",
   listShortcutsEnabled: true,
+  sidebarWidth: null,
+  prPanelWidth: null,
 });

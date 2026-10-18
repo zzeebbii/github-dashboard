@@ -84,10 +84,11 @@ const reasonTone: Record<Reason["kind"], Tone> = {
 
 /** The reason chip: text on a soft tint of its tone. The text carries the meaning. */
 function ReasonChip({ t, reason }: { t: Translate; reason: Reason }) {
+  const text = reasonText(t, reason);
   return (
-    <span className="reason-chip" data-tone={reasonTone[reason.kind]}>
+    <span className="reason-chip" data-tone={reasonTone[reason.kind]} title={text}>
       {reason.kind === "team-requested" && <Icon icon={Users} size={12} />}
-      {reasonText(t, reason)}
+      <span className="reason-text">{text}</span>
     </span>
   );
 }
@@ -126,8 +127,37 @@ function ciIndicator(t: Translate, pr: PullRequest): Indicator | null {
   return { ...indicator, label: t(key) };
 }
 
-/** The design's review cell: "Changes", "approved/total", "0/total" or "—". */
+/** Who reviewed or is asked to: logins, then `@org/team`, each once. */
+function reviewerNames(pr: PullRequest): string[] {
+  const names = new Map<string, string>();
+  const add = (name: string) => {
+    if (!names.has(name.toLowerCase())) names.set(name.toLowerCase(), name);
+  };
+  for (const review of pr.reviews) {
+    // The author answering in a review thread is not a reviewer.
+    if (review.author !== null && review.author.login !== pr.author?.login) {
+      add(review.author.login);
+    }
+  }
+  for (const request of pr.reviewRequests) {
+    add(request.kind === "user" ? request.login : `@${request.team}`);
+  }
+  return [...names.values()];
+}
+
+/**
+ * The design's review cell, kept compact: "Changes", "approved/total", "0/total" or "—".
+ * The reviewers' names are in its tooltip and accessible name.
+ */
 function reviewIndicator(t: Translate, pr: PullRequest): Indicator & { text: string } {
+  const indicator = reviewCount(t, pr);
+  const names = reviewerNames(pr);
+  if (names.length === 0) return indicator;
+  const list = t("ly_reviewerList", { names: names.join(", ") });
+  return { ...indicator, label: `${indicator.label}. ${list}` };
+}
+
+function reviewCount(t: Translate, pr: PullRequest): Indicator & { text: string } {
   const latest = new Map<string, string>();
   for (const review of pr.reviews.toSorted((a, b) => a.submittedAt.localeCompare(b.submittedAt))) {
     if (review.author !== null && review.state !== "COMMENTED") {
@@ -168,6 +198,7 @@ const isPlainClick = (event: MouseEvent) =>
  * rendered as React text only.
  *
  * Fixed height per density, so the windowed list can position rows without measuring each.
+ * Long values truncate, the title last; each one's full text is its tooltip.
  * The title link's accessible name is the status then the title (AC-5.6).
  */
 export function PrRow({
@@ -208,14 +239,14 @@ export function PrRow({
             <span id={`${id}-title`}>{pr.title}</span>
           </a>
           {pr.labels.map((label) => (
-            <span key={label} className="pr-label">
+            <span key={label} className="pr-label" title={label}>
               {label}
             </span>
           ))}
         </div>
         <div className="pr-meta">
-          <span className="pr-ref">
-            {showRepository ? pr.repository : ""}#{pr.number}
+          <span className="pr-ref" title={`${pr.repository}#${String(pr.number)}`}>
+            {showRepository && <span className="pr-repo">{pr.repository}</span>}#{pr.number}
           </span>
           <span aria-hidden="true">·</span>
           {isBot(pr.author) ? (
@@ -225,9 +256,11 @@ export function PrRow({
               {login.slice(0, 2).toUpperCase()}
             </span>
           )}
-          <span>{login}</span>
+          <span className="pr-author" title={login}>
+            {login}
+          </span>
           <span aria-hidden="true">·</span>
-          <span>
+          <span className="pr-opened">
             {t("opened")} {format.relative(new Date(pr.createdAt), now)}
           </span>
           {reason !== null && <ReasonChip t={t} reason={reason} />}
