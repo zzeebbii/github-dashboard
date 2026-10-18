@@ -36,6 +36,9 @@ ARG VITE_GITHUB_APP_EXCHANGE_URL=""
 RUN pnpm --filter @ghd/web run build
 
 FROM nginx:1.30-alpine AS runtime
+# Alpine publishes security fixes before nginx rebuilds its image (e.g. libexpat
+# CVE-2026-77214); take them at build time so the Trivy gate doesn't wait on upstream.
+RUN apk upgrade --no-cache
 # The exchange URL's origin joins the CSP connect-src only when set (FR-0.8).
 ARG VITE_GITHUB_APP_EXCHANGE_URL=""
 ENV VITE_GITHUB_APP_EXCHANGE_URL=${VITE_GITHUB_APP_EXCHANGE_URL}
