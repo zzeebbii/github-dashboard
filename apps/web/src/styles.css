@@ -2965,42 +2965,82 @@ html:not(.dark) .pr-row:hover {
   overflow-wrap: anywhere;
 }
 
-/* PR rows keep a fixed height, so long values truncate. The title keeps most of the width:
-   labels, the repository and the author give way first, each with a full-text tooltip, and
-   the stats column never shrinks. */
+/* PR rows keep a fixed height, so long values truncate, but only once a line runs out of
+   room; each one has its full text as a tooltip. The title wins over the labels, the
+   repository over the author; `#number` and the reason chip never shrink. */
+
+/* The stats sized to their content: a small ch minimum per stat keeps the columns aligned
+   from row to row (every row is its own grid, as the windowed list needs). */
 .pr-stats {
   flex-shrink: 0;
+  gap: 12px;
+}
+
+.pr-review {
+  min-width: 6ch;
+}
+
+.pr-comments {
+  min-width: 5ch;
+}
+
+.pr-lines {
+  min-width: 9ch;
+}
+
+.pr-updated {
+  min-width: 9ch;
+}
+
+/* The labels' box shrinks (to nothing if need be) before the title gives up a pixel. */
+.pr-labels {
+  flex: 0 1000 auto;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
 }
 
 .pr-label {
-  flex: 0 100 auto;
-  min-width: 4ch;
-  max-width: 20ch;
+  flex: 0 1 auto;
+  min-width: 3ch;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* No box of its own: the repository and the number are items of the meta line, so the
+   repository can shrink to nothing while the number keeps its width. The tooltip is the
+   wrapper's title, which hovering either part shows. */
 .pr-ref {
-  display: inline-flex;
-  flex-shrink: 0;
+  display: contents;
 }
 
-.pr-repo {
-  max-width: 32ch;
+.pr-number {
+  flex-shrink: 0;
+  /* Cancels the line's gap: "owner/name#12" reads as one reference. */
+  margin-left: -6px;
+}
+
+.pr-ref > :only-child {
+  margin-left: 0;
 }
 
 .pr-repo,
 .pr-author,
 .reason-text {
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* The repository keeps up to 32ch; the author gives way first. */
+/* Flex shrinks in proportion to size × factor. The author's huge factor makes it take all
+   the shrinking first: even a fraction of a pixel taken from a short repository would clip
+   it with an ellipsis. Once the author is down to its few characters, the repository takes
+   the rest. (Factors below 1 would not work: the spec then shrinks by only that fraction.) */
 .pr-author {
-  flex: 0 1 auto;
-  min-width: 6ch;
+  flex-shrink: 100000;
+  min-width: 4ch;
 }
 
 /* Below 768 px the stats line is narrow: each stat keeps its size, so none overlaps the
@@ -3014,15 +3054,28 @@ html:not(.dark) .pr-row:hover {
     flex-shrink: 0;
   }
 
-  /* No room for 32ch: the repository truncates, the number stays. */
-  .pr-ref {
-    flex-shrink: 1;
-    min-width: 8ch;
+  .pr-review,
+  .pr-comments,
+  .pr-lines {
+    min-width: 0;
   }
 
-  .pr-review,
-  .pr-comments {
+  /* The meta line cannot hold everything: the age goes first, then the chip truncates;
+     the repository and author keep a few characters (the tooltips have them whole). */
+  .pr-repo {
+    min-width: 6ch;
+  }
+
+  .pr-meta > .pr-opened {
+    flex: 0 100 auto;
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reason-chip {
+    flex-shrink: 1;
+    min-width: 6ch;
   }
 
   .pr-stat.pr-updated {

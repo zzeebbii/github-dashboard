@@ -214,6 +214,81 @@ test("a row with long values keeps its height, its stats and every full value", 
   await expectNoAxeViolations(screen.container);
 });
 
+const part = (row: Element, selector: string) => {
+  const element = row.querySelector<HTMLElement>(selector);
+  if (element === null) throw new Error(`no ${selector}`);
+  return element;
+};
+const truncated = (element: HTMLElement) => element.scrollWidth > element.clientWidth;
+const shown = (element: HTMLElement) => element.clientWidth / element.scrollWidth;
+
+test("a wide row shows the long repository and author in full; a narrow one truncates them", async () => {
+  await page.viewport(1920, 800);
+  const screen = await renderWithProviders(<LongRow />);
+  const row = screen.getByRole("listitem");
+  await expect.element(row).toBeVisible();
+  const repo = part(row.element(), ".pr-repo");
+  const author = part(row.element(), ".pr-author");
+  const label = part(row.element(), ".pr-label");
+
+  expect(repo.textContent).toBe(LONG);
+  expect({ repo: truncated(repo), author: truncated(author) }).toEqual({
+    repo: false,
+    author: false,
+  });
+
+  await page.viewport(1100, 800);
+
+  await expect.poll(() => truncated(author)).toBe(true);
+  // The author gives way first: less of it stays visible than of the repository.
+  expect(shown(author)).toBeLessThan(shown(repo));
+
+  await page.viewport(820, 800);
+
+  await expect.poll(() => truncated(repo)).toBe(true);
+  // Both keep their full text as tooltip and text.
+  expect(author.title).toBe("a-contributor-with-an-unusually-long-login");
+  expect(author.textContent).toBe("a-contributor-with-an-unusually-long-login");
+  expect(part(row.element(), ".pr-ref").title).toBe(`${LONG}#4321`);
+  // The number and the reason chip stay whole.
+  await expect.element(row.getByText("#4321", { exact: false })).toBeVisible();
+  const chip = part(row.element(), ".reason-chip");
+  expect(truncated(part(chip, ".reason-text"))).toBe(false);
+  // A label squeezed by the title keeps its full text as tooltip and accessible text.
+  expect(label.title).toBe("needs-a-very-careful-review");
+  expect(label.textContent).toBe("needs-a-very-careful-review");
+  expect(Math.round(row.element().getBoundingClientRect().height)).toBe(64);
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+    document.documentElement.clientWidth,
+  );
+  await expectNoAxeViolations(screen.container);
+});
+
+function ShortTitle() {
+  const { t, format } = useI18n();
+  const pr = aPullRequest({ id: "s", title: "Fix", labels: ["needs-a-very-careful-review"] });
+  return (
+    <PrList
+      t={t}
+      format={format}
+      now={new Date("2026-10-30T00:00:00Z")}
+      density="comfortable"
+      showRepository
+      label="Rows"
+      rows={[{ pr, reason: null, newCount: null, href: "/x" }]}
+    />
+  );
+}
+
+test("a short title leaves the labels room to show in full", async () => {
+  await page.viewport(1280, 800);
+  const screen = await renderWithProviders(<ShortTitle />);
+  await expect.element(screen.getByRole("listitem")).toBeVisible();
+
+  expect(truncated(part(screen.container, ".pr-label"))).toBe(false);
+  expect(truncated(part(screen.container, ".pr-title"))).toBe(false);
+});
+
 test("below 768 px there is no splitter and the drawer keeps its width", async () => {
   const { screen } = await renderSidebar({ width: 375 });
 

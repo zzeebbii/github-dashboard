@@ -238,15 +238,21 @@ export function PrRow({
           >
             <span id={`${id}-title`}>{pr.title}</span>
           </a>
-          {pr.labels.map((label) => (
-            <span key={label} className="pr-label" title={label}>
-              {label}
+          {pr.labels.length > 0 && (
+            // One box that gives way before the title does.
+            <span className="pr-labels">
+              {pr.labels.map((label) => (
+                <span key={label} className="pr-label" title={label}>
+                  {label}
+                </span>
+              ))}
             </span>
-          ))}
+          )}
         </div>
         <div className="pr-meta">
           <span className="pr-ref" title={`${pr.repository}#${String(pr.number)}`}>
-            {showRepository && <span className="pr-repo">{pr.repository}</span>}#{pr.number}
+            {showRepository && <span className="pr-repo">{pr.repository}</span>}
+            <span className="pr-number">#{pr.number}</span>
           </span>
           <span aria-hidden="true">·</span>
           {isBot(pr.author) ? (
